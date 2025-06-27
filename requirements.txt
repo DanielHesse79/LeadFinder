@@ -1,0 +1,8 @@
+requests
+google-search-results
+ollama
+Flask
+beautifulsoup4
+pytrends
+openpyxl
+pandas 
