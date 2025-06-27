@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="utf-8">
+    <title>Leadfinder - Leads</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; }
+        th { background: #eee; }
+        form { margin-bottom: 2em; }
+        input[type=text] { width: 400px; padding: 6px; }
+        input[type=submit] { padding: 6px 12px; }
+        .status-dot { display: inline-block; width: 16px; height: 16px; border-radius: 8px; margin-right: 8px; }
+        .status-green { background: #0c0; }
+        .status-red { background: #c00; }
+        .search-section { margin-bottom: 2em; padding: 1em; border: 1px solid #ddd; }
+        .stats { margin-bottom: 1em; }
+    </style>
+</head>
+<body>
+    <h1>Leadfinder</h1>
+    
+    <!-- Ollama Status -->
+    <div>
+        {% set ollama_status = ollama_status or {"ok": False, "msg": "Status okänd"} %}
+        <span class="status-dot {% if ollama_status.ok %}status-green{% else %}status-red{% endif %}"></span>
+        Ollama-status: {{ ollama_status.msg }}
+        {% if not ollama_status.ok %}
+            <form method="post" action="{{ url_for('ollama.check_ollama') }}" style="display:inline;">
+                <button type="submit">Försök igen</button>
+            </form>
+        {% endif %}
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats">
+        <strong>Totalt antal leads: {{ lead_count }}</strong>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div>
+        <a href="{{ url_for('leads.export_to_excel') }}"><button>Exportera till Excel</button></a>
+        <a href="{{ url_for('leads.download_links') }}"><button>Ladda ner alla länkars innehåll</button></a>
+        <a href="{{ url_for('ollama.models_ui') }}"><button>Hantera Ollama Modeller</button></a>
+    </div>
+    
+    <!-- Search Form -->
+    <div class="search-section">
+        <h2>Sök</h2>
+        <form method="post" action="{{ url_for('search.perform_search') }}">
+            <input type="text" name="query" placeholder="Skriv in sökfråga..." required><br><br>
+            <input type="text" name="research_question" placeholder="Vad ska AI:n leta efter?" value="{{ research_question or 'epigenetik och pre-diabetes' }}"><br><br>
+            
+            <label>Söktyp:</label><br>
+            <input type="radio" name="search_type" value="articles" checked> Artiklar<br>
+            <input type="radio" name="search_type" value="profiles"> Forskare<br>
+            <input type="radio" name="search_type" value="both"> Båda<br><br>
+            
+            <label>Välj SERP API-källor:</label><br>
+            {% for engine in engines %}
+                <input type="checkbox" name="engines" value="{{ engine }}" {% if engine in selected_engines %}checked{% endif %}> {{ engine }}<br>
+            {% endfor %}
+            <br><input type="submit" value="Sök">
+        </form>
+    </div>
+    
+    <!-- Search History -->
+    {% if search_history %}
+    <div class="search-section">
+        <h3>Senaste sökningar</h3>
+        <ul>
+        {% for search in search_history %}
+            <li>{{ search[1] }} ({{ search[2] }}) - {{ search[5] }} resultat</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    
+    <!-- Leads Table -->
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Titel</th>
+            <th>Beskrivning</th>
+            <th>Länk</th>
+            <th>AI-sammanfattning</th>
+            <th>Källa</th>
+            <th>Skapad</th>
+            <th>Åtgärder</th>
+        </tr>
+        {% for lead in leads %}
+        <tr>
+            <td>{{ lead[0] }}</td>
+            <td>{{ lead[1] }}</td>
+            <td>{{ lead[2] }}</td>
+            <td><a href="{{ lead[3] }}" target="_blank">Länk</a></td>
+            <td>{{ lead[4] }}</td>
+            <td>{{ lead[5] or 'serp' }}</td>
+            <td>{{ lead[6] or 'N/A' }}</td>
+            <td>
+                <form method="post" action="{{ url_for('leads.delete_lead', lead_id=lead[0]) }}" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Är du säker?')">Ta bort</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html> 
