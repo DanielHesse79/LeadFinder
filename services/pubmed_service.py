@@ -1,6 +1,12 @@
 import requests
 from typing import List, Dict, Any, Optional
-from config import PUBMED_API_KEY, PUBMED_BASE_URL
+
+# Import config with fallbacks
+try:
+    from config import PUBMED_API_KEY, PUBMED_BASE_URL
+except ImportError:
+    PUBMED_API_KEY = ''
+    PUBMED_BASE_URL = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils'
 
 class PubMedService:
     def __init__(self, api_key: str = PUBMED_API_KEY, base_url: str = PUBMED_BASE_URL):

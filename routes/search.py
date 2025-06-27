@@ -1,12 +1,37 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from typing import List, Dict, Any
 
-from services.serp_service import serp_service
-from services.ollama_service import ollama_service
-from services.pubmed_service import pubmed_service
-from services.orcid_service import orcid_service
-from models.database import db
-from config import SERP_ENGINES, DEFAULT_RESEARCH_QUESTION
+# Import services with error handling
+try:
+    from services.serp_service import serp_service
+except ImportError:
+    serp_service = None
+
+try:
+    from services.ollama_service import ollama_service
+except ImportError:
+    ollama_service = None
+
+try:
+    from services.pubmed_service import pubmed_service
+except ImportError:
+    pubmed_service = None
+
+try:
+    from services.orcid_service import orcid_service
+except ImportError:
+    orcid_service = None
+
+try:
+    from models.database import db
+except ImportError:
+    db = None
+
+try:
+    from config import SERP_ENGINES, DEFAULT_RESEARCH_QUESTION
+except ImportError:
+    SERP_ENGINES = ["google"]
+    DEFAULT_RESEARCH_QUESTION = "epigenetik och pre-diabetes"
 
 search_bp = Blueprint('search', __name__)
 
@@ -25,7 +50,7 @@ def perform_search():
     relevant_leads = 0
     
     # SERP search (articles)
-    if search_type in ['articles', 'both']:
+    if search_type in ['articles', 'both'] and serp_service:
         selected_engines = request.form.getlist('engines')
         if not selected_engines:
             selected_engines = ["google"]
@@ -41,9 +66,12 @@ def perform_search():
             link = res.get('link', '')
             print(f"[LOG] Analyserar SERP lead: {title}")
             
-            ai_summary = ollama_service.analyze_relevance(title, snippet, link, research_question)
+            if ollama_service:
+                ai_summary = ollama_service.analyze_relevance(title, snippet, link, research_question)
+            else:
+                ai_summary = f"Manual analysis needed for: {title}"
             
-            if ai_summary:  # Only save if AI thinks it's relevant
+            if ai_summary and db:  # Only save if AI thinks it's relevant
                 db.save_lead(title, snippet, link, ai_summary, source='serp')
                 print(f"[LOG] Relevant SERP lead sparad: {title}")
                 relevant_leads += 1
@@ -51,13 +79,13 @@ def perform_search():
                 print(f"[LOG] Inte relevant SERP lead, hoppar över: {title}")
     
     # PubMed search (articles)
-    if search_type in ['articles', 'both']:
+    if search_type in ['articles', 'both'] and pubmed_service:
         print(f"[LOG] PubMed-sökning för: {query}")
         pubmed_results = pubmed_service.search_articles(query)
         # TODO: Process PubMed results when implemented
     
     # ORCID search (profiles)
-    if search_type in ['profiles', 'both']:
+    if search_type in ['profiles', 'both'] and orcid_service:
         print(f"[LOG] ORCID-sökning för: {query}")
         orcid_results = orcid_service.search_researchers(query)
         # TODO: Process ORCID results when implemented
@@ -65,8 +93,9 @@ def perform_search():
     print(f"[LOG] Totalt {len(all_results)} leads analyserade, {relevant_leads} relevanta sparade.")
     
     # Save search history
-    engines_str = ','.join(selected_engines) if 'selected_engines' in locals() else 'none'
-    db.save_search_history(query, research_question, engines_str, relevant_leads)
+    if db:
+        engines_str = ','.join(selected_engines) if 'selected_engines' in locals() else 'none'
+        db.save_search_history(query, research_question, engines_str, relevant_leads)
     
     return redirect(url_for('leads.show_leads'))
 

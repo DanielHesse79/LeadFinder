@@ -1,7 +1,17 @@
 import requests
 from typing import List, Dict, Any
-from serpapi import GoogleSearch
-from config import SERPAPI_KEY, SERP_ENGINES
+
+# Import config with fallbacks
+try:
+    from config import SERPAPI_KEY, SERP_ENGINES
+except ImportError:
+    SERPAPI_KEY = ''
+    SERP_ENGINES = ["google"]
+
+try:
+    from serpapi import GoogleSearch
+except ImportError:
+    GoogleSearch = None
 
 class SerpService:
     def __init__(self, api_key: str = SERPAPI_KEY):
@@ -46,6 +56,10 @@ class SerpService:
             List of search results
         """
         print(f"[LOG] Kör {engine}-sökning med query: '{query}'")
+        
+        if not GoogleSearch:
+            print(f"[LOG] GoogleSearch not available, skipping {engine} search")
+            return []
         
         params = {
             "engine": engine,

@@ -7,22 +7,49 @@ from pathlib import Path
 import os
 from typing import List, Tuple
 
-from models.database import db
-from services.ollama_service import ollama_service
-from services.serp_service import serp_service
-from config import EXPORT_FOLDER, SCIHUB_FOLDER, SERP_ENGINES, DEFAULT_RESEARCH_QUESTION
+# Import services with error handling
+try:
+    from models.database import db
+except ImportError:
+    db = None
+
+try:
+    from services.ollama_service import ollama_service
+except ImportError:
+    ollama_service = None
+
+try:
+    from services.serp_service import serp_service
+except ImportError:
+    serp_service = None
+
+try:
+    from config import EXPORT_FOLDER, SCIHUB_FOLDER, SERP_ENGINES, DEFAULT_RESEARCH_QUESTION
+except ImportError:
+    EXPORT_FOLDER = "exports"
+    SCIHUB_FOLDER = "scihub"
+    SERP_ENGINES = ["google"]
+    DEFAULT_RESEARCH_QUESTION = "epigenetik och pre-diabetes"
 
 leads_bp = Blueprint('leads', __name__)
 
 @leads_bp.route('/')
 def show_leads():
     """Display all leads"""
-    leads = db.get_all_leads()
-    lead_count = db.get_lead_count()
-    search_history = db.get_search_history(5)
+    if db:
+        leads = db.get_all_leads()
+        lead_count = db.get_lead_count()
+        search_history = db.get_search_history(5)
+    else:
+        leads = []
+        lead_count = 0
+        search_history = []
     
     # Ensure ollama status is checked
-    ollama_status = ollama_service.check_status()
+    if ollama_service:
+        ollama_status = ollama_service.check_status()
+    else:
+        ollama_status = {"ok": False, "msg": "Ollama service not available"}
     
     return render_template('leads.html', 
                          leads=leads, 
@@ -36,6 +63,9 @@ def show_leads():
 @leads_bp.route('/export')
 def export_to_excel():
     """Export leads to Excel file"""
+    if not db:
+        return "Database not available", 500
+    
     leads = db.get_all_leads()
     
     wb = openpyxl.Workbook()
@@ -110,6 +140,9 @@ def download_links():
 @leads_bp.route('/delete/<int:lead_id>', methods=['POST'])
 def delete_lead(lead_id: int):
     """Delete a specific lead"""
+    if not db:
+        return "Database not available", 500
+    
     if db.delete_lead(lead_id):
         return redirect(url_for('leads.show_leads'))
     else:
@@ -118,10 +151,16 @@ def delete_lead(lead_id: int):
 @leads_bp.route('/leads_by_source/<source>')
 def leads_by_source(source: str):
     """Show leads filtered by source"""
-    leads = db.get_leads_by_source(source)
+    if not db:
+        leads = []
+    else:
+        leads = db.get_leads_by_source(source)
     
     # Ensure ollama status is checked
-    ollama_status = ollama_service.check_status()
+    if ollama_service:
+        ollama_status = ollama_service.check_status()
+    else:
+        ollama_status = {"ok": False, "msg": "Ollama service not available"}
     
     return render_template('leads.html', 
                          leads=leads, 

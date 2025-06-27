@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konfiguration - LeadFinder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .config-section {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .config-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #007bff;
+        }
+        .config-item.missing {
+            border-left-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        .config-item.configured {
+            border-left-color: #28a745;
+            background-color: #f8fff9;
+        }
+        .secret-field {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+        }
+        .status-badge {
+            font-size: 0.75em;
+        }
+        .test-button {
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-search"></i> LeadFinder
+                </a>
+                <div class="navbar-nav">
+                    <a class="nav-link" href="/">Leads</a>
+                    <a class="nav-link" href="/research">Forskning</a>
+                    <a class="nav-link" href="/ollama">Ollama</a>
+                    <a class="nav-link active" href="/config">Konfiguration</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="mb-4">
+                        <i class="fas fa-cogs"></i> 
+                        Konfigurationshantering
+                    </h1>
+                    
+                    <!-- Configuration Status -->
+                    <div class="alert {% if is_configured %}alert-success{% else %}alert-warning{% endif %} mb-4">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-info-circle"></i> 
+                            Konfigurationsstatus
+                        </h5>
+                        {% if is_configured %}
+                            <p class="mb-0">
+                                <i class="fas fa-check-circle"></i> 
+                                Alla nödvändiga konfigurationer är inställda. Applikationen är redo att användas.
+                            </p>
+                        {% else %}
+                            <p class="mb-0">
+                                <i class="fas fa-exclamation-triangle"></i> 
+                                Vissa nödvändiga konfigurationer saknas. Vänligen konfigurera följande:
+                            </p>
+                            <ul class="mb-0 mt-2">
+                                {% for config in missing_configs %}
+                                <li><strong>{{ config }}</strong></li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <!-- Configuration Form -->
+                    <div class="config-section">
+                        <h4>
+                            <i class="fas fa-key"></i> 
+                            API-nycklar och konfiguration
+                        </h4>
+                        <p class="text-muted">
+                            Ange dina API-nycklar och konfigurationsinställningar här. 
+                            Känsliga data lagras säkert i databasen.
+                        </p>
+                        
+                        <form method="POST" action="{{ url_for('config.bulk_update_config') }}">
+                            {% for key_name, config in configs.items() %}
+                            <div class="config-item {% if key_name in missing_configs %}missing{% elif config.has_value %}configured{% endif %}">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <label for="config_{{ key_name }}" class="form-label">
+                                            <strong>{{ key_name }}</strong>
+                                            {% if config.is_secret %}
+                                                <i class="fas fa-lock text-muted"></i>
+                                            {% endif %}
+                                            {% if key_name == 'NIH_API_KEY' %}
+                                                <span class="badge bg-info ms-2">Valfritt – ingen API-nyckel krävs</span>
+                                            {% endif %}
+                                        </label>
+                                        <br>
+                                        <small class="text-muted">{{ config.description }}</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="secret-field">
+                                            <input type="{% if config.is_secret %}password{% else %}text{% endif %}" 
+                                                   class="form-control" 
+                                                   id="config_{{ key_name }}"
+                                                   name="config_{{ key_name }}"
+                                                   value="{{ config.value }}"
+                                                   placeholder="Ange värde...">
+                                            {% if config.is_secret %}
+                                            <button type="button" class="toggle-password" 
+                                                    onclick="togglePassword('config_{{ key_name }}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="d-flex gap-2">
+                                            {% if config.has_value %}
+                                                <span class="badge bg-success status-badge">
+                                                    <i class="fas fa-check"></i> Satt
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-danger status-badge">
+                                                    <i class="fas fa-times"></i> Saknas
+                                                </span>
+                                            {% endif %}
+                                            
+                                            {% if key_name in ['SERPAPI_KEY', 'OLLAMA_BASE_URL'] %}
+                                            <button type="button" class="btn btn-sm btn-outline-info test-button"
+                                                    onclick="testConfig('{{ key_name }}')">
+                                                <i class="fas fa-vial"></i> Testa
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Spara alla konfigurationer
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="refreshStatus()">
+                                    <i class="fas fa-sync"></i> Uppdatera status
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="config-section">
+                        <h4>
+                            <i class="fas fa-tools"></i> 
+                            Snabbåtgärder
+                        </h4>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <button class="btn btn-outline-info w-100 mb-2" onclick="exportConfig()">
+                                    <i class="fas fa-download"></i> Exportera konfiguration
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-outline-warning w-100 mb-2" onclick="resetConfig()">
+                                    <i class="fas fa-undo"></i> Återställ till standard
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="{{ url_for('config.config_status') }}" class="btn btn-outline-secondary w-100 mb-2" target="_blank">
+                                    <i class="fas fa-code"></i> JSON Status
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="/" class="btn btn-success w-100 mb-2">
+                                    <i class="fas fa-home"></i> Tillbaka till appen
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Help Section -->
+                    <div class="config-section">
+                        <h4>
+                            <i class="fas fa-question-circle"></i> 
+                            Hjälp och information
+                        </h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>API-nycklar som behövs:</h6>
+                                <ul>
+                                    <li><strong>SERPAPI_KEY</strong> - För Google-sökningar</li>
+                                    <li><strong>OLLAMA_BASE_URL</strong> - Ollama-serveradress</li>
+                                    <li><strong>OLLAMA_MODEL</strong> - AI-modell att använda</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Valfria API:er:</h6>
+                                <ul>
+                                    <li><strong>SWECRIS_API_KEY</strong> - Svensk forskningsdata</li>
+                                    <li><strong>CORDIS_API_KEY</strong> - EU-forskningsprojekt</li>
+                                    <li><strong>NIH_API_KEY</strong> - Amerikansk forskning</li>
+                                    <li><strong>NSF_API_KEY</strong> - National Science Foundation</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+        
+        function testConfig(keyName) {
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testar...';
+            button.disabled = true;
+            
+            fetch(`/config/test/${keyName}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Fel vid testning: ' + error);
+                })
+                .finally(() => {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                });
+        }
+        
+        function refreshStatus() {
+            location.reload();
+        }
+        
+        function exportConfig() {
+            fetch('/config/export')
+                .then(response => response.json())
+                .then(data => {
+                    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'leadfinder_config.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    alert('Fel vid export: ' + error);
+                });
+        }
+        
+        function resetConfig() {
+            if (confirm('Är du säker på att du vill återställa alla konfigurationer till standardvärden?')) {
+                fetch('/config/reset', {method: 'POST'})
+                    .then(() => {
+                        location.reload();
+                    })
+                    .catch(error => {
+                        alert('Fel vid återställning: ' + error);
+                    });
+            }
+        }
+        
+        // Auto-refresh status every 30 seconds
+        setInterval(refreshStatus, 30000);
+    </script>
+</body>
+</html> 

@@ -1,6 +1,13 @@
 import requests
 from typing import List, Dict, Any, Optional
-from config import ORCID_CLIENT_ID, ORCID_CLIENT_SECRET, ORCID_BASE_URL
+
+# Import config with fallbacks
+try:
+    from config import ORCID_CLIENT_ID, ORCID_CLIENT_SECRET, ORCID_BASE_URL
+except ImportError:
+    ORCID_CLIENT_ID = ''
+    ORCID_CLIENT_SECRET = ''
+    ORCID_BASE_URL = 'https://orcid.org/oauth'
 
 class OrcidService:
     def __init__(self, client_id: str = ORCID_CLIENT_ID, 
