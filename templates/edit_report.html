@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Report - {{ project.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .edit-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .form-section {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .preview-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .company-branding {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="edit-container">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-edit"></i> Edit Report</h1>
+                    <p class="mb-0">Customize your report content and branding before PDF generation</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{{ url_for('lead_workshop.view_project', project_id=project.id) }}" class="btn btn-light">
+                        <i class="fas fa-arrow-left"></i> Back to Project
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Company Branding Section -->
+        <div class="company-branding">
+            <h4><i class="fas fa-building"></i> Company Branding</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label">Company Name</label>
+                        <input type="text" class="form-control" id="companyName" value="4Front 2 Market AB">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="disclaimer" class="form-label">Disclaimer</label>
+                        <input type="text" class="form-control" id="disclaimer" value="This is a beta-version. Data might be unreliable.">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Content Editing -->
+        <div class="form-section">
+            <h4><i class="fas fa-file-alt"></i> Report Content</h4>
+            
+            <div class="mb-3">
+                <label for="background" class="form-label">Background and Purpose</label>
+                <textarea class="form-control" id="background" rows="4" placeholder="Enter custom background text...">This report presents the results of an AI-powered lead discovery analysis conducted using 4Front 2 Market AB's advanced semantic analysis capabilities. The analysis leverages machine learning algorithms to identify and evaluate potential business opportunities, research collaborations, and market intelligence from diverse data sources including academic publications, industry reports, and web content.</textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="methodology" class="form-label">Methodology</label>
+                <textarea class="form-control" id="methodology" rows="4" placeholder="Enter custom methodology text...">The analysis was conducted using 4Front 2 Market AB's proprietary AI algorithms and data processing techniques. Each lead was evaluated based on multiple criteria including relevance to the project scope, business potential, and collaboration opportunities.</textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="objectives" class="form-label">Key Objectives</label>
+                <textarea class="form-control" id="objectives" rows="6" placeholder="Enter custom objectives...">• Identify high-potential leads and business opportunities relevant to the project scope
+• Benchmark market activity and identify emerging trends in the target domain
+• Extract actionable intelligence including contact information, product details, and collaboration opportunities
+• Provide evidence-based recommendations for strategic decision-making
+• Establish a foundation for ongoing market monitoring and lead generation</textarea>
+            </div>
+        </div>
+
+        <!-- Project Information -->
+        <div class="form-section">
+            <h4><i class="fas fa-info-circle"></i> Project Information</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Project Name:</strong> {{ project.name }}</p>
+                    <p><strong>Created:</strong> {{ project.created_at }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Total Leads:</strong> {{ analyses|length }}</p>
+                    <p><strong>Description:</strong> {{ project.description or 'No description' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Summary -->
+        <div class="form-section">
+            <h4><i class="fas fa-chart-bar"></i> Analysis Summary</h4>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ analyses|length }}</h5>
+                            <p class="card-text">Total Leads</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {% set high_relevance = analyses|selectattr('relevancy_score', '>=', 4)|list|length %}
+                                {{ high_relevance }}
+                            </h5>
+                            <p class="card-text">High Relevance (4-5)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {% set medium_relevance = analyses|selectattr('relevancy_score', '==', 3)|list|length %}
+                                {{ medium_relevance }}
+                            </h5>
+                            <p class="card-text">Medium Relevance (3)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {% set low_relevance = analyses|selectattr('relevancy_score', '<=', 2)|list|length %}
+                                {{ low_relevance }}
+                            </h5>
+                            <p class="card-text">Low Relevance (1-2)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-section">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <button type="button" class="btn btn-secondary" onclick="previewReport()">
+                        <i class="fas fa-eye"></i> Preview Report
+                    </button>
+                    <button type="button" class="btn btn-info" onclick="resetToDefaults()">
+                        <i class="fas fa-undo"></i> Reset to Defaults
+                    </button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-success" onclick="generatePDF()">
+                        <i class="fas fa-file-pdf"></i> Generate PDF Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Section (hidden by default) -->
+        <div class="preview-section" id="previewSection" style="display: none;">
+            <h4><i class="fas fa-eye"></i> Report Preview</h4>
+            <div id="previewContent"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function generatePDF() {
+            const companyName = document.getElementById('companyName').value;
+            const disclaimer = document.getElementById('disclaimer').value;
+            const background = document.getElementById('background').value;
+            const methodology = document.getElementById('methodology').value;
+            const objectives = document.getElementById('objectives').value;
+            
+            const customContent = {
+                background: background,
+                methodology: methodology,
+                objectives: objectives
+            };
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            button.disabled = true;
+            
+            fetch('{{ url_for("lead_workshop.generate_custom_pdf", project_id=project.id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    custom_content: customContent,
+                    company_name: companyName,
+                    disclaimer: disclaimer
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                } else {
+                    throw new Error('PDF generation failed');
+                }
+            })
+            .then(blob => {
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${companyName.replace(' ', '_')}_report_{{ project.name.replace(' ', '_') }}_${new Date().toISOString().slice(0,10)}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // Reset button
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                alert('PDF report generated successfully!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error generating PDF: ' + error.message);
+                
+                // Reset button
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+        
+        function previewReport() {
+            const companyName = document.getElementById('companyName').value;
+            const disclaimer = document.getElementById('disclaimer').value;
+            const background = document.getElementById('background').value;
+            const methodology = document.getElementById('methodology').value;
+            const objectives = document.getElementById('objectives').value;
+            
+            const previewContent = `
+                <div class="card">
+                    <div class="card-header">
+                        <h5>${companyName}</h5>
+                        <p class="text-muted mb-0">Lead Discovery Project Report</p>
+                    </div>
+                    <div class="card-body">
+                        <h6>Background and Purpose</h6>
+                        <p>${background}</p>
+                        
+                        <h6>Methodology</h6>
+                        <p>${methodology}</p>
+                        
+                        <h6>Key Objectives</h6>
+                        <p>${objectives.replace(/\n/g, '<br>')}</p>
+                        
+                        <hr>
+                        <small class="text-muted"><i>${disclaimer}</i></small>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('previewContent').innerHTML = previewContent;
+            document.getElementById('previewSection').style.display = 'block';
+            
+            // Scroll to preview
+            document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function resetToDefaults() {
+            if (confirm('Reset all content to default values?')) {
+                document.getElementById('companyName').value = '4Front 2 Market AB';
+                document.getElementById('disclaimer').value = 'This is a beta-version. Data might be unreliable.';
+                document.getElementById('background').value = 'This report presents the results of an AI-powered lead discovery analysis conducted using 4Front 2 Market AB\'s advanced semantic analysis capabilities. The analysis leverages machine learning algorithms to identify and evaluate potential business opportunities, research collaborations, and market intelligence from diverse data sources including academic publications, industry reports, and web content.';
+                document.getElementById('methodology').value = 'The analysis was conducted using 4Front 2 Market AB\'s proprietary AI algorithms and data processing techniques. Each lead was evaluated based on multiple criteria including relevance to the project scope, business potential, and collaboration opportunities.';
+                document.getElementById('objectives').value = '• Identify high-potential leads and business opportunities relevant to the project scope\n• Benchmark market activity and identify emerging trends in the target domain\n• Extract actionable intelligence including contact information, product details, and collaboration opportunities\n• Provide evidence-based recommendations for strategic decision-making\n• Establish a foundation for ongoing market monitoring and lead generation';
+            }
+        }
+    </script>
+</body>
+</html> 

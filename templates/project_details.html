@@ -1,0 +1,123 @@
+{% extends "leads.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Project Details</h5>
+                    <a href="{{ url_for('research.research') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if project %}
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>{{ project.title or 'No title' }}</h4>
+                            <p class="text-muted">
+                                <strong>API:</strong> {{ project.source or 'Unknown' }} |
+                                <strong>ID:</strong> {{ project.id or 'N/A' }}
+                            </p>
+                            
+                            {% if project.description %}
+                            <div class="mb-4">
+                                <h6>Description</h6>
+                                <p>{{ project.description }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if project.abstract %}
+                            <div class="mb-4">
+                                <h6>Abstract</h6>
+                                <p>{{ project.abstract }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if project.keywords %}
+                            <div class="mb-4">
+                                <h6>Keywords</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for keyword in project.keywords %}
+                                    <span class="badge bg-primary">{{ keyword }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Project Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <dl class="row mb-0">
+                                        {% if project.start_date %}
+                                        <dt class="col-sm-4">Start Date:</dt>
+                                        <dd class="col-sm-8">{{ project.start_date }}</dd>
+                                        {% endif %}
+                                        
+                                        {% if project.end_date %}
+                                        <dt class="col-sm-4">End Date:</dt>
+                                        <dd class="col-sm-8">{{ project.end_date }}</dd>
+                                        {% endif %}
+                                        
+                                        {% if project.funding_amount %}
+                                        <dt class="col-sm-4">Funding:</dt>
+                                        <dd class="col-sm-8">{{ project.funding_amount }}</dd>
+                                        {% endif %}
+                                        
+                                        {% if project.currency %}
+                                        <dt class="col-sm-4">Currency:</dt>
+                                        <dd class="col-sm-8">{{ project.currency }}</dd>
+                                        {% endif %}
+                                        
+                                        {% if project.status %}
+                                        <dt class="col-sm-4">Status:</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge bg-{{ 'success' if project.status == 'active' else 'secondary' }}">
+                                                {{ project.status }}
+                                            </span>
+                                        </dd>
+                                        {% endif %}
+                                    </dl>
+                                </div>
+                            </div>
+                            
+                            {% if project.principal_investigator %}
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Principal Investigator</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-1"><strong>{{ project.principal_investigator.name or 'Unknown' }}</strong></p>
+                                    {% if project.principal_investigator.affiliation %}
+                                    <p class="text-muted small mb-0">{{ project.principal_investigator.affiliation }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if project.url %}
+                            <div class="mt-3">
+                                <a href="{{ project.url }}" target="_blank" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-external-link-alt"></i> View on {{ project.source }}
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        The project could not be found or loaded.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

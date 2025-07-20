@@ -1,0 +1,1367 @@
+2025-06-28 00:48:25 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 00:48:25 - leadfinder.app - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-28 00:48:25 - leadfinder.app - INFO - Ollama and model are ready
+2025-06-28 00:52:38 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 00:52:38 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-06-28 00:52:38 - leadfinder.app - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-28 00:52:38 - leadfinder.app - INFO - Ollama and model are ready
+2025-06-28 00:52:38 - leadfinder.ollama_service - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-28 00:52:38 - leadfinder.ollama_service - INFO - Selected model: mistral:latest
+2025-06-28 01:06:20 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:06:21 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-06-28 01:06:21 - leadfinder.ollama_service - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-28 01:06:21 - leadfinder.ollama_service - INFO - Selected model: mistral:latest
+2025-06-28 01:06:21 - leadfinder.app - INFO - Registered leads blueprint
+2025-06-28 01:06:21 - leadfinder.app - INFO - Registered search blueprint
+2025-06-28 01:06:21 - leadfinder.app - INFO - Registered ollama blueprint
+2025-06-28 01:06:21 - leadfinder.research_service - INFO - Initializing research funding APIs...
+2025-06-28 01:06:21 - leadfinder.research_service - INFO - Initialized SweCRIS API
+2025-06-28 01:06:21 - leadfinder.research_service - INFO - Initialized 1 research APIs
+2025-06-28 01:06:21 - leadfinder.app - INFO - Registered research blueprint
+2025-06-28 01:06:21 - leadfinder.app - INFO - Registered config blueprint
+2025-06-28 01:06:21 - leadfinder.app - WARNING - Could not initialize database: cannot import name 'init_db' from 'models.database' (/home/daniel/leadfinder/models/database.py)
+2025-06-28 01:06:21 - leadfinder.app - INFO - Starting LeadFinder on 0.0.0.0:5050
+2025-06-28 01:06:21 - leadfinder.app - INFO - Debug mode: False
+2025-06-28 01:07:03 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 01:07:04 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7eb18f607470>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:07:04 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 01:07:04 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7eb18f01d4c0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:07:04 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 01:07:05 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7eb18f01df10>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:07:05 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 01:07:05 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7eb18f607590>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:07:36 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 01:07:36 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7eb18f01d4c0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:07:36 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 01:07:37 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7eb18f01f050>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:08:56 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:09:26 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:09:56 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:10:26 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:10:56 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:11:27 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:11:58 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:12:29 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:13:00 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:13:31 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:14:01 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:14:31 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:15:02 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:15:32 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:16:03 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:16:34 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:17:05 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:17:36 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:18:07 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:18:38 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:19:09 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:19:40 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:20:11 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:20:42 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:21:13 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:21:44 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:22:15 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:22:46 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:23:17 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:23:48 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:24:19 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:24:38 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:24:38 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-06-28 01:24:38 - leadfinder.ollama_service - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-28 01:24:38 - leadfinder.ollama_service - INFO - Selected model: mistral:latest
+2025-06-28 01:24:38 - leadfinder.app - INFO - Registered leads blueprint
+2025-06-28 01:24:38 - leadfinder.app - INFO - Registered search blueprint
+2025-06-28 01:24:38 - leadfinder.app - INFO - Registered ollama blueprint
+2025-06-28 01:24:38 - leadfinder.research_service - INFO - Initializing research funding APIs...
+2025-06-28 01:24:38 - leadfinder.research_service - INFO - Initialized SweCRIS API
+2025-06-28 01:24:38 - leadfinder.research_service - INFO - Initialized 1 research APIs
+2025-06-28 01:24:38 - leadfinder.app - INFO - Registered research blueprint
+2025-06-28 01:24:38 - leadfinder.app - INFO - Registered config blueprint
+2025-06-28 01:24:38 - leadfinder.app - WARNING - Could not initialize database: cannot import name 'init_db' from 'models.database' (/home/daniel/leadfinder/models/database.py)
+2025-06-28 01:24:38 - leadfinder.app - INFO - Starting LeadFinder on 0.0.0.0:5050
+2025-06-28 01:24:38 - leadfinder.app - INFO - Debug mode: False
+2025-06-28 01:24:45 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:25:16 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:25:46 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:26:16 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:26:35 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:26:46 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Updated config: OLLAMA_BASE_URL
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Updated config: OLLAMA_MODEL
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Updated config: RESEARCH_MAX_RESULTS
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Updated config: RESEARCH_TIMEOUT
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Updated config: ORCID_BASE_URL
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Updated config: PUBMED_BASE_URL
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Updated config: FLASK_DEBUG
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Updated config: LOG_LEVEL
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Updated config: LOG_FILE
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Updated config: REQUEST_POOL_SIZE
+2025-06-28 01:26:54 - leadfinder.config_routes - INFO - Bulk updated 10 configs
+2025-06-28 01:26:54 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:27:18 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:27:24 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:27:49 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:27:54 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:28:25 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:28:56 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:29:27 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:29:58 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:30:29 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:30:44 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: SERPAPI_KEY
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: OLLAMA_BASE_URL
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: OLLAMA_MODEL
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: RESEARCH_MAX_RESULTS
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: RESEARCH_TIMEOUT
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: ORCID_BASE_URL
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: PUBMED_BASE_URL
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: FLASK_DEBUG
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: LOG_LEVEL
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: LOG_FILE
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Updated config: REQUEST_POOL_SIZE
+2025-06-28 01:30:50 - leadfinder.config_routes - INFO - Bulk updated 11 configs
+2025-06-28 01:30:50 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:31:20 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:31:51 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: SERPAPI_KEY
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: OLLAMA_BASE_URL
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: OLLAMA_MODEL
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: SWECRIS_API_KEY
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: RESEARCH_MAX_RESULTS
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: RESEARCH_TIMEOUT
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: ORCID_BASE_URL
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: PUBMED_BASE_URL
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: FLASK_DEBUG
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: LOG_LEVEL
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: LOG_FILE
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Updated config: REQUEST_POOL_SIZE
+2025-06-28 01:31:59 - leadfinder.config_routes - INFO - Bulk updated 12 configs
+2025-06-28 01:31:59 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:32:30 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:33:01 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:33:32 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:34:03 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:34:34 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:35:05 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:35:36 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:36:07 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:36:38 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:37:09 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:37:40 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:38:11 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:38:42 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:39:13 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:39:43 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: SERPAPI_KEY
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: OLLAMA_BASE_URL
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: OLLAMA_MODEL
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: SWECRIS_API_KEY
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: CORDIS_API_KEY
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: RESEARCH_MAX_RESULTS
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: RESEARCH_TIMEOUT
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: ORCID_BASE_URL
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: PUBMED_BASE_URL
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: FLASK_DEBUG
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: LOG_LEVEL
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: LOG_FILE
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Updated config: REQUEST_POOL_SIZE
+2025-06-28 01:39:50 - leadfinder.config_routes - INFO - Bulk updated 13 configs
+2025-06-28 01:39:50 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:40:20 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:40:51 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:41:22 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:41:53 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:42:24 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:42:55 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:43:26 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:43:57 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:44:28 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:44:59 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:45:30 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:46:01 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:46:32 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:47:03 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:47:34 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:47:58 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 01:48:08 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 01:48:09 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b82c90>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:48:09 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 01:48:10 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b830e0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:48:10 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 01:48:10 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b81d60>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:48:10 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 01:48:11 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b81970>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:48:20 - leadfinder.research_routes - INFO - Research search: 'Epigenetics' with APIs: ['SweCRIS', 'CORDIS', 'NIH RePORTER', 'NSF']
+2025-06-28 01:48:20 - leadfinder.research_service - INFO - Searching all APIs for: 'Epigenetics'
+2025-06-28 01:48:20 - leadfinder.api.swecris - INFO - Searching SweCRIS for: 'Epigenetics'
+2025-06-28 01:48:20 - leadfinder.api.swecris - INFO - Found 0 projects in SweCRIS
+2025-06-28 01:48:20 - leadfinder.research_service - INFO - Completed search for swecris: 0 results
+2025-06-28 01:48:20 - leadfinder.research_service - INFO - Search completed in 0.50s: 0 total results
+2025-06-28 01:48:20 - leadfinder.research_service - INFO - Combined 0 projects from all APIs
+2025-06-28 01:58:34 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 01:58:34 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b82c30>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:58:34 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 01:58:35 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b827e0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:58:35 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 01:58:36 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b80c50>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 01:58:36 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 01:58:36 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0aa8c44a0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:06:13 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:06:14 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b80560>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:06:14 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:06:14 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9ba47a0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:06:14 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:06:15 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9cd61b0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:06:15 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:06:16 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b82e10>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:06:46 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:06:47 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0aa8c49e0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:06:47 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:06:48 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9ba4110>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:07:16 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:07:17 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0aa8c7920>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:07:17 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:07:18 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b825d0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:07:46 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:07:47 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b83ce0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:07:47 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:07:48 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0aa8b6510>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:08:16 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:08:17 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b82090>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:08:17 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:08:18 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b805c0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:08:46 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:08:46 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0aa8c7740>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:08:46 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:08:47 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9ba4320>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:08:56 - leadfinder.research_routes - INFO - Research search: 'Cancer' with APIs: ['SweCRIS', 'CORDIS', 'NIH RePORTER', 'NSF']
+2025-06-28 02:08:56 - leadfinder.research_service - INFO - Searching all APIs for: 'Cancer'
+2025-06-28 02:08:56 - leadfinder.api.swecris - INFO - Searching SweCRIS for: 'Cancer'
+2025-06-28 02:08:57 - leadfinder.api.swecris - INFO - Found 12 projects in SweCRIS
+2025-06-28 02:08:57 - leadfinder.research_service - INFO - Completed search for swecris: 12 results
+2025-06-28 02:08:57 - leadfinder.research_service - INFO - Search completed in 0.50s: 12 total results
+2025-06-28 02:08:57 - leadfinder.research_service - INFO - Combined 12 projects from all APIs
+2025-06-28 02:09:15 - leadfinder.api.swecris - INFO - Getting project details for ID: swe-000060
+2025-06-28 02:09:15 - leadfinder.research_routes - ERROR - Error getting project details: project_details.html
+2025-06-28 02:13:37 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:13:38 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9ba4110>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:13:38 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:13:38 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9ba4d70>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:13:38 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:13:39 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9ba4800>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:13:39 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:13:40 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b81400>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:13:54 - leadfinder.research_routes - INFO - Research search: 'biomarker' with APIs: ['SweCRIS', 'CORDIS', 'NIH RePORTER', 'NSF']
+2025-06-28 02:13:54 - leadfinder.research_service - INFO - Searching all APIs for: 'biomarker'
+2025-06-28 02:13:54 - leadfinder.api.swecris - INFO - Searching SweCRIS for: 'biomarker'
+2025-06-28 02:13:54 - leadfinder.api.swecris - INFO - Found 0 projects in SweCRIS
+2025-06-28 02:13:54 - leadfinder.research_service - INFO - Completed search for swecris: 0 results
+2025-06-28 02:13:54 - leadfinder.research_service - INFO - Search completed in 0.50s: 0 total results
+2025-06-28 02:13:54 - leadfinder.research_service - INFO - Combined 0 projects from all APIs
+2025-06-28 02:37:20 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:37:21 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9ba62d0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:37:21 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:37:22 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9ba6ab0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:37:22 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:37:22 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0aa8c6a20>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:37:22 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:37:23 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b83fb0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:37:37 - leadfinder.research_routes - INFO - Research search: 'Cancer' with APIs: ['SweCRIS', 'CORDIS', 'NIH RePORTER', 'NSF']
+2025-06-28 02:37:37 - leadfinder.research_service - INFO - Searching all APIs for: 'Cancer'
+2025-06-28 02:37:37 - leadfinder.api.swecris - INFO - Searching SweCRIS for: 'Cancer'
+2025-06-28 02:37:38 - leadfinder.api.swecris - INFO - Found 12 projects in SweCRIS
+2025-06-28 02:37:38 - leadfinder.research_service - INFO - Completed search for swecris: 12 results
+2025-06-28 02:37:38 - leadfinder.research_service - INFO - Search completed in 0.50s: 12 total results
+2025-06-28 02:37:38 - leadfinder.research_service - INFO - Combined 12 projects from all APIs
+2025-06-28 02:44:26 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:44:26 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9ba64b0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:44:26 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:44:27 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9ba7020>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:44:27 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:44:28 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0aa8b7500>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:44:28 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:44:28 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0aa8c62a0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:44:37 - leadfinder.research_routes - INFO - Research search: 'diabetes' with APIs: ['SweCRIS', 'CORDIS', 'NIH RePORTER', 'NSF']
+2025-06-28 02:44:37 - leadfinder.research_service - INFO - Searching all APIs for: 'diabetes'
+2025-06-28 02:44:37 - leadfinder.api.swecris - INFO - Searching SweCRIS for: 'diabetes'
+2025-06-28 02:44:37 - leadfinder.api.swecris - INFO - Found 9 projects in SweCRIS
+2025-06-28 02:44:37 - leadfinder.research_service - INFO - Completed search for swecris: 9 results
+2025-06-28 02:44:37 - leadfinder.research_service - INFO - Search completed in 0.50s: 9 total results
+2025-06-28 02:44:37 - leadfinder.research_service - INFO - Combined 9 projects from all APIs
+2025-06-28 02:44:50 - leadfinder.api.swecris - INFO - Getting project details for ID: swe-000029
+2025-06-28 02:44:50 - leadfinder.research_routes - ERROR - Error getting project details: project_details.html
+2025-06-28 02:54:48 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:54:49 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b834d0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:54:49 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:54:50 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0aa8bf260>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:54:50 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:54:50 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0a9b677d0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:54:50 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:54:51 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72a0aa8b63c0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:55:46 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 02:55:46 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-06-28 02:55:46 - leadfinder.ollama_service - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-28 02:55:46 - leadfinder.ollama_service - INFO - Selected model: mistral:latest
+2025-06-28 02:55:46 - leadfinder.app - INFO - Registered leads blueprint
+2025-06-28 02:55:46 - leadfinder.app - INFO - Registered search blueprint
+2025-06-28 02:55:46 - leadfinder.app - INFO - Registered ollama blueprint
+2025-06-28 02:55:46 - leadfinder.research_service - INFO - Initializing research funding APIs...
+2025-06-28 02:55:46 - leadfinder.research_service - INFO - Initialized SweCRIS API
+2025-06-28 02:55:46 - leadfinder.research_service - INFO - Initialized 1 research APIs
+2025-06-28 02:55:46 - leadfinder.app - INFO - Registered research blueprint
+2025-06-28 02:55:46 - leadfinder.app - INFO - Registered config blueprint
+2025-06-28 02:55:46 - leadfinder.app - WARNING - Could not initialize database: cannot import name 'init_db' from 'models.database' (/home/daniel/leadfinder/models/database.py)
+2025-06-28 02:55:46 - leadfinder.app - INFO - Starting LeadFinder on 0.0.0.0:5050
+2025-06-28 02:55:46 - leadfinder.app - INFO - Debug mode: False
+2025-06-28 02:58:52 - leadfinder.ollama_service - INFO - Analyzing lead: Dextran (https://en.wikipedia.org/wiki/Dextran)
+2025-06-28 02:58:52 - leadfinder.ollama_service - INFO - Fetched 4688 characters from page
+2025-06-28 02:58:59 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:59:00 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x736e730f8b90>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:59:00 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:59:01 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x736e730f9640>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:59:01 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 02:59:01 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x736e730fa090>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:59:01 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 02:59:02 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x736e730faba0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 02:59:22 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-28 02:59:22 - leadfinder.ollama_service - INFO - Analyzing lead: Dextran - StatPearls (https://www.ncbi.nlm.nih.gov/books/NBK557631/)
+2025-06-28 02:59:23 - leadfinder.ollama_service - INFO - Fetched 11073 characters from page
+2025-06-28 02:59:53 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-28 02:59:53 - leadfinder.ollama_service - INFO - Analyzing lead: Dextran: Uses, Interactions, Mechanism of Action - DrugBank (https://go.drugbank.com/drugs/DB09255)
+2025-06-28 02:59:54 - leadfinder.ollama_service - INFO - Fetched 0 characters from page
+2025-06-28 02:59:54 - leadfinder.ollama_service - WARNING - No text extracted, skipping AI analysis
+2025-06-28 02:59:54 - leadfinder.ollama_service - INFO - Analyzing lead: Dextran - an overview (https://www.sciencedirect.com/topics/agricultural-and-biological-sciences/dextran)
+2025-06-28 02:59:54 - leadfinder.ollama_service - INFO - Fetched 309 characters from page
+2025-06-28 03:00:24 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-28 03:00:24 - leadfinder.ollama_service - INFO - Analyzing lead: Dextran (https://www.sigmaaldrich.com/US/en/technical-documents/protocol/protein-biology/protein-pulldown/dextran?srsltid=AfmBOooUp7Xao5SMAbikH09tkKP60IpM3qi6hUK-KPD65HtMJhxeMDFb)
+2025-06-28 03:00:25 - leadfinder.ollama_service - INFO - Fetched 3953 characters from page
+2025-06-28 03:00:55 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-28 03:00:55 - leadfinder.ollama_service - INFO - Analyzing lead: Dextran | C18H32O16 | CID 4125253 (https://pubchem.ncbi.nlm.nih.gov/compound/Dextran)
+2025-06-28 03:00:56 - leadfinder.ollama_service - INFO - Fetched 57 characters from page
+2025-06-28 03:01:26 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-28 03:01:26 - leadfinder.ollama_service - INFO - Analyzing lead: Dextran - an overview | ScienceDirect Topics (https://www.sciencedirect.com/topics/neuroscience/dextran)
+2025-06-28 03:01:27 - leadfinder.ollama_service - INFO - Fetched 309 characters from page
+2025-06-28 03:02:14 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 03:02:14 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-06-28 03:02:14 - leadfinder.ollama_service - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-28 03:02:14 - leadfinder.ollama_service - INFO - Selected model: mistral:latest
+2025-06-28 03:02:14 - leadfinder.app - INFO - Registered leads blueprint
+2025-06-28 03:02:14 - leadfinder.app - INFO - Registered search blueprint
+2025-06-28 03:02:14 - leadfinder.app - INFO - Registered ollama blueprint
+2025-06-28 03:02:14 - leadfinder.research_service - INFO - Initializing research funding APIs...
+2025-06-28 03:02:14 - leadfinder.research_service - INFO - Initialized SweCRIS API
+2025-06-28 03:02:14 - leadfinder.research_service - INFO - Initialized 1 research APIs
+2025-06-28 03:02:14 - leadfinder.app - INFO - Registered research blueprint
+2025-06-28 03:02:14 - leadfinder.app - INFO - Registered config blueprint
+2025-06-28 03:02:14 - leadfinder.app - WARNING - Could not initialize database: cannot import name 'init_db' from 'models.database' (/home/daniel/leadfinder/models/database.py)
+2025-06-28 03:02:14 - leadfinder.app - INFO - Starting LeadFinder on 0.0.0.0:5050
+2025-06-28 03:02:14 - leadfinder.app - INFO - Debug mode: False
+2025-06-28 03:02:25 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:02:26 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b4871130>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:02:26 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:02:27 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b3b3cf50>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:02:27 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:02:27 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b3b3e3f0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:02:27 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:02:28 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b4a00380>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:02:58 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:02:59 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b3b3df10>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:02:59 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:02:59 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b3b3eb10>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:03:28 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:03:29 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b3b3efc0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:03:29 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:03:29 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b48687a0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:03:58 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:03:59 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b3b3dd90>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:03:59 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:03:59 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b3b88260>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:04:28 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:04:29 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b3b3dca0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:04:29 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:04:29 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b3b3f710>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:04:58 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:04:59 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b484e600>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:04:59 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:04:59 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7481b3b89520>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:11:52 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 03:11:53 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-06-28 03:11:53 - leadfinder.ollama_service - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-28 03:11:53 - leadfinder.ollama_service - INFO - Selected model: mistral:latest
+2025-06-28 03:11:53 - leadfinder.app - INFO - Registered leads blueprint
+2025-06-28 03:11:53 - leadfinder.app - INFO - Registered search blueprint
+2025-06-28 03:11:53 - leadfinder.app - INFO - Registered ollama blueprint
+2025-06-28 03:11:53 - leadfinder.research_service - INFO - Initializing research funding APIs...
+2025-06-28 03:11:53 - leadfinder.research_service - INFO - Initialized SweCRIS API
+2025-06-28 03:11:53 - leadfinder.research_service - INFO - Initialized 1 research APIs
+2025-06-28 03:11:53 - leadfinder.app - INFO - Registered research blueprint
+2025-06-28 03:11:53 - leadfinder.app - INFO - Registered config blueprint
+2025-06-28 03:11:53 - leadfinder.app - WARNING - Could not initialize database: cannot import name 'init_db' from 'models.database' (/home/daniel/leadfinder/models/database.py)
+2025-06-28 03:11:53 - leadfinder.app - INFO - Starting LeadFinder on 0.0.0.0:5050
+2025-06-28 03:11:53 - leadfinder.app - INFO - Debug mode: False
+2025-06-28 03:11:59 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:12:00 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b34405eef30>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:12:00 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:12:00 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b343f8f1f40>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:12:00 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:12:01 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b343f8f2a20>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:12:01 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:12:02 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7b343fc583b0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:16:32 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-28 03:16:33 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-06-28 03:16:33 - leadfinder.ollama_service - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-28 03:16:33 - leadfinder.ollama_service - INFO - Selected model: mistral:latest
+2025-06-28 03:16:33 - leadfinder.app - INFO - Registered leads blueprint
+2025-06-28 03:16:33 - leadfinder.app - INFO - Registered search blueprint
+2025-06-28 03:16:33 - leadfinder.app - INFO - Registered ollama blueprint
+2025-06-28 03:16:33 - leadfinder.research_service - INFO - Initializing research funding APIs...
+2025-06-28 03:16:33 - leadfinder.research_service - INFO - Initialized SweCRIS API
+2025-06-28 03:16:33 - leadfinder.research_service - INFO - Initialized 1 research APIs
+2025-06-28 03:16:33 - leadfinder.app - INFO - Registered research blueprint
+2025-06-28 03:16:33 - leadfinder.app - INFO - Registered config blueprint
+2025-06-28 03:16:33 - leadfinder.app - WARNING - Could not initialize database: cannot import name 'init_db' from 'models.database' (/home/daniel/leadfinder/models/database.py)
+2025-06-28 03:16:33 - leadfinder.app - INFO - Starting LeadFinder on 0.0.0.0:5050
+2025-06-28 03:16:33 - leadfinder.app - INFO - Debug mode: False
+2025-06-28 03:16:48 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:16:49 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72451b1c6180>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:16:49 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:16:49 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72451b1c6ba0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:16:49 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:16:50 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:16:50 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72451b1c69f0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:16:50 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:16:50 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72451b1c6720>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:16:50 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:16:51 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72451b1c7b00>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:16:51 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72451b1c7c80>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:16:51 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-28 03:16:52 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72451b1c6480>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:16:52 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-28 03:16:52 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x72451b1c5d90>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-28 03:17:00 - leadfinder.research_routes - INFO - Research search: 'cancer' with APIs: ['SweCRIS', 'CORDIS', 'NIH RePORTER', 'NSF']
+2025-06-28 03:17:00 - leadfinder.research_service - INFO - Searching all APIs for: 'cancer'
+2025-06-28 03:17:00 - leadfinder.api.swecris - INFO - Searching SweCRIS for: 'cancer'
+2025-06-28 03:17:00 - leadfinder.api.swecris - INFO - Found 7 projects in SweCRIS
+2025-06-28 03:17:00 - leadfinder.research_service - INFO - Completed search for swecris: 7 results
+2025-06-28 03:17:00 - leadfinder.research_service - INFO - Search completed in 0.50s: 7 total results
+2025-06-28 03:17:00 - leadfinder.research_service - INFO - Combined 7 projects from all APIs
+2025-06-28 03:17:05 - leadfinder.api.swecris - INFO - Getting project details for ID: swe-000040
+2025-06-28 03:17:05 - leadfinder.research_routes - ERROR - Error getting project details: project_details.html
+2025-06-29 23:54:26 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-29 23:54:42 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-29 23:54:43 - leadfinder.database - INFO - Database initialized successfully
+2025-06-29 23:54:43 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-06-29 23:54:43 - leadfinder.ollama_service - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-29 23:54:43 - leadfinder.ollama_service - INFO - Selected model: mistral:latest
+2025-06-29 23:54:43 - leadfinder.app - INFO - Registered leads blueprint
+2025-06-29 23:54:43 - leadfinder.app - INFO - Registered search blueprint
+2025-06-29 23:54:43 - leadfinder.app - INFO - Registered ollama blueprint
+2025-06-29 23:54:43 - leadfinder.research_service - INFO - Initializing research funding APIs...
+2025-06-29 23:54:43 - leadfinder.research_service - INFO - Initialized SweCRIS API
+2025-06-29 23:54:43 - leadfinder.research_service - INFO - Initialized 1 research APIs
+2025-06-29 23:54:43 - leadfinder.app - INFO - Registered research blueprint
+2025-06-29 23:54:43 - leadfinder.app - INFO - Registered config blueprint
+2025-06-29 23:54:43 - leadfinder.database - INFO - Database initialized successfully
+2025-06-29 23:54:43 - leadfinder.app - INFO - Database initialized successfully
+2025-06-29 23:54:43 - leadfinder.app - INFO - Starting LeadFinder on 0.0.0.0:5050
+2025-06-29 23:54:43 - leadfinder.app - INFO - Debug mode: False
+2025-06-29 23:54:59 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-29 23:55:00 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de2ba0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:55:00 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-29 23:55:01 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de2e10>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:55:01 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-29 23:55:02 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb55db380>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:55:02 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-29 23:55:02 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de3350>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:55:33 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-29 23:55:33 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de2450>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:55:33 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-29 23:55:34 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de1b80>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:56:03 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-29 23:56:04 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de3890>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:56:04 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-29 23:56:05 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de1d60>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:56:33 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-29 23:56:34 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb55d9ca0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:56:34 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-29 23:56:35 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4e24380>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:57:03 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-29 23:57:04 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de2c90>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:57:04 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-29 23:57:05 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de24b0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:57:20 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-29 23:57:21 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4e24290>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:57:21 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-29 23:57:22 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de2060>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:57:22 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-29 23:57:22 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de2cf0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:57:22 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-29 23:57:23 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4de2c90>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:57:53 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-29 23:57:54 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb4e25130>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:57:54 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-29 23:57:55 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x776eb5588e00>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:58:16 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-29 23:58:16 - leadfinder.database - INFO - Database initialized successfully
+2025-06-29 23:58:16 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-06-29 23:58:16 - leadfinder.ollama_service - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-29 23:58:16 - leadfinder.ollama_service - INFO - Selected model: mistral:latest
+2025-06-29 23:58:16 - leadfinder.app - INFO - Registered leads blueprint
+2025-06-29 23:58:16 - leadfinder.app - INFO - Registered search blueprint
+2025-06-29 23:58:16 - leadfinder.app - INFO - Registered ollama blueprint
+2025-06-29 23:58:16 - leadfinder.research_service - INFO - Initializing research funding APIs...
+2025-06-29 23:58:16 - leadfinder.research_service - INFO - Initialized SweCRIS API
+2025-06-29 23:58:16 - leadfinder.research_service - INFO - Initialized 1 research APIs
+2025-06-29 23:58:16 - leadfinder.app - INFO - Registered research blueprint
+2025-06-29 23:58:16 - leadfinder.app - INFO - Registered config blueprint
+2025-06-29 23:58:16 - leadfinder.database - INFO - Database initialized successfully
+2025-06-29 23:58:16 - leadfinder.app - INFO - Database initialized successfully
+2025-06-29 23:58:16 - leadfinder.app - INFO - Starting LeadFinder on 0.0.0.0:5050
+2025-06-29 23:58:16 - leadfinder.app - INFO - Debug mode: False
+2025-06-29 23:58:23 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-29 23:58:24 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x713aef719d90>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-29 23:58:24 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-29 23:58:24 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x713aef71a630>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-30 15:27:01 - leadfinder.config_model - INFO - Configuration table initialized
+2025-06-30 15:27:02 - leadfinder.database - INFO - Database initialized successfully
+2025-06-30 15:27:02 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-06-30 15:27:02 - leadfinder.ollama_service - INFO - Available models: ['mistral:latest', 'deepseek-coder:latest']
+2025-06-30 15:27:02 - leadfinder.ollama_service - INFO - Selected model: mistral:latest
+2025-06-30 15:27:02 - leadfinder.app - INFO - Registered leads blueprint
+2025-06-30 15:27:02 - leadfinder.app - INFO - Registered search blueprint
+2025-06-30 15:27:02 - leadfinder.app - INFO - Registered ollama blueprint
+2025-06-30 15:27:02 - leadfinder.research_service - INFO - Initializing research funding APIs...
+2025-06-30 15:27:02 - leadfinder.research_service - INFO - Initialized SweCRIS API
+2025-06-30 15:27:02 - leadfinder.research_service - INFO - Initialized 1 research APIs
+2025-06-30 15:27:02 - leadfinder.app - INFO - Registered research blueprint
+2025-06-30 15:27:02 - leadfinder.app - INFO - Registered config blueprint
+2025-06-30 15:27:02 - leadfinder.database - INFO - Database initialized successfully
+2025-06-30 15:27:02 - leadfinder.app - INFO - Database initialized successfully
+2025-06-30 15:27:02 - leadfinder.app - INFO - Starting LeadFinder on 0.0.0.0:5050
+2025-06-30 15:27:02 - leadfinder.app - INFO - Debug mode: False
+2025-06-30 15:28:12 - leadfinder.search - INFO - Sökterm mottagen: Epigenetics longevity biomarkers
+2025-06-30 15:28:12 - leadfinder.search - INFO - Frågeställning: Leta efter kontaktuppgifter som namn förnamn och instititution och möjlig email
+2025-06-30 15:28:12 - leadfinder.search - INFO - Söktyp: articles
+2025-06-30 15:28:12 - leadfinder.search - INFO - Valda SERP-motorer: ['google']
+2025-06-30 15:28:12 - leadfinder.serp_service - INFO - Kör google-sökning med query: 'Epigenetics longevity biomarkers'
+2025-06-30 15:28:15 - leadfinder.serp_service - INFO - google - Antal resultat: 9
+2025-06-30 15:28:15 - leadfinder.search - INFO - Analyserar SERP lead: Epigenetic biomarkers in aging and longevity
+2025-06-30 15:28:15 - leadfinder.ollama_service - INFO - Analyzing lead: Epigenetic biomarkers in aging and longevity (https://pubmed.ncbi.nlm.nih.gov/38879158/)
+2025-06-30 15:28:15 - leadfinder.ollama_service - INFO - Fetched 2607 characters from page
+2025-06-30 15:28:45 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-30 15:28:45 - leadfinder.search - INFO - Inte relevant SERP lead, hoppar över: Epigenetic biomarkers in aging and longevity
+2025-06-30 15:28:45 - leadfinder.search - INFO - Analyserar SERP lead: Epigenetic biomarkers in aging and longevity
+2025-06-30 15:28:45 - leadfinder.ollama_service - INFO - Analyzing lead: Epigenetic biomarkers in aging and longevity (https://www.sciencedirect.com/science/article/pii/S0024320524004326)
+2025-06-30 15:28:45 - leadfinder.ollama_service - INFO - Fetched 309 characters from page
+2025-06-30 15:29:15 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-30 15:29:15 - leadfinder.search - INFO - Inte relevant SERP lead, hoppar över: Epigenetic biomarkers in aging and longevity
+2025-06-30 15:29:15 - leadfinder.search - INFO - Analyserar SERP lead: An epigenetic biomarker of aging for lifespan and healthspan
+2025-06-30 15:29:15 - leadfinder.ollama_service - INFO - Analyzing lead: An epigenetic biomarker of aging for lifespan and healthspan (https://pmc.ncbi.nlm.nih.gov/articles/PMC5940111/)
+2025-06-30 15:29:16 - leadfinder.ollama_service - INFO - Fetched 50002 characters from page
+2025-06-30 15:29:46 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-30 15:29:46 - leadfinder.search - INFO - Inte relevant SERP lead, hoppar över: An epigenetic biomarker of aging for lifespan and healthspan
+2025-06-30 15:29:46 - leadfinder.search - INFO - Analyserar SERP lead: Epigenetic biomarkers in aging and longevity
+2025-06-30 15:29:46 - leadfinder.ollama_service - INFO - Analyzing lead: Epigenetic biomarkers in aging and longevity (https://www.sciencedirect.com/science/article/abs/pii/S0024320524004326)
+2025-06-30 15:29:46 - leadfinder.ollama_service - INFO - Fetched 309 characters from page
+2025-06-30 15:30:16 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-30 15:30:16 - leadfinder.search - INFO - Inte relevant SERP lead, hoppar över: Epigenetic biomarkers in aging and longevity
+2025-06-30 15:30:16 - leadfinder.search - INFO - Analyserar SERP lead: Epigenetic and Metabolomic Biomarkers for Biological Age
+2025-06-30 15:30:16 - leadfinder.ollama_service - INFO - Analyzing lead: Epigenetic and Metabolomic Biomarkers for Biological Age (https://academic.oup.com/biomedgerontology/article/78/10/1753/7194006)
+2025-06-30 15:30:16 - leadfinder.ollama_service - INFO - Fetched 0 characters from page
+2025-06-30 15:30:16 - leadfinder.ollama_service - WARNING - No text extracted, skipping AI analysis
+2025-06-30 15:30:16 - leadfinder.search - INFO - Inte relevant SERP lead, hoppar över: Epigenetic and Metabolomic Biomarkers for Biological Age
+2025-06-30 15:30:16 - leadfinder.search - INFO - Analyserar SERP lead: Epigenetic regulation of aging: implications for ...
+2025-06-30 15:30:16 - leadfinder.ollama_service - INFO - Analyzing lead: Epigenetic regulation of aging: implications for ... (https://www.nature.com/articles/s41392-022-01211-8)
+2025-06-30 15:30:18 - leadfinder.ollama_service - INFO - Fetched 179884 characters from page
+2025-06-30 15:30:48 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-30 15:30:48 - leadfinder.search - INFO - Inte relevant SERP lead, hoppar över: Epigenetic regulation of aging: implications for ...
+2025-06-30 15:30:48 - leadfinder.search - INFO - Analyserar SERP lead: DNAm aging biomarkers are responsive: Insights from 51 ...
+2025-06-30 15:30:48 - leadfinder.ollama_service - INFO - Analyzing lead: DNAm aging biomarkers are responsive: Insights from 51 ... (https://www.biorxiv.org/content/10.1101/2024.10.22.619522v1)
+2025-06-30 15:30:49 - leadfinder.ollama_service - INFO - Fetched 0 characters from page
+2025-06-30 15:30:49 - leadfinder.ollama_service - WARNING - No text extracted, skipping AI analysis
+2025-06-30 15:30:49 - leadfinder.search - INFO - Inte relevant SERP lead, hoppar över: DNAm aging biomarkers are responsive: Insights from 51 ...
+2025-06-30 15:30:49 - leadfinder.search - INFO - Analyserar SERP lead: Epigenetic biomarkers of ageing are predictive of mortality risk ...
+2025-06-30 15:30:49 - leadfinder.ollama_service - INFO - Analyzing lead: Epigenetic biomarkers of ageing are predictive of mortality risk ... (https://clinicalepigeneticsjournal.biomedcentral.com/articles/10.1186/s13148-021-01220-4)
+2025-06-30 15:30:49 - leadfinder.ollama_service - INFO - Fetched 57566 characters from page
+2025-06-30 15:31:19 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-30 15:31:19 - leadfinder.search - INFO - Inte relevant SERP lead, hoppar över: Epigenetic biomarkers of ageing are predictive of mortality risk ...
+2025-06-30 15:31:19 - leadfinder.search - INFO - Analyserar SERP lead: DNA Methylation Biomarkers in Aging and Age-Related ...
+2025-06-30 15:31:19 - leadfinder.ollama_service - INFO - Analyzing lead: DNA Methylation Biomarkers in Aging and Age-Related ... (https://www.frontiersin.org/journals/genetics/articles/10.3389/fgene.2020.00171/full)
+2025-06-30 15:31:20 - leadfinder.ollama_service - INFO - Fetched 77692 characters from page
+2025-06-30 15:31:50 - leadfinder.ollama_service - ERROR - Error calling Ollama: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=30)
+2025-06-30 15:31:50 - leadfinder.search - INFO - Inte relevant SERP lead, hoppar över: DNA Methylation Biomarkers in Aging and Age-Related ...
+2025-06-30 15:31:50 - leadfinder.search - INFO - PubMed-sökning för: Epigenetics longevity biomarkers
+2025-06-30 15:31:50 - leadfinder.pubmed_service - INFO - PubMed search not yet implemented for query: Epigenetics longevity biomarkers
+2025-06-30 15:31:50 - leadfinder.search - INFO - Totalt 9 leads analyserade, 0 relevanta sparade.
+2025-06-30 15:31:50 - leadfinder.database - INFO - Saved search history: Epigenetics longevity biomarkers...
+2025-06-30 15:32:15 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-30 15:32:16 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x793953d7fb90>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-30 15:32:16 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-30 15:32:16 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x793951674ec0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-30 15:32:16 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-30 15:32:17 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x793951675700>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-30 15:32:17 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-30 15:32:18 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x793951b042f0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-30 15:32:48 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/health
+2025-06-30 15:32:48 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/health?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7939516756d0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-30 15:32:48 - leadfinder.api.swecris - INFO - Making request to https://api.swecris.se/v1/
+2025-06-30 15:32:49 - leadfinder.api.swecris - ERROR - Request failed for SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/?api_key=VRSwecrisAPI2025-1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x793951674e60>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-06-30 15:33:10 - leadfinder.research_routes - INFO - Research search: 'Cancer' with APIs: ['SweCRIS', 'CORDIS', 'NIH RePORTER', 'NSF']
+2025-06-30 15:33:10 - leadfinder.research_service - INFO - Searching all APIs for: 'Cancer'
+2025-06-30 15:33:10 - leadfinder.api.swecris - INFO - Searching SweCRIS for: 'Cancer'
+2025-06-30 15:33:10 - leadfinder.api.swecris - INFO - Found 10 projects in SweCRIS
+2025-06-30 15:33:10 - leadfinder.research_service - INFO - Completed search for swecris: 10 results
+2025-06-30 15:33:10 - leadfinder.research_service - INFO - Search completed in 0.50s: 10 total results
+2025-06-30 15:33:10 - leadfinder.research_service - INFO - Combined 10 projects from all APIs
+2025-07-03 01:10:37 - leadfinder.config_model - INFO - Configuration table initialized
+2025-07-03 01:10:37 - leadfinder.performance - INFO - Optimized session created with pool size 10
+2025-07-03 01:10:37 - leadfinder.api.swecris - INFO - Searching SweCRIS for: 'cancer'
+2025-07-03 01:10:37 - leadfinder.api.swecris - ERROR - Error searching SweCRIS: HTTPSConnectionPool(host='api.swecris.se', port=443): Max retries exceeded with url: /v1/projects?q=cancer&limit=3&format=json&api_key=test_key (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x75e2974369f0>: Failed to resolve 'api.swecris.se' ([Errno -2] Name or service not known)"))
+2025-07-03 01:10:37 - leadfinder.api.swecris - INFO - Using fallback search with mock data
+2025-07-03 01:10:37 - leadfinder.api.cordis - INFO - Searching CORDIS for: 'cancer'
+2025-07-03 01:10:37 - leadfinder.api.cordis - ERROR - CORDIS API error: 404 - 	<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>CORDIS | European Commission</title>
+		<base href="/">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="icon" type="image/x-icon" href="favicon.ico">
+		<meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+		<meta name="DCSext.w_error_type" content="application">
+		<meta name="DCSext.w_error_status_code" content="404"> 
+					<link rel="stylesheet" href="/build/94.b20776ee.css"><link rel="stylesheet" href="/build/main.b4b86801.css">
+				<script defer src="https://webtools.europa.eu/load.js" type="text/javascript"></script>
+	</head>
+	<body>
+		<div id="globan-here"></div>
+		<div id="survey"></div>
+		<div id="banners"></div>
+
+		<div class="c-modal c-logout-modal" id="modal-logout">
+  <div class="c-modal__overlay">
+    <div class="c-modal__dialog" role="dialog" tabindex="-1">
+      <div class="c-modal__dialog-header">
+        <div class="c-modal__dialog-header-buttons">
+          <button class="c-modal__dialog-header-button c-modal__dialog-header-button--close" aria-label="Close"><span aria-hidden="true" class="fa-solid fa-xmark"></span></button>
+        </div>
+      </div>
+      <div class="c-modal__dialog-body">
+        <h2 class="o-title o-title--h2" id="heading-logout-modal">Log out</h2>
+        <p class="c-logout-modal__text">Logging out of EU Login will log you out of any other services that use your EU Login account. <br/> Use the CORDIS log out button to remain logged in on other services.</p>
+        
+        <button class="o-btn c-logout-modal__logout-btn selector-logout-btn">
+            Log out
+        </button>
+
+        <button class="o-btn o-btn--light c-btn-eu selector-eulogin-logout-btn">
+            <span class="c-btn-eu__icon"><span class="sr-only">EU Login</span></span> Log out
+        </button>
+      </div>
+    </div>
+  </div> 
+</div>
+						<header class="ecl-site-header ecl-site-header--has-menu c-header d-print-none" data-ecl-auto-init="SiteHeader" lang="en">
+	<div class="ecl-site-header__background">
+		<div class="ecl-site-header__header">
+			<div class="ecl-site-header__container ecl-container container container-full">
+				<div class="ecl-site-header__top" data-ecl-site-header-top>
+					 <a href="https://commission.europa.eu/index_en" class="ecl-link ecl-link--standalone ecl-site-header__logo-link" target="_blank">
+						<picture class="ecl-picture ecl-site-header__picture">
+							<source srcset="/build/images/preset-ec/logo/positive/logo-ec--en.svg" media="(min-width: 996px)">
+							<img class="ecl-site-header__logo-image" src="/build/images/preset-ec/logo/positive/logo-ec--en.svg" alt="Go to the home page of the European Commission"/>
+						</picture>
+					 	<span class="sr-only">(opens in new window)</span>
+					</a>
+					<div
+						class="ecl-site-header__action">
+						<!-- UPDATED CUSTOM SIGN IN MENU -->
+						<div class="ecl-site-header__account">
+																																																						<a class="ecl-button ecl-button--tertiary ecl-site-header__login-toggle c-login c-login--base" href="https://cordis.europa.eu/login?extUrl=https://cordis.europa.eu%2Fapi%2Fprojects%3Fq%3Dcancer%26num%3D3%26format%3Djson%26api_key%3Dtest_key">
+								<svg class="ecl-icon ecl-icon--s ecl-site-header__icon" focusable="false" aria-hidden="false" role="img">
+									<title>Log in</title>
+									<use xlink:href="/build/images/preset-ec/icons/icons.svg#log-in"></use>
+								</svg>
+								Log in
+							</a>
+						</div>
+						<!-- END CUSTOM SIGN IN MENU -->
+						<div class="ecl-site-header__language">
+							<a class="ecl-button ecl-button--tertiary ecl-site-header__language-selector etransNo" href="/assets/preset-ec/icons/icon#ahl85" data-ecl-language-selector role="button" aria-label="Change language, current language is English" aria-controls="language-list-overlay">
+								<span class="ecl-site-header__language-icon">
+									<svg class="ecl-icon ecl-icon--s ecl-site-header__icon" focusable="false" aria-hidden="false" role="img">
+										<title>English</title>
+										<use xlink:href="/build/images/preset-ec/icons/icons.svg#global"></use>
+									</svg>
+								</span>
+								<span id="lang_name">English</span>
+							</a>
+							<div class="ecl-site-header__language-container" id="language-list-overlay" hidden data-ecl-language-list-overlay aria-labelledby="ecl-site-header__language-title" role="dialog">
+								<div class="ecl-site-header__language-header">
+									<div class="ecl-site-header__language-title" id="ecl-site-header__language-title">
+										Select your language
+									</div>
+									<button class="ecl-button ecl-button--tertiary ecl-site-header__language-close ecl-button--icon-only" type="submit" data-ecl-language-list-close>
+										<span class="ecl-button__container">
+											<span class="ecl-button__label sr-only" data-ecl-label="true">Close</span>
+											<svg class="ecl-icon ecl-icon--m ecl-button__icon" focusable="false" aria-hidden="true" data-ecl-icon>
+												<use xlink:href="/build/images/preset-ec/icons/icons.svg#close-filled"></use>
+											</svg>
+										</span>
+									</button>
+								</div>
+								<div
+									class="ecl-site-header__language-content">
+																		<div class="ecl-site-header__language-category ecl-site-header__language-category--2-col" data-ecl-language-list-eu>
+										<div class="ecl-site-header__language-category-title">CORDIS languages:</div>
+										<ul class="ecl-site-header__language-list etransNo">
+																																																												<li class="ecl-site-header__language-item">
+													<a href="/api/projects/es?q=cancer&amp;num=3&amp;format=json&amp;api_key=test_key" class="ecl-link ecl-link--standalone ecl-link--no-visited ecl-site-header__language-link " lang="es" hreflang="es" data-se="lang_change_button">
+														<span class="ecl-site-header__language-link-code">es</span>
+														<span class="ecl-site-header__language-link-label">español</span>
+													</a>
+												</li>
+																																																												<li class="ecl-site-header__language-item">
+													<a href="/api/projects/de?q=cancer&amp;num=3&amp;format=json&amp;api_key=test_key" class="ecl-link ecl-link--standalone ecl-link--no-visited ecl-site-header__language-link " lang="de" hreflang="de" data-se="lang_change_button">
+														<span class="ecl-site-header__language-link-code">de</span>
+														<span class="ecl-site-header__language-link-label">Deutsch</span>
+													</a>
+												</li>
+																																																												<li class="ecl-site-header__language-item">
+													<a href="/api/projects/en?q=cancer&amp;num=3&amp;format=json&amp;api_key=test_key" class="ecl-link ecl-link--standalone ecl-link--no-visited ecl-site-header__language-link ecl-site-header__language-link--active" lang="en" hreflang="en" data-se="lang_change_button">
+														<span class="ecl-site-header__language-link-code">en</span>
+														<span class="ecl-site-header__language-link-label">English</span>
+													</a>
+												</li>
+																																																												<li class="ecl-site-header__language-item">
+													<a href="/api/projects/fr?q=cancer&amp;num=3&amp;format=json&amp;api_key=test_key" class="ecl-link ecl-link--standalone ecl-link--no-visited ecl-site-header__language-link " lang="fr" hreflang="fr" data-se="lang_change_button">
+														<span class="ecl-site-header__language-link-code">fr</span>
+														<span class="ecl-site-header__language-link-label">français</span>
+													</a>
+												</li>
+																																																												<li class="ecl-site-header__language-item">
+													<a href="/api/projects/it?q=cancer&amp;num=3&amp;format=json&amp;api_key=test_key" class="ecl-link ecl-link--standalone ecl-link--no-visited ecl-site-header__language-link " lang="it" hreflang="it" data-se="lang_change_button">
+														<span class="ecl-site-header__language-link-code">it</span>
+														<span class="ecl-site-header__language-link-label">italiano</span>
+													</a>
+												</li>
+																																																												<li class="ecl-site-header__language-item">
+													<a href="/api/projects/pl?q=cancer&amp;num=3&amp;format=json&amp;api_key=test_key" class="ecl-link ecl-link--standalone ecl-link--no-visited ecl-site-header__language-link " lang="pl" hreflang="pl" data-se="lang_change_button">
+														<span class="ecl-site-header__language-link-code">pl</span>
+														<span class="ecl-site-header__language-link-label">polski</span>
+													</a>
+												</li>
+																					</ul>
+									</div>
+																		<div class="ecl-site-header__language-category" data-ecl-language-list-non-eu="">
+										<div class="ecl-site-header__language-category-title">Machine translation:</div>
+										<p>This is a machine translation provided by the European Commission’s eTranslation service to help you understand this page. <a href="https://ec.europa.eu/info/use-machine-translation-europa-exclusion-liability_en" class="link--external" target="_blank" rel="noopener" aria-label="(opens in new window)">Please read the conditions of use</a>.</p>
+										<div class="c-header__machine-container etransNo">
+											<select name="machine-lang-options" id="machine-lang-options" class="o-select">
+																									<option value="bg">български</option>
+																									<option value="es">español</option>
+																									<option value="cs">čeština</option>
+																									<option value="da">dansk</option>
+																									<option value="de">Deutsch</option>
+																									<option value="et">eesti</option>
+																									<option value="el">ελληνικά</option>
+																									<option value="fr">français</option>
+																									<option value="ga">Gaeilge</option>
+																									<option value="hr">hrvatski</option>
+																									<option value="it">italiano</option>
+																									<option value="lv">latviešu</option>
+																									<option value="lt">lietuvių</option>
+																									<option value="hu">magyar</option>
+																									<option value="mt">Malti</option>
+																									<option value="nl">Nederlands</option>
+																									<option value="pl">polski</option>
+																									<option value="pt">português</option>
+																									<option value="ro">română</option>
+																									<option value="sk">slovenčina</option>
+																									<option value="sl">slovenščina</option>
+																									<option value="fi">suomi</option>
+																									<option value="sv">svenska</option>
+																									<option value="ru">русский</option>
+																									<option value="uk">Українська</option>
+																							</select>
+											<button class="o-btn" id="trigger-etrans">Translate</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="ecl-site-header__search-container" role="search" aria-label="Search">
+							<a class="ecl-button ecl-button--tertiary ecl-site-header__search-toggle" href="#" data-ecl-search-toggle="true" aria-controls="search-form-id" aria-expanded="false">
+								<svg class="ecl-icon ecl-icon--s ecl-site-header__icon" focusable="false" aria-hidden="false" role="img">
+									<title>Search</title>
+									<use xlink:href="/build/images/preset-ec/icons/icons.svg#search"></use>
+								</svg>
+								Search
+							</a>
+							<form class="ecl-search-form ecl-site-header__search" role="search" arial-label="Search on CORDIS" data-ecl-search-form action="/search/en" id="header_search-form" aria-label="Search">
+								<div class="ecl-form-group">
+									<label for="search-input-id" id="search-input-id-label" class="ecl-form-label ecl-search-form__label">Search</label>
+									<input id="search-input-id" class="ecl-text-input ecl-text-input--m ecl-search-form__text-input" type="search" name="query"/>
+								</div>
+								<button class="ecl-button ecl-button--ghost ecl-search-form__button ppas-oss_launch-search3" type="submit" aria-label="Search" data-se="header_searchform_button">
+									<span class="ecl-button__container" data-se="header_searchform_text">
+										<svg class="ecl-icon ecl-icon--xs ecl-button__icon" focusable="false" aria-hidden="true" data-ecl-icon>
+											<use xlink:href="/build/images/preset-ec/icons/icons.svg#search"></use>
+										</svg>
+										<span class="ecl-button__label t-text-bold" style="margin: 0" data-ecl-label="true">Search</span>
+									</span>
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="ecl-site-header__message">
+			<div class="ecl-container">
+								<div id="custom-etrans">
+    <div id="etrans-here"></div>
+    <div id="customReceiver"></div>
+</div>
+
+<script type="application/json">
+{
+    "service": "etrans",
+    "renderTo": "#etrans-here",
+    "languages": {
+        "exclude": [
+            "en"
+        ]
+    },
+    "renderAs": {
+        "icon": false,
+        "link": false,
+        "button": false
+    },
+    "config": {
+       "targets": {
+            "receiver": "#customReceiver"
+        },
+        "mode": "lc2023"
+    },
+    "hidden": false,
+    "lang": "en"
+}
+</script>
+			</div>
+		</div>
+	</div>
+	<div class="ecl-site-header__banner">
+		<div class="ecl-container container container-full">
+																		<div class="ecl-site-header__site-name c-site-name  " data-env="" data-se="cordis_title">CORDIS - EU research results</div>
+			<div class="ecl-site-header__site-name c-site-name--short   " data-env="" data-se="cordis_title">CORDIS</div>
+		</div>
+	</div>
+	<nav class="ecl-menu" data-ecl-menu data-ecl-menu-max-lines="2" data-ecl-auto-init="Menu" data-ecl-menu-label-open="Menu" data-ecl-menu-label-close="Close" aria-expanded="false" role="navigation">
+		<div class="ecl-menu__overlay"></div>
+		<div class="ecl-container ecl-menu__container container container-full">
+			<a href="#" class="ecl-link ecl-link--standalone ecl-link--icon ecl-button ecl-button--tertiary ecl-menu__open ecl-link--icon-only" data-ecl-menu-open>
+				<svg class="ecl-icon ecl-icon--m ecl-link__icon" focusable="false" aria-hidden="true">
+					<use xlink:href="/build/images/preset-ec/icons/icons.svg#hamburger"></use>
+				</svg>
+				<span class="ecl-link__label">Menu</span>
+			</a>
+			<section class="ecl-menu__inner" data-ecl-menu-inner role="application" aria-label="Menu">
+				<header class="ecl-menu__inner-header">
+					<button class="ecl-button ecl-button--ghost ecl-menu__close ecl-button--icon-only" type="submit" data-ecl-menu-close>
+						<span class="ecl-button__container">
+							<span class="ecl-button__label sr-only" data-ecl-label="true">Close</span>
+							<svg class="ecl-icon ecl-icon--m ecl-button__icon" focusable="false" aria-hidden="true" data-ecl-icon>
+								<use xlink:href="/build/images/preset-ec/icons/icons.svg#close"></use>
+							</svg>
+						</span>
+					</button>
+					<div class="ecl-menu__title">Menu</div>
+					<button class="ecl-button ecl-button--ghost ecl-menu__back" type="submit" data-ecl-menu-back>
+						<span class="ecl-button__container">
+							<svg class="ecl-icon ecl-icon--xs ecl-icon--rotate-270 ecl-button__icon" focusable="false" aria-hidden="true" data-ecl-icon>
+								<use xlink:href="/build/images/preset-ec/icons/icons.svg#corner-arrow"></use>
+							</svg>
+							<span class="ecl-button__label" data-ecl-label="true">Back</span>
+						</span>
+					</button>
+				</header>
+				<button class="ecl-button ecl-button--ghost ecl-menu__item ecl-menu__items-previous ecl-button--icon-only" type="button" data-ecl-menu-items-previous tabindex="-1">
+					<span class="ecl-button__container">
+						<svg class="ecl-icon ecl-icon--s ecl-icon--rotate-270 ecl-button__icon" focusable="false" aria-hidden="true" data-ecl-icon>
+							<use xlink:href="/build/images/preset-ec/icons/icons.svg#corner-arrow"></use>
+						</svg>
+						<span class="ecl-button__label" data-ecl-label="true">Previous
+							              items</span>
+					</span>
+				</button>
+				<button class="ecl-button ecl-button--ghost ecl-menu__item ecl-menu__items-next ecl-button--icon-only" type="button" data-ecl-menu-items-next tabindex="-1">
+					<span class="ecl-button__container">
+						<svg class="ecl-icon ecl-icon--s ecl-icon--rotate-90 ecl-button__icon" focusable="false" aria-hidden="true" data-ecl-icon>
+							<use xlink:href="/build/images/preset-ec/icons/icons.svg#corner-arrow"></use>
+						</svg>
+						<span class="ecl-button__label" data-ecl-label="true">Next
+							              items</span>
+					</span>
+				</button>
+
+				<ul class="ecl-menu__list" data-ecl-menu-list>
+															<li class="ecl-menu__item " data-ecl-menu-item id="ecl-menu-item-demo-0">
+						<a href="/" class="ecl-menu__link"  data-se="main-menu-link" data-ecl-menu-link data-seid="home">
+							Home
+						</a>
+					</li>
+															<li class="ecl-menu__item " data-ecl-menu-item id="ecl-menu-item-demo-0">
+						<a href="/thematic-packs" class="ecl-menu__link"  data-se="main-menu-link" data-ecl-menu-link data-seid="packs">
+							Thematic Packs
+						</a>
+					</li>
+															<li class="ecl-menu__item " data-ecl-menu-item id="ecl-menu-item-demo-0">
+						<a href="/projects" class="ecl-menu__link"  data-se="main-menu-link" data-ecl-menu-link data-seid="projects-results">
+							Projects &amp; Results
+						</a>
+					</li>
+															<li class="ecl-menu__item " data-ecl-menu-item id="ecl-menu-item-demo-0">
+						<a href="/videos-podcasts" class="ecl-menu__link"  data-se="main-menu-link" data-ecl-menu-link data-seid="videos-podcasts">
+							Videos &amp; Podcasts
+						</a>
+					</li>
+															<li class="ecl-menu__item " data-ecl-menu-item id="ecl-menu-item-demo-0">
+						<a href="/news" class="ecl-menu__link"  data-se="main-menu-link" data-ecl-menu-link data-seid="news">
+							News
+						</a>
+					</li>
+															<li class="ecl-menu__item " data-ecl-menu-item id="ecl-menu-item-demo-0">
+						<a href="/datalab" class="ecl-menu__link"  data-se="main-menu-link" data-ecl-menu-link data-seid="datalab">
+							Datalab
+						</a>
+					</li>
+										<li class="ecl-menu__item " data-ecl-menu-item id="ecl-menu-item-demo-0">
+						<a href="/search" class="ecl-menu__link"  data-se="main-menu-link" data-ecl-menu-link data-seid="search">
+							Search
+						</a>
+					</li>
+				</ul>
+			</section>
+		</div>
+	</nav>
+</header>
+
+
+		<div
+			class="o-wrapper o-wrapper--webux">
+						<div class="c-error container">
+				<div id="metaLoaded"></div>
+
+									<h1 class="sr-only">Error [404]: Page not available</h1>
+				
+				<div class="row">
+					<div class="col-12 col-lg-8 offset-lg-2">
+													<p class="o-title o-title--h2 t-text-align-left">Who seeks will find... but not always. <br/>Sorry, we couldn't find what you are looking for...</p>
+											</div>
+											<div class="col-12 col-lg-8 offset-lg-2">
+							<img class="c-error__image" src="/images/error/error-404.svg" alt="" aria-hidden="true"/>
+						</div>
+																<div class="col-12 col-lg-8 offset-lg-2">
+							<div class="c-error__suggestions">
+								<span>Please, don't give up:</span><ul class="c-error__suggestions-list c-error__suggestions-list--circle"><li>Visit the <a href="/">CORDIS homepage</a>,</li><li>Try our <a href="/search">internal search</a>, or</li><li>Contact our <a href="mailto:cordis@publications.europa.eu">helpdesk</a>, where we´ll be happy to help you.</li></ul>
+							</div>
+						</div>
+														</div>
+			</div>
+		</div>
+
+		<footer class="ecl-site-footer c-footer" lang="en">
+  <div class="c-footer__in container-full">
+    <div class="ecl-site-footer__row">
+      <div class="ecl-site-footer__column">
+        <div class="ecl-site-footer__section ecl-site-footer__section--site-info">
+          <h2 class="ecl-site-footer__title t-margin-bottom-20">
+            CORDIS - EU research results
+          </h2>
+          <div class="ecl-site-footer__description">This website is managed by the <a class="link--underlined link--external" href="https://op.europa.eu/" target="_blank" rel="noopener" aria-label="(opens in new window)">Publications Office of the European Union</a></div>
+          <ul class="ecl-site-footer__list">
+            <li class="ecl-site-footer__list-item"><a href="/about/accessibility/"
+                class="ecl-link ecl-link--standalone ecl-site-footer__link">Accessibility</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="ecl-site-footer__column">
+        <div class="ecl-site-footer__section">
+          <h2 class="ecl-site-footer__title ecl-site-footer__title--separator">Contact us</h2>
+          <ul class="ecl-site-footer__list">
+            <li class="ecl-site-footer__list-item">
+              <span class="ecl-site-footer__description"><a href='mailto:cordis@publications.europa.eu'>Contact our Help Desk</a>. Our multilingual team is available from Monday to Friday from 8:30 to 18:00 (Luxembourg time).</span>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <span class="ecl-site-footer__description"><a href="/about/faq">Frequently Asked Questions</a> (and their answers)</span>
+            </li>
+          </ul>
+        </div>
+        <div class="ecl-site-footer__section">
+          <h2 class="ecl-site-footer__title ecl-site-footer__title--separator">Follow us</h2>
+          <ul class="ecl-site-footer__list ecl-site-footer__list--inline">
+            <li class="ecl-site-footer__list-item">
+              <a 
+                href="https://ec.europa.eu/newsroom/cordis/user-subscriptions/4149/create"
+                class="ecl-link ecl-link--standalone ecl-link--icon ecl-link--icon-before ecl-site-footer__link"
+                target="_blank"
+              >
+                <svg class="ecl-icon ecl-icon--xs ecl-link__icon" focusable="false" aria-hidden="true">
+                  <use xlink:href="/build/images/preset-ec/icons/icons.svg#email">
+                  </use>
+                  </svg><span class="ecl-link__label">Newsletter</span><span class="sr-only">(opens in new window)</span>
+              </a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a 
+                href="https://twitter.com/CORDIS_EU"
+                class="ecl-link ecl-link--standalone ecl-link--icon ecl-link--icon-before ecl-site-footer__link"
+                target="_blank"
+              >
+                                  <span class="fa-brands fa-x-twitter ecl-icon ecl-icon--xs ecl-link__icon" focusable="false" aria-hidden="true"></span><span class="ecl-link__label">X/Twitter</span>
+                  <span class="sr-only">(opens in new window)</span>
+                </a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a 
+                href="https://www.facebook.com/EUScienceInnov/"
+                class="ecl-link ecl-link--standalone ecl-link--icon ecl-link--icon-before ecl-site-footer__link"
+                target="_blank"
+              >
+                <svg class="ecl-icon ecl-icon--xs ecl-link__icon" focusable="false" aria-hidden="true">
+                  <use xlink:href="/build/images/preset-ec/icons/icons-social-media.svg#facebook-negative">
+                  </use>
+                  </svg><span class="ecl-link__label">Facebook</span><span class="sr-only">(opens in new window)</span>
+              </a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a 
+                href="https://www.youtube.com/user/CORDISdotEU"
+                class="ecl-link ecl-link--standalone ecl-link--icon ecl-link--icon-before ecl-site-footer__link"
+                target="_blank"
+              >
+                <svg class="ecl-icon ecl-icon--xs ecl-link__icon" focusable="false" aria-hidden="true">
+                  <use xlink:href="/build/images/preset-ec/icons/icons-social-media.svg#youtube-negative">
+                  </use>
+                  </svg><span class="ecl-link__label">YouTube</span><span class="sr-only">(opens in new window)</span>
+              </a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a 
+                href="https://www.instagram.com/eu_science"
+                class="ecl-link ecl-link--standalone ecl-link--icon ecl-link--icon-before ecl-site-footer__link"
+                target="_blank"
+              >
+                <svg class="ecl-icon ecl-icon--xs ecl-link__icon" focusable="false" aria-hidden="true">
+                  <use xlink:href="/build/images/preset-ec/icons/icons-social-media.svg#instagram-negative">
+                  </use>
+                  </svg><span class="ecl-link__label">Instagram</span><span class="sr-only">(opens in new window)</span>
+              </a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a 
+                href="https://www.linkedin.com/company/publications-office-of-the-european-union/"
+                class="ecl-link ecl-link--standalone ecl-link--icon ecl-link--icon-before ecl-site-footer__link"
+                target="_blank"
+              >
+                <svg class="ecl-icon ecl-icon--xs ecl-link__icon" focusable="false" aria-hidden="true">
+                  <use xlink:href="/build/images/preset-ec/icons/icons-social-media.svg#linkedin-negative">
+                  </use>
+                  </svg><span class="ecl-link__label">LinkedIn</span><span class="sr-only">(opens in new window)</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="ecl-site-footer__column">
+        <div class="ecl-site-footer__section">
+          <h2 class="ecl-site-footer__title ecl-site-footer__title--separator">About us</h2>
+          <ul class="ecl-site-footer__list">
+            <li class="ecl-site-footer__list-item">
+              <a
+                href="/about/"
+                class="ecl-link ecl-link--standalone ecl-site-footer__link">Who we are
+              </a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a
+                href="/about/services/"
+                class="ecl-link ecl-link--standalone ecl-site-footer__link">CORDIS services
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="ecl-site-footer__section">
+          <h2 class="ecl-site-footer__title ecl-site-footer__title--separator">Related links</h2>
+          <ul class="ecl-site-footer__list">
+            <li class="ecl-site-footer__list-item">
+              <a
+                href="https://research-and-innovation.ec.europa.eu/"
+                class="ecl-link ecl-link--standalone ecl-site-footer__link link--external"
+                target="_blank">Research and innovation
+                <span class="sr-only">(opens in new window)</span>
+              </a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a
+                href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/home"
+                class="ecl-link ecl-link--standalone ecl-site-footer__link link--external"
+                target="_blank">Funding &amp; tenders portal
+                <span class="sr-only">(opens in new window)</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="ecl-site-footer__row">
+      <div class="ecl-site-footer__column">
+        <div class="ecl-site-footer__section">
+          <a 
+            href="https://commission.europa.eu/index_en"
+            class="ecl-link ecl-link--standalone ecl-site-footer__logo-link"
+            target="_blank"
+          >
+            <picture class="ecl-picture ecl-site-footer__picture">
+              <source srcSet="/build/images/preset-ec/logo/negative/logo-ec--en.svg"
+                media="(min-width: 996px)" /><img class="ecl-site-footer__logo-image"
+                src="/build/images/preset-ec/logo/negative/logo-ec--en.svg" alt="Go to the home page of the European Commission" />
+            </picture>
+            <span class="sr-only">(opens in new window)</span>
+          </a>
+        </div>
+      </div>
+      <div class="ecl-site-footer__column">
+        <div class="ecl-site-footer__section ecl-site-footer__section--split-list">
+          <ul class="ecl-site-footer__list">
+            <li class="ecl-site-footer__list-item">
+              <a
+                href="https://commission.europa.eu/about-european-commission/contact_en"
+                class="ecl-link ecl-link--standalone ecl-site-footer__link link--external"
+                target="_blank">Contact the European Commission<span class="sr-only">(opens in new window)</span></a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a
+                href="https://european-union.europa.eu/contact-eu/social-media-channels_en#/search?page=0&amp;amp;institutions=european_commission"
+                class="ecl-link ecl-link--standalone ecl-link--icon ecl-link--icon-after ecl-site-footer__link link--external"
+                target="_blank"><span
+                  class="ecl-link__label">Follow the European Commission on social media</span><span class="sr-only">(opens in new window)</span></a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a href="https://commission.europa.eu/resources-partners_en"
+                class="ecl-link ecl-link--standalone ecl-site-footer__link link--external"
+                target="_blank">Resources for partners<span class="sr-only">(opens in new window)</span></a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="ecl-site-footer__column">
+        <div class="ecl-site-footer__section ecl-site-footer__section--split-list">
+          <ul class="ecl-site-footer__list">
+            <li class="ecl-site-footer__list-item">
+              <a href="/about/legal/#cookies"
+                class="ecl-link ecl-link--standalone ecl-site-footer__link">Cookies</a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a href="/about/legal/#privacy-statement-on-the-protection-of-personal-data"
+                class="ecl-link ecl-link--standalone ecl-site-footer__link">Privacy policy</a>
+            </li>
+            <li class="ecl-site-footer__list-item">
+              <a href="/about/legal/"
+                class="ecl-link ecl-link--standalone ecl-site-footer__link">Legal Notice</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+		<div
+    role="dialog"
+    aria-live="polite"
+    aria-describedby="cookieconsent:desc"
+    class="co-cookie-consent container-fluid"
+    id="cookieConsentBanner"
+>
+    <div class="co-cookie-consent__in row">
+        <span id="cookieconsent:desc" class="co-cookie-consent__message col-12 col-lg-6">
+            <a 
+                href="/about/legal"
+                aria-label="Learn more about cookies"
+                class="co-cookie-consent__link t-focus--second"
+            >This site uses cookies </a>
+            to offer you a better browsing experience. 
+        </span>
+        <div class="co-cookie-consent__button-container col-12 col-lg-6">
+            <button
+                class="o-btn o-btn--large o-btn--light co-cookie-consent__button co-cookie-consent__button--allow"
+                id="cookieAccept"
+            >
+               I accept cookies.
+            </button>
+            <button
+                class="o-btn o-btn--large  co-cookie-consent__button co-cookie-consent__button--decline"
+                id="cookieDeclined"
+            >
+                I refuse cookies.
+            </button>
+        </div>
+    </div>
+    
+</div>
+		<div class="c-modal" id="det-completion-modal-success">
+	<div class="c-modal__overlay">
+		<div class="c-modal__dialog" role="dialog">
+			<div class="c-modal__dialog-header">
+				<div class="c-modal__dialog-header-buttons">
+					<button class="c-modal__dialog-header-button c-modal__dialog-header-button--close" aria-label="Close">
+						<span aria-hidden="true" class="fa-solid fa-xmark"></span>
+					</button>
+				</div>
+			</div>
+			<div class="c-modal__dialog-body">
+				<h2>Your data extraction is available</h2>
+				<p>Your data extraction with Task ID
+					<strong class="det-completion-modal-success-taskId">TASK_ID_PLACEHOLDER</strong>
+					is available for download.</p>
+				<div class="container">
+					<div class="row justify-content-center align-items-center">
+						<div class="col-12 col-sm-5 t-margin-bottom-30 t-text-align-center t-align-h">
+							<button class="o-btn o-btn--large c-btn-survey c-modal__dialog-btn-ok">Go to my data extractions</button>
+						</div>
+						<div class="col-12 col-sm-4 t-margin-bottom-30 t-text-align-center t-align-h">
+							<button class="o-btn o-btn--large o-btn--light c-btn-survey c-modal__dialog-btn-cancel">Close</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="c-modal" id="det-completion-modal-error">
+  <div class="c-modal__overlay">
+    <div class="c-modal__dialog" role="dialog">
+      <div class="c-modal__dialog-header">
+                <div class="c-modal__dialog-header-buttons">
+          <button class="c-modal__dialog-header-button c-modal__dialog-header-button--close" aria-label="Close"><span aria-hidden="true" class="fa-solid fa-xmark"></span></button>
+        </div>
+      </div>
+      <div class="c-modal__dialog-body">
+        DET Modal body ...
+      </div>
+    </div>
+  </div> 
+</div>
+		 <div class="c-modal" id="booklet-completion-modal-success">
+	<div class="c-modal__overlay">
+		<div class="c-modal__dialog" role="dialog">
+			<div class="c-modal__dialog-header">
+				<div class="c-modal__dialog-header-buttons">
+					<button class="c-modal__dialog-header-button c-modal__dialog-header-button--close" aria-label="Close">
+						<span aria-hidden="true" class="fa-solid fa-xmark"></span>
+					</button>
+				</div>
+			</div>
+			<div class="c-modal__dialog-body">
+				<h2 class="o-title o-title--h2">Your booklet is ready</h2>
+
+				<div class="c-booklet-modal__text c-selector-booklet-modal-txt"><p>Your booklet is ready.</p><p>Your booklet {{ title }} generated on {{ timestamp }} is available for download.</p><p>The file will remain available for {{ hours }} hours, or until you close your browser.</p></div>
+				
+				<a class="o-btn o-btn--large c-btn--pdf c-link-btn c-selector-booklet-modal-dl-btn">
+					Download booklet
+				</a>
+
+				<a class="o-btn o-btn--light c-link-btn" href="/booklet">
+					View all booklets
+				</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="c-modal" id="booklet-completion-modal-error">
+	<div class="c-modal__overlay">
+		<div class="c-modal__dialog" role="dialog">
+			<div class="c-modal__dialog-header">
+				<div class="c-modal__dialog-header-buttons">
+					<button class="c-modal__dialog-header-button c-modal__dialog-header-button--close" aria-label="Close">
+						<span aria-hidden="true" class="fa-solid fa-xmark"></span>
+					</button>
+				</div>
+			</div>
+			<div class="c-modal__dialog-body">
+				<h2 class="o-title o-title--h2 c-selector-booklet-modal-failure-title">The generation of your booklet {{ title }} has failed</h2>
+
+				<div class="c-booklet-modal__text c-selector-booklet-modal-failure-txt">The generation of your booklet {{ title }} has failed. Please check your My Booklet page for more information</div>
+				
+
+				<a class="o-btn o-btn--light c-link-btn" href="/booklet">
+					View all booklets
+				</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+				<div id="envUrl" data-env="https://cordis.europa.eu"></div>
+		<div id="uiLanguage" data-lang=en></div>
+		<div id="surveyDoCheck" data-survey-do-check="false"></div>
+		<div id="surveyYear" data-survey-year="2024"></div>
+
+		<div position="bottom-center" class="p-element p-toaster">
+    <div class="p-toast p-component p-toast-bottom-center">
+        <div class="p-element">
+            <div class="p-toast-message" style="transform: translateY(0px); opacity: 1;">
+                <div role="alert" aria-live="assertive" aria-atomic="true" class="p-toast-message-content">
+                    <div class="p-toast-message-text">
+                        <div class="p-toast-summary"
+                            data-bookletok="Item added to booklet"
+                            data-bookletnok="Item could not be added"
+                            data-cookies="Your cookie preference has been updated."
+                        ></div>
+                        <div class="p-toast-detail"></div>
+                    </div>
+                    <span class="p-toaster-icon"></span>
+                                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+		
+					<script src="/assets/libs/op_piwik_pro_production.js" type="text/javascript"></script>
+		
+			<script type="application/json">{
+				"utility": "globan",
+				"renderTo": "#globan-here",
+				"lang": "en",
+				"theme": "dark",
+				"logo": true,
+				"link": true,
+				"mode": false,
+				"zindex" : 40
+			}</script>
+							<script src="/build/libs/moment.min.js"></script>
+				<script src="/build/libs/ecl-ec.js"></script>
+				<script>ECL.autoInit();</script>
+				<script src="/build/runtime.ced75ccf.js" defer></script><script src="/build/454.10b40c9c.js" defer></script><script src="/build/633.36d17256.js" defer></script><script src="/build/412.12d9eecd.js" defer></script><script src="/build/822.fb8e6adc.js" defer></script><script src="/build/94.9fabc49c.js" defer></script><script src="/build/main.0efb7ddc.js" defer></script>
+				</body>
+</html>
+
+2025-07-03 01:10:37 - leadfinder.api.cordis - INFO - Using fallback search with mock data for CORDIS
+2025-07-03 01:10:37 - leadfinder.api.nih reporter - INFO - Searching NIH RePORTER for: 'cancer'
+2025-07-03 01:10:37 - leadfinder.api.nih reporter - ERROR - NIH API error: 404 - 
+2025-07-03 01:10:37 - leadfinder.api.nih reporter - INFO - Using fallback search with mock data for NIH
+2025-07-03 01:12:36 - leadfinder.config_model - INFO - Configuration table initialized
+2025-07-03 01:12:50 - leadfinder.config_model - INFO - Configuration table initialized
+2025-07-03 01:14:56 - leadfinder.config_model - INFO - Configuration table initialized
+2025-07-03 01:14:56 - leadfinder.config_model - INFO - Updated config: SWECRIS_BASE_URL
+2025-07-03 13:11:14 - leadfinder.config_model - INFO - Configuration table initialized

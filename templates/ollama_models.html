@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama Models - LeadFinder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .model-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .model-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .model-card.selected {
+            border: 2px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-ok { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-robot"></i> Ollama Models</h2>
+                    <a href="{{ url_for('leads.show_leads') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Leads
+                    </a>
+                </div>
+
+                <!-- Status Section -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-info-circle"></i> Ollama Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Server:</strong> 
+                                    <span class="status-indicator status-ok"></span>
+                                    Ollama is running
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Active model:</strong> 
+                                    <span class="badge bg-primary">{{ selected_model or 'None selected' }}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="refreshStatus()">
+                            <i class="fas fa-sync-alt"></i> Refresh status
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Available Models -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-list"></i> Available Models</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if available_models %}
+                            <div class="row">
+                                {% for model in available_models %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card model-card h-100 {% if model == selected_model %}selected{% endif %}"
+                                         onclick="selectModel('{{ model }}')">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-brain fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">{{ model }}</h6>
+                                            {% if model == selected_model %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Available</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                No models found. Check that Ollama is running and has models loaded.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Model Selection Form -->
+                <form id="modelForm" method="POST" action="{{ url_for('ollama.set_model') }}" class="mt-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-cog"></i> Select Model</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <select name="model_name" class="form-select" id="modelSelect">
+                                        <option value="">Select a model...</option>
+                                        {% for model in available_models %}
+                                        <option value="{{ model }}" {% if model == selected_model %}selected{% endif %}>
+                                            {{ model }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-check"></i> Use Model
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function selectModel(modelName) {
+            document.getElementById('modelSelect').value = modelName;
+            // Remove selected class from all cards
+            document.querySelectorAll('.model-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            // Add selected class to clicked card
+            event.currentTarget.classList.add('selected');
+        }
+
+        function refreshStatus() {
+            fetch('/ollama_status')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Status updated:', data);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error refreshing status:', error);
+                });
+        }
+
+        // Auto-refresh models every 30 seconds
+        setInterval(() => {
+            fetch('/ollama_models')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.models) {
+                        console.log('Models updated:', data.models);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating models:', error);
+                });
+        }, 30000);
+    </script>
+</body>
+</html> 

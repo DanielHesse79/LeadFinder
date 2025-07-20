@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUPP.AI Agent Details - LeadFinder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            max-width: 1200px;
+            padding: 30px;
+        }
+        .agent-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .agent-name {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .agent-cui {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        .agent-type {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #667eea;
+        }
+        .info-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .info-title i {
+            margin-right: 10px;
+            color: #667eea;
+        }
+        .synonym-tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 12px;
+            border-radius: 15px;
+            margin: 3px;
+            font-size: 0.9rem;
+        }
+        .tradename-tag {
+            display: inline-block;
+            background: #f3e5f5;
+            color: #7b1fa2;
+            padding: 5px 12px;
+            border-radius: 15px;
+            margin: 3px;
+            font-size: 0.9rem;
+        }
+        .interaction-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #4caf50;
+            transition: transform 0.2s;
+        }
+        .interaction-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        .interaction-agent {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .interaction-type {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .evidence-count {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        .back-btn {
+            background: #6c757d;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover {
+            background: #5a6268;
+        }
+        .stats-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <!-- Back Button -->
+            <a href="{{ url_for('ollama.ollama_home') }}" class="btn btn-custom back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Search
+            </a>
+
+            <!-- Agent Header -->
+            <div class="agent-header">
+                <div class="agent-name">{{ agent.name }}</div>
+                <div class="agent-cui">CUI: {{ agent.cui }}</div>
+                <div class="agent-type">{{ agent.type|title }}</div>
+                <div class="mt-3">
+                    <span class="stats-badge">
+                        <i class="fas fa-link"></i> {{ agent.interactions_count }} Interactions
+                    </span>
+                    {% if agent.url %}
+                    <a href="{{ agent.url }}" target="_blank" class="btn btn-custom">
+                        <i class="fas fa-external-link-alt"></i> View on SUPP.AI
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Agent Information -->
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- Definition -->
+                    {% if agent.definition %}
+                    <div class="info-card">
+                        <div class="info-title">
+                            <i class="fas fa-info-circle"></i> Definition
+                        </div>
+                        <p>{{ agent.definition }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Synonyms -->
+                    {% if agent.synonyms %}
+                    <div class="info-card">
+                        <div class="info-title">
+                            <i class="fas fa-tags"></i> Synonyms
+                        </div>
+                        {% for synonym in agent.synonyms %}
+                        <span class="synonym-tag">{{ synonym }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <!-- Trade Names -->
+                    {% if agent.tradenames %}
+                    <div class="info-card">
+                        <div class="info-title">
+                            <i class="fas fa-pills"></i> Trade Names
+                        </div>
+                        {% for tradename in agent.tradenames %}
+                        <span class="tradename-tag">{{ tradename }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Agent Type -->
+                    <div class="info-card">
+                        <div class="info-title">
+                            <i class="fas fa-flask"></i> Agent Type
+                        </div>
+                        <p><strong>{{ agent.type|title }}</strong></p>
+                        <p class="text-muted">
+                            {% if agent.type == 'drug' %}
+                            Pharmaceutical drug with known interactions
+                            {% elif agent.type == 'supplement' %}
+                            Dietary supplement or natural product
+                            {% else %}
+                            Other type of agent
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactions -->
+            {% if interactions and interactions.interactions %}
+            <div class="info-card">
+                <div class="info-title">
+                    <i class="fas fa-link"></i> Interactions ({{ interactions.total }} total)
+                </div>
+                <p class="text-muted mb-3">Showing page {{ interactions.page }} of interactions</p>
+                
+                {% for interaction in interactions.interactions %}
+                <div class="interaction-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="interaction-agent">
+                                {% if interaction.agent %}
+                                {{ interaction.agent.name }}
+                                {% else %}
+                                Unknown Agent
+                                {% endif %}
+                            </div>
+                            <div class="interaction-type">
+                                {% if interaction.agent %}
+                                Type: {{ interaction.agent.type|title }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="evidence-count">
+                                {{ interaction.evidence_count }} evidence items
+                            </span>
+                            {% if interaction.url %}
+                            <a href="{{ interaction.url }}" target="_blank" class="btn btn-custom btn-sm ms-2">
+                                <i class="fas fa-external-link-alt"></i> Details
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if interactions.total > interactions.interactions_per_page %}
+                <div class="text-center mt-4">
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            {% if interactions.page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('ollama.agent_details', cui=agent.cui) }}?page={{ interactions.page - 1 }}">
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">Page {{ interactions.page }}</span>
+                            </li>
+                            
+                            {% if interactions.page * interactions.interactions_per_page < interactions.total %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('ollama.agent_details', cui=agent.cui) }}?page={{ interactions.page + 1 }}">
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="info-card">
+                <div class="info-title">
+                    <i class="fas fa-exclamation-triangle"></i> No Interactions Found
+                </div>
+                <p>No interactions were found for this agent in the SUPP.AI database.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

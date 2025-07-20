@@ -1,0 +1,4 @@
+{
+  "error": "\nparagraph text \"<para><b>Relevancy Score:</b> <span style='color: #ffc107; font-weight: bold;'>3/5</span></para>\" caused exception findSpanStyle not implemented in this parser",
+  "success": false
+}

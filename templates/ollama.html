@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publications & Researchers - LeadFinder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .search-form {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .result-card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            transition: transform 0.2s;
+        }
+        .result-card:hover {
+            transform: translateY(-2px);
+        }
+        .source-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .ollama-status {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .publication-title {
+            font-weight: 600;
+            color: #495057;
+        }
+        .author-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .abstract-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-search"></i> LeadFinder
+                </a>
+                <div class="navbar-nav">
+                    <a class="nav-link" href="/">General Search</a>
+                    <a class="nav-link" href="/research">Funding</a>
+                    <a class="nav-link active" href="/ollama">Publications & Researchers</a>
+                    <a class="nav-link" href="/lead-workshop">Lead Workshop</a>
+                    <a class="nav-link" href="/config">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="mb-4">
+                        <i class="fas fa-users"></i> 
+                        Publications & Researchers
+                    </h1>
+                    
+                    <!-- Ollama Status -->
+                    <div class="ollama-status">
+                        {% set ollama_status = ollama_status or {"ok": False, "msg": "Status unknown"} %}
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <strong>
+                                    <i class="fas fa-robot"></i> AI Analysis: 
+                                    {{ ollama_status.msg }}
+                                </strong>
+                            </div>
+                            {% if not ollama_status.ok %}
+                                <form method="post" action="{{ url_for('ollama.check_ollama') }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-light btn-sm">
+                                        <i class="fas fa-sync-alt"></i> Try Again
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Card -->
+                    <div class="stats-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h3 class="mb-0">
+                                    <i class="fas fa-microscope"></i> 
+                                    Academic Search
+                                </h3>
+                                <p class="mb-0">Search PubMed, ORCID, Semantic Scholar and Sci-Hub</p>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <i class="fas fa-graduation-cap fa-3x opacity-75"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Search Form -->
+                    <div class="search-form">
+                        <h3 class="mb-4">
+                            <i class="fas fa-search"></i> Search publications & researchers
+                        </h3>
+                        <form method="POST" action="{{ url_for('ollama.search_publications') }}">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <label for="query" class="form-label">
+                                            <i class="fas fa-search"></i> Search Term
+                                        </label>
+                                        <input type="text" class="form-control form-control-lg" 
+                                               id="query" name="query" 
+                                               placeholder="e.g., epigenetics, diabetes, AI, cancer, author name..."
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="search_type" class="form-label">
+                                            <i class="fas fa-filter"></i> Search Type
+                                        </label>
+                                        <select class="form-select" id="search_type" name="search_type">
+                                            <option value="both">Publications & Researchers</option>
+                                            <option value="publications">Publications Only</option>
+                                            <option value="researchers">Researchers Only</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Data Sources -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-database"></i> Data Sources
+                                </label>
+                                <div class="row">
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="sources" value="pubmed" id="source_pubmed" checked>
+                                            <label class="form-check-label" for="source_pubmed">
+                                                <strong>PubMed</strong>
+                                                <br>
+                                                <small class="text-light">Scientific articles</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="sources" value="orcid" id="source_orcid" checked>
+                                            <label class="form-check-label" for="source_orcid">
+                                                <strong>ORCID</strong>
+                                                <br>
+                                                <small class="text-light">Researcher profiles</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="sources" value="scholar" id="source_scholar">
+                                            <label class="form-check-label" for="source_scholar">
+                                                <strong>Semantic Scholar</strong>
+                                                <br>
+                                                <small class="text-light">Academic search</small>
+                                            </label>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-light btn-lg">
+                                <i class="fas fa-search"></i> Start academic search
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Advanced Filters -->
+                    <div class="filter-section">
+                        <h4 class="mb-3">
+                            <i class="fas fa-filter"></i> Advanced filters
+                        </h4>
+                        <form method="POST" action="{{ url_for('ollama.advanced_search') }}">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="author" class="form-label">Author</label>
+                                        <input type="text" class="form-control" id="author" 
+                                               name="author" placeholder="Author's name">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="journal" class="form-label">Journal</label>
+                                        <input type="text" class="form-control" id="journal" 
+                                               name="journal" placeholder="Journal name">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="year_from" class="form-label">From Year</label>
+                                        <input type="number" class="form-control" id="year_from" 
+                                               name="year_from" placeholder="2020" min="1900" max="2025">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="year_to" class="form-label">To Year</label>
+                                        <input type="number" class="form-control" id="year_to" 
+                                               name="year_to" placeholder="2025" min="1900" max="2025">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Advanced search
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Results Section -->
+                    {% if publications %}
+                    <div class="mt-4">
+                        <h3 class="mb-3">
+                            <i class="fas fa-list"></i> Search results
+                        </h3>
+                        
+                        <!-- Action Buttons Section -->
+                        <div class="alert alert-info mb-3">
+                            <h5><i class="fas fa-tools"></i> Publication Actions</h5>
+                            <p class="mb-2">Select publications to perform actions:</p>
+                            <div class="form-check d-inline-block me-3">
+                                <input class="form-check-input" type="checkbox" id="selectAllPublications" onchange="toggleAllPublications()">
+                                <label class="form-check-label" for="selectAllPublications">
+                                    <strong>Select All</strong>
+                                </label>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="sendToWorkshop()">
+                                <i class="fas fa-share"></i> Send to Lead Workshop
+                            </button>
+                            <span id="selectedCount" class="ms-2 text-muted">(0 selected)</span>
+                            
+                            {% set has_dois = publications | selectattr('doi') | list | length > 0 %}
+                            {% if has_dois %}
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-success btn-sm" onclick="downloadSelectedPapers()">
+                                    <i class="fas fa-download"></i> Download selected articles
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm ms-2" onclick="showDownloadedFiles()">
+                                    <i class="fas fa-folder-open"></i> Show downloaded files
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% for pub in publications %}
+                        <div class="card result-card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input publication-checkbox" type="checkbox" 
+                                                   value="{{ loop.index0 }}" id="pub_{{ loop.index }}"
+                                                   data-publication='{{ pub | tojson }}'
+                                                   onchange="updateSelectedCount()">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <h5 class="publication-title">{{ pub.title }}</h5>
+                                        <p class="author-info">
+                                            <strong>Authors:</strong> {{ pub.authors|join(', ') }}
+                                        </p>
+                                        <p class="abstract-text">{{ pub.abstract|truncate(200) }}</p>
+                                        <div class="mt-2">
+                                            <span class="badge bg-primary source-badge">{{ pub.source }}</span>
+                                            {% if pub.year %}
+                                            <span class="badge bg-secondary source-badge">{{ pub.year }}</span>
+                                            {% endif %}
+                                            {% if pub.journal %}
+                                            <span class="badge bg-info source-badge">{{ pub.journal }}</span>
+                                            {% endif %}
+                                            {% if pub.doi %}
+                                            <span class="badge bg-warning source-badge">DOI: {{ pub.doi }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        {% if pub.url %}
+                                        <a href="{{ pub.url }}" target="_blank" class="btn btn-outline-primary btn-sm mb-2">
+                                            <i class="fas fa-external-link-alt"></i> View article
+                                        </a>
+                                        {% endif %}
+
+                                        {% if pub.doi and pub.doi.startswith('10.') %}
+                                        <div class="form-check d-inline-block me-2">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   value="{{ pub.doi }}" id="doi_{{ loop.index }}"
+                                                   onchange="updateDownloadButton()">
+                                            <label class="form-check-label" for="doi_{{ loop.index }}">
+                                                <small>Select for Sci-Hub</small>
+                                            </label>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                                onclick="downloadSinglePaper('{{ pub.doi }}', '{{ pub.title|replace("'", "\\'") }}')">
+                                            <i class="fas fa-file-pdf"></i> Sci-Hub PDF
+                                        </button>
+                                        {% elif pub.doi %}
+                                        <small class="text-muted">DOI: {{ pub.doi }} (not Sci-Hub compatible)</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Researchers Section -->
+                    {% if researchers %}
+                    <div class="mt-4">
+                        <h3 class="mb-3">
+                            <i class="fas fa-user-graduate"></i> Researchers
+                        </h3>
+                        {% for researcher in researchers %}
+                        <div class="card result-card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5 class="publication-title">{{ researcher.name }}</h5>
+                                        <p class="author-info">
+                                            <strong>Institution:</strong> {{ researcher.institution }}
+                                        </p>
+                                        <p class="abstract-text">{{ researcher.bio|truncate(150) }}</p>
+                                        <div class="mt-2">
+                                            <span class="badge bg-success source-badge">{{ researcher.source }}</span>
+                                            {% if researcher.orcid %}
+                                            <span class="badge bg-info source-badge">ORCID: {{ researcher.orcid }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        {% if researcher.profile_url %}
+                                        <a href="{{ researcher.profile_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-user"></i> Profile
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function downloadSinglePaper(doi, title) {
+            if (!doi) {
+                alert('No DOI available for this article.');
+                return;
+            }
+            
+            if (confirm(`Attempt to download "${title}" via Sci-Hub?`)) {
+                // Show loading indicator
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                button.disabled = true;
+                
+                // Make AJAX request instead of form submission
+                fetch('{{ url_for("ollama.download_pdf") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `doi=${encodeURIComponent(doi)}`
+                })
+                .then(response => {
+                    if (response.headers.get('content-type')?.includes('application/pdf')) {
+                        // PDF download - trigger download
+                        return response.blob().then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `article_${doi.replace('/', '_')}.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                            
+                            // Check if PDF was also saved to server
+                            if (response.headers.get('X-PDF-Downloaded')) {
+                                return { success: true, message: 'PDF downloaded and saved to server' };
+                            }
+                        });
+                    } else {
+                        // JSON response - handle redirect
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data && data.redirect && data.url) {
+                        // Redirect to Sci-Hub URL
+                        window.open(data.url, '_blank');
+                        alert(`Direct download not available. Opening Sci-Hub in new tab: ${data.url}`);
+                    } else if (data && data.error) {
+                        // Handle error response
+                        if (data.invalid_doi) {
+                            alert(`Invalid DOI: ${data.error}`);
+                        } else {
+                            alert(`Error: ${data.error}`);
+                        }
+                    } else if (data && data.success) {
+                        // PDF downloaded successfully
+                        alert(`PDF downloaded successfully! File saved in the folder: scihub_downloads/`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred during download. Please try again.');
+                })
+                .finally(() => {
+                    // Restore button
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                });
+            }
+        }
+        
+        function downloadSelectedPapers() {
+            const selectedDois = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value)
+                .filter(doi => doi);
+            
+            if (selectedDois.length === 0) {
+                alert('Please select at least one article with a DOI for download.');
+                return;
+            }
+            
+            if (confirm(`Attempt to download ${selectedDois.length} article(s) via Sci-Hub?`)) {
+                // Show loading indicator
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                button.disabled = true;
+                
+                // Download them one by one with proper handling
+                let completed = 0;
+                const total = selectedDois.length;
+                
+                selectedDois.forEach((doi, index) => {
+                    setTimeout(() => {
+                        fetch('{{ url_for("ollama.download_pdf") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `doi=${encodeURIComponent(doi)}`
+                        })
+                        .then(response => {
+                            if (response.headers.get('content-type')?.includes('application/pdf')) {
+                                // PDF download - trigger download
+                                return response.blob().then(blob => {
+                                    const url = window.URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `article_${doi.replace('/', '_')}.pdf`;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    window.URL.revokeObjectURL(url);
+                                    document.body.removeChild(a);
+                                });
+                            } else {
+                                // JSON response - handle redirect
+                                return response.json();
+                            }
+                        })
+                        .then(data => {
+                            if (data && data.redirect && data.url) {
+                                // Open Sci-Hub URL in new tab
+                                window.open(data.url, '_blank');
+                            } else if (data && data.error) {
+                                // Handle error response
+                                if (data.invalid_doi) {
+                                    console.warn(`Invalid DOI: ${doi} - ${data.error}`);
+                                } else {
+                                    console.error(`Error downloading DOI ${doi}: ${data.error}`);
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error downloading DOI:', doi, error);
+                        })
+                        .finally(() => {
+                            completed++;
+                            if (completed === total) {
+                                // All downloads completed
+                                button.innerHTML = originalText;
+                                button.disabled = false;
+                                alert(`Download completed for ${completed} article(s).`);
+                            }
+                        });
+                    }, index * 1000); // 1 second delay between downloads
+                });
+            }
+        }
+        
+        function updateDownloadButton() {
+            const selectedDois = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value)
+                .filter(doi => doi);
+            
+            const downloadButton = document.querySelector('button[onclick="downloadSelectedPapers()"]');
+            if (downloadButton) {
+                downloadButton.textContent = `Download selected articles (${selectedDois.length})`;
+                downloadButton.disabled = selectedDois.length === 0;
+            }
+        }
+        
+        function showDownloadedFiles() {
+            fetch('{{ url_for("ollama.download_pdf") }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(`Error: ${data.error}`);
+                        return;
+                    }
+                    
+                    if (data.count === 0) {
+                        alert('No downloaded PDF files found.');
+                        return;
+                    }
+                    
+                    let message = `Downloaded PDF files (${data.count} st):\n\n`;
+                    data.files.forEach(file => {
+                        const sizeKB = Math.round(file.size / 1024);
+                        const date = new Date(file.modified * 1000).toLocaleDateString('sv-SE');
+                        message += `• ${file.filename} (${sizeKB} KB, ${date})\n`;
+                    });
+                    message += `\nFolder: ${data.download_folder}`;
+                    
+                    alert(message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching files.');
+                });
+        }
+        
+        // Initialize download button state
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDownloadButton();
+            updateSelectedCount();
+        });
+        
+        // Update selected count for publications
+        function updateSelectedCount() {
+            const selectedCheckboxes = document.querySelectorAll('.publication-checkbox:checked');
+            const countSpan = document.getElementById('selectedCount');
+            if (countSpan) {
+                countSpan.textContent = `(${selectedCheckboxes.length} selected)`;
+            }
+            
+            // Update select all checkbox state
+            const selectAllCheckbox = document.getElementById('selectAllPublications');
+            const allCheckboxes = document.querySelectorAll('.publication-checkbox');
+            if (selectAllCheckbox && allCheckboxes.length > 0) {
+                if (selectedCheckboxes.length === 0) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                } else if (selectedCheckboxes.length === allCheckboxes.length) {
+                    selectAllCheckbox.checked = true;
+                    selectAllCheckbox.indeterminate = false;
+                } else {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = true;
+                }
+            }
+        }
+        
+        // Toggle all publications
+        function toggleAllPublications() {
+            const selectAllCheckbox = document.getElementById('selectAllPublications');
+            const allCheckboxes = document.querySelectorAll('.publication-checkbox');
+            
+            allCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            
+            updateSelectedCount();
+        }
+        
+        // Send selected publications to workshop
+        function sendToWorkshop() {
+            const selectedCheckboxes = document.querySelectorAll('.publication-checkbox:checked');
+            
+            if (selectedCheckboxes.length === 0) {
+                alert('Please select at least one publication to send to the workshop.');
+                return;
+            }
+            
+            if (confirm(`Send ${selectedCheckboxes.length} selected publication(s) to Lead Workshop?`)) {
+                // Show loading state
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                button.disabled = true;
+                
+                // Collect publication data
+                const publications = [];
+                selectedCheckboxes.forEach(checkbox => {
+                    try {
+                        const pubData = JSON.parse(checkbox.getAttribute('data-publication'));
+                        publications.push(pubData);
+                    } catch (e) {
+                        console.error('Error parsing publication data:', e);
+                    }
+                });
+                
+                // Send to server
+                fetch('{{ url_for("ollama.send_to_workshop") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        publications: publications
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`✅ ${data.message}\n\nRedirecting to Lead Workshop...`);
+                        // Uncheck all checkboxes
+                        selectedCheckboxes.forEach(checkbox => {
+                            checkbox.checked = false;
+                        });
+                        updateSelectedCount();
+                        
+                        // Redirect to Lead Workshop with the saved lead IDs
+                        if (data.redirect_url) {
+                            setTimeout(() => {
+                                window.location.href = data.redirect_url;
+                            }, 1000);
+                        }
+                    } else {
+                        alert(`❌ Error: ${data.error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while sending to workshop. Please try again.');
+                })
+                .finally(() => {
+                    // Restore button
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                });
+            }
+        }
+    </script>
+</body>
+</html> 

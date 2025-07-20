@@ -1,0 +1,514 @@
+{% extends "leads.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Unified Search Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-search"></i> Unified Lead Search
+                        {% if autogpt_available %}
+                        <span class="badge bg-success ms-2">
+                            <i class="fas fa-robot"></i> AutoGPT Available
+                        </span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Mode Selector -->
+                    <div class="mode-selector mb-4">
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="searchMode" id="quickMode" value="quick" checked>
+                            <label class="btn btn-outline-primary" for="quickMode">
+                                <i class="fas fa-search"></i> Quick Search
+                                <small class="d-block">Fast lead discovery</small>
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="searchMode" id="researchMode" value="research">
+                            <label class="btn btn-outline-success" for="researchMode">
+                                <i class="fas fa-robot"></i> AI Research
+                                <small class="d-block">Comprehensive analysis</small>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Unified Search Form -->
+                    <form id="unifiedSearchForm" method="POST" action="{{ url_for('unified_search.unified_search') }}">
+                        <input type="hidden" name="mode" id="searchModeInput" value="quick">
+                        
+                        <!-- Quick Search Fields -->
+                        <div id="quickSearchFields">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="query" class="form-label">
+                                            <i class="fas fa-search"></i> Search Term
+                                        </label>
+                                        <input type="text" class="form-control" id="query" name="query" 
+                                               placeholder="e.g., epigenetics pre-diabetes" required>
+                                        <div class="form-text">Enter keywords to search for relevant leads</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="research_question" class="form-label">
+                                            <i class="fas fa-question-circle"></i> Research Question (Optional)
+                                        </label>
+                                        <input type="text" class="form-control" id="research_question" name="research_question" 
+                                               placeholder="Research focus area (leave empty for standard search)">
+                                        <div class="form-text">AI will analyze relevance based on this question</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="max_results" class="form-label">
+                                            <i class="fas fa-list"></i> Number of Results
+                                        </label>
+                                        <select class="form-select" id="max_results" name="max_results">
+                                            <option value="5">5 results</option>
+                                            <option value="10" selected>10 results</option>
+                                            <option value="20">20 results</option>
+                                            <option value="50">50 results</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-search"></i> Search Engines
+                                        </label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="engines" value="google" checked>
+                                            <label class="form-check-label">Google</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="engines" value="bing">
+                                            <label class="form-check-label">Bing</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="engines" value="duckduckgo">
+                                            <label class="form-check-label">DuckDuckGo</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-robot"></i> AI Analysis
+                                        </label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="use_ai_analysis" id="use_ai_analysis" checked>
+                                            <label class="form-check-label" for="use_ai_analysis">
+                                                <strong>Enable AI Analysis</strong>
+                                            </label>
+                                        </div>
+                                        <div class="form-text">
+                                            <i class="fas fa-brain text-primary"></i> 
+                                            Uses local Mistral AI to analyze leads
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Research Mode Fields -->
+                        <div id="researchFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="company_name" class="form-label">
+                                            <i class="fas fa-building"></i> Your Company Name
+                                        </label>
+                                        <input type="text" class="form-control" id="company_name" name="company_name" 
+                                               placeholder="e.g., TechCorp Solutions">
+                                        <div class="form-text">The company doing the research</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="industry" class="form-label">
+                                            <i class="fas fa-industry"></i> Target Industry
+                                        </label>
+                                        <input type="text" class="form-control" id="industry" name="industry" 
+                                               placeholder="e.g., SaaS, Healthcare, AI">
+                                        <div class="form-text">Industry to research for leads</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>AI Research Mode:</strong> This will perform comprehensive lead research using AutoGPT, 
+                                including web searches, AI analysis, and detailed insights. The process may take up to 30 minutes.
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg" id="searchBtn">
+                                <i class="fas fa-search"></i> 
+                                <span id="searchBtnText">Quick Search</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Progress Section (hidden by default) -->
+                    <div id="searchProgress" style="display: none;" class="mt-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-spinner fa-spin"></i> 
+                                    <span id="progressTitle">Searching...</span>
+                                </h5>
+                                
+                                <!-- Progress Bar -->
+                                <div class="progress mb-3" style="height: 25px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         id="progressBar" role="progressbar" style="width: 0%">
+                                        <span id="progressText">0%</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Status Messages -->
+                                <div id="statusMessages" class="mt-3">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span id="currentStatus">Initializing search...</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Cancel Button -->
+                                <div class="text-center mt-3">
+                                    <button type="button" class="btn btn-secondary" id="cancelSearch">
+                                        <i class="fas fa-times"></i> Cancel Search
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Results Section -->
+            <div id="searchResults" class="mt-4" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list"></i> Search Results
+                            <span id="resultsCount" class="badge bg-primary ms-2"></span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultsContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('unifiedSearchForm');
+    const searchModeInput = document.getElementById('searchModeInput');
+    const quickSearchFields = document.getElementById('quickSearchFields');
+    const researchFields = document.getElementById('researchFields');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchBtnText = document.getElementById('searchBtnText');
+    const searchProgress = document.getElementById('searchProgress');
+    const searchResults = document.getElementById('searchResults');
+    const resultsContent = document.getElementById('resultsContent');
+    const resultsCount = document.getElementById('resultsCount');
+    
+    let searchAborted = false;
+    
+    // Mode switching
+    document.querySelectorAll('input[name="searchMode"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const mode = this.value;
+            searchModeInput.value = mode;
+            
+            if (mode === 'quick') {
+                quickSearchFields.style.display = 'block';
+                researchFields.style.display = 'none';
+                searchBtnText.textContent = 'Quick Search';
+                searchBtn.className = 'btn btn-primary btn-lg';
+            } else {
+                quickSearchFields.style.display = 'none';
+                researchFields.style.display = 'block';
+                searchBtnText.textContent = 'AI Research';
+                searchBtn.className = 'btn btn-success btn-lg';
+            }
+        });
+    });
+    
+    // Form submission
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        startSearch();
+    });
+    
+    // Cancel search
+    document.getElementById('cancelSearch').addEventListener('click', function() {
+        searchAborted = true;
+        updateProgress(100, 'Search cancelled by user', 'Search Cancelled');
+        setTimeout(() => {
+            hideProgress();
+        }, 2000);
+    });
+    
+    function startSearch() {
+        // Reset state
+        searchAborted = false;
+        
+        // Show progress
+        searchProgress.style.display = 'block';
+        searchResults.style.display = 'none';
+        searchBtn.disabled = true;
+        
+        // Get form data
+        const formData = new FormData(searchForm);
+        
+        // Start progress simulation
+        simulateSearchProgress();
+        
+        // Send AJAX request
+        fetch('{{ url_for("unified_search.unified_search") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (searchAborted) return;
+            return response.json();
+        })
+        .then(data => {
+            if (searchAborted) return;
+            
+            hideProgress();
+            
+            if (data.success) {
+                displayResults(data);
+            } else {
+                displayError(data.error);
+            }
+        })
+        .catch(error => {
+            if (searchAborted) return;
+            hideProgress();
+            displayError('Search failed: ' + error.message);
+        });
+    }
+    
+    function simulateSearchProgress() {
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const currentStatus = document.getElementById('currentStatus');
+        const progressTitle = document.getElementById('progressTitle');
+        
+        let progress = 0;
+        const mode = searchModeInput.value;
+        
+        if (mode === 'research') {
+            progressTitle.textContent = 'AI Research in Progress';
+        } else {
+            progressTitle.textContent = 'Searching...';
+        }
+        
+        const progressInterval = setInterval(() => {
+            if (searchAborted) {
+                clearInterval(progressInterval);
+                return;
+            }
+            
+            progress += Math.random() * 2;
+            if (progress > 95) progress = 95;
+            
+            progressBar.style.width = progress + '%';
+            progressText.textContent = Math.round(progress) + '%';
+            
+            // Update status messages
+            const statuses = mode === 'research' ? [
+                'Initializing AI research...',
+                'Scanning internet for companies...',
+                'Analyzing web search results...',
+                'Extracting company information...',
+                'Performing additional web searches...',
+                'Generating industry insights...',
+                'Creating contact strategies...',
+                'Prioritizing leads...',
+                'Finalizing comprehensive analysis...'
+            ] : [
+                'Initializing search...',
+                'Searching web sources...',
+                'Processing results...',
+                'Analyzing with AI...',
+                'Finalizing results...'
+            ];
+            
+            const statusIndex = Math.floor((progress / 100) * statuses.length);
+            if (statusIndex < statuses.length) {
+                currentStatus.textContent = statuses[statusIndex];
+            }
+        }, 1000);
+    }
+    
+    function updateProgress(percent, status, title) {
+        document.getElementById('progressBar').style.width = percent + '%';
+        document.getElementById('progressText').textContent = percent + '%';
+        document.getElementById('currentStatus').textContent = status;
+        document.getElementById('progressTitle').textContent = title;
+    }
+    
+    function hideProgress() {
+        searchProgress.style.display = 'none';
+        searchBtn.disabled = false;
+    }
+    
+    function displayResults(data) {
+        searchResults.style.display = 'block';
+        
+        if (data.mode === 'quick') {
+            displayQuickSearchResults(data);
+        } else {
+            displayResearchResults(data);
+        }
+    }
+    
+    function displayQuickSearchResults(data) {
+        const leads = data.leads || [];
+        resultsCount.textContent = `${leads.length} leads found`;
+        
+        if (leads.length === 0) {
+            resultsContent.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> No leads found for your search.
+                </div>
+            `;
+            return;
+        }
+        
+        let html = `
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> 
+                <strong>Search completed!</strong> Found ${leads.length} leads, saved ${data.saved_count} to database.
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>AI Analysis</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        leads.forEach(lead => {
+            html += `
+                <tr>
+                    <td>
+                        <strong>${lead.title}</strong>
+                        <br><small class="text-muted">${lead.source}</small>
+                    </td>
+                    <td>${lead.snippet}</td>
+                    <td>
+                        ${lead.ai_summary ? 
+                            `<span class="badge bg-success">AI Analyzed</span><br><small>${lead.ai_summary}</small>` :
+                            `<span class="badge bg-warning">No AI Analysis</span>`
+                        }
+                    </td>
+                    <td>
+                        <a href="${lead.link}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt"></i> Open
+                        </a>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        resultsContent.innerHTML = html;
+    }
+    
+    function displayResearchResults(data) {
+        resultsCount.textContent = 'Research completed';
+        
+        const researchOutput = data.research_output || 'No research output available';
+        const metadata = data.metadata || {};
+        
+        let html = `
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> 
+                <strong>AI Research completed!</strong> 
+                ${metadata.web_results_count ? `Analyzed ${metadata.web_results_count} web results.` : ''}
+                ${metadata.companies_identified ? `Identified ${metadata.companies_identified} companies.` : ''}
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">🌐 Web Searches</h5>
+                            <h3 class="text-primary">${metadata.web_results_count || 0}</h3>
+                            <small>Results analyzed</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">🏢 Companies</h5>
+                            <h3 class="text-success">${metadata.companies_identified || 0}</h3>
+                            <small>Identified</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">⚡ Steps</h5>
+                            <h3 class="text-info">${metadata.steps_completed || 0}</h3>
+                            <small>Completed</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Research Results for ${data.company_name} in ${data.industry}</h6>
+                </div>
+                <div class="card-body">
+                    <pre style="white-space: pre-wrap; font-size: 0.9em; background: white; padding: 1rem; border-radius: 0.5rem; max-height: 400px; overflow-y: auto;">${researchOutput}</pre>
+                </div>
+            </div>
+        `;
+        
+        resultsContent.innerHTML = html;
+    }
+    
+    function displayError(error) {
+        searchResults.style.display = 'block';
+        resultsCount.textContent = 'Error';
+        resultsContent.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> 
+                <strong>Search failed:</strong> ${error}
+            </div>
+        `;
+    }
+});
+</script>
+{% endblock %} 

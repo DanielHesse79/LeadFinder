@@ -1,0 +1,376 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from typing import List, Dict, Any
+
+# Import services with error handling
+try:
+    from services.ollama_service import ollama_service
+except ImportError:
+    ollama_service = None
+
+try:
+    from services.pubmed_service import pubmed_service
+except ImportError:
+    pubmed_service = None
+
+try:
+    from services.orcid_service import orcid_service
+except ImportError:
+    orcid_service = None
+
+try:
+    from services.scihub_service import scihub_service
+except ImportError:
+    scihub_service = None
+
+try:
+    from services.semantic_scholar_service import semantic_scholar_service
+except ImportError:
+    semantic_scholar_service = None
+
+
+
+try:
+    from utils.logger import get_logger
+    logger = get_logger('ollama')
+except ImportError:
+    logger = None
+
+ollama_bp = Blueprint('ollama', __name__)
+
+@ollama_bp.route('/ollama')
+def ollama_home():
+    """Ollama home page"""
+    return render_template('ollama.html', 
+                         ollama_status=ollama_service.check_status() if ollama_service else {"ok": False, "msg": "Service not available"})
+
+@ollama_bp.route('/ollama/search', methods=['POST'])
+def search_publications():
+    """Search publications and researchers"""
+    query = request.form.get('query', '').strip()
+    if not query:
+        flash('Search term is required', 'error')
+        return redirect(url_for('ollama.ollama_home'))
+    
+    search_type = request.form.get('search_type', 'both')
+    sources = request.form.getlist('sources')
+    
+    if logger:
+        logger.info(f"Publication search: {query}, type: {search_type}, sources: {sources}")
+    
+    publications = []
+    researchers = []
+    
+    # Search PubMed
+    if 'pubmed' in sources and pubmed_service:
+        try:
+            pubmed_results = pubmed_service.search_articles(query, max_results=20)
+            publications.extend(pubmed_results)
+            if logger:
+                logger.info(f"Found {len(pubmed_results)} PubMed articles")
+        except Exception as e:
+            if logger:
+                logger.error(f"PubMed search failed: {e}")
+    
+    # Search ORCID
+    if 'orcid' in sources and orcid_service:
+        try:
+            orcid_results = orcid_service.search_researchers(query, max_results=20)
+            researchers.extend(orcid_results)
+            if logger:
+                logger.info(f"Found {len(orcid_results)} ORCID researchers")
+        except Exception as e:
+            if logger:
+                logger.error(f"ORCID search failed: {e}")
+    
+    # Search Semantic Scholar
+    if 'scholar' in sources and semantic_scholar_service:
+        try:
+            semantic_results = semantic_scholar_service.search_articles(query, max_results=20)
+            publications.extend(semantic_results)
+            if logger:
+                logger.info(f"Found {len(semantic_results)} Semantic Scholar articles")
+        except Exception as e:
+            if logger:
+                logger.error(f"Semantic Scholar search failed: {e}")
+    
+
+    
+    return render_template('ollama.html',
+                         query=query,
+                         publications=publications,
+                         researchers=researchers,
+                         search_type=search_type,
+                         ollama_status=ollama_service.check_status() if ollama_service else {"ok": False, "msg": "Service not available"})
+
+@ollama_bp.route('/ollama/advanced', methods=['POST'])
+def advanced_search():
+    """Advanced search with filters"""
+    query = request.form.get('query', '').strip()
+    author = request.form.get('author', '').strip()
+    journal = request.form.get('journal', '').strip()
+    year_from = request.form.get('year_from', '').strip()
+    year_to = request.form.get('year_to', '').strip()
+    
+    if logger:
+        logger.info(f"Advanced search: {query}, author: {author}, journal: {journal}, years: {year_from}-{year_to}")
+    
+    publications = []
+    
+    # Advanced PubMed search
+    if pubmed_service:
+        try:
+            # Build advanced query
+            advanced_query = query
+            if author:
+                advanced_query += f" AND {author}[Author]"
+            if journal:
+                advanced_query += f" AND {journal}[Journal]"
+            if year_from or year_to:
+                year_filter = ""
+                if year_from and year_to:
+                    year_filter = f" AND ({year_from}[Date - Publication] : {year_to}[Date - Publication])"
+                elif year_from:
+                    year_filter = f" AND {year_from}[Date - Publication] : 3000[Date - Publication]"
+                elif year_to:
+                    year_filter = f" AND 1900[Date - Publication] : {year_to}[Date - Publication]"
+                advanced_query += year_filter
+            
+            pubmed_results = pubmed_service.search_articles(advanced_query, max_results=30)
+            publications.extend(pubmed_results)
+            if logger:
+                logger.info(f"Advanced search found {len(pubmed_results)} articles")
+        except Exception as e:
+            if logger:
+                logger.error(f"Advanced PubMed search failed: {e}")
+    
+    return render_template('ollama.html',
+                         query=query,
+                         publications=publications,
+                         researchers=[],
+                         search_type='publications',
+                         ollama_status=ollama_service.check_status() if ollama_service else {"ok": False, "msg": "Service not available"})
+
+@ollama_bp.route('/ollama/check', methods=['POST'])
+def check_ollama():
+    """Check Ollama status"""
+    if ollama_service:
+        status = ollama_service.check_status()
+        if logger:
+            logger.info(f"Ollama status check: {status}")
+        flash(f"Ollama status: {status['msg']}", 'info' if status['ok'] else 'warning')
+    else:
+        flash('Ollama service not available', 'error')
+    
+    return redirect(url_for('ollama.ollama_home'))
+
+@ollama_bp.route('/ollama/models')
+def models_ui():
+    """Ollama models management UI"""
+    if not ollama_service:
+        flash('Ollama service not available', 'error')
+        return redirect(url_for('leads.show_leads'))
+    
+    available_models = ollama_service.get_available_models()
+    selected_model = ollama_service.get_selected_model()
+    
+    return render_template('ollama_models.html',
+                         available_models=available_models,
+                         selected_model=selected_model)
+
+@ollama_bp.route('/ollama/set_model', methods=['POST'])
+def set_model():
+    """Set preferred Ollama model"""
+    if not ollama_service:
+        flash('Ollama service not available', 'error')
+        return redirect(url_for('ollama.models_ui'))
+    
+    model_name = request.form.get('model_name', '').strip()
+    if not model_name:
+        flash('Model name is required', 'error')
+        return redirect(url_for('ollama.models_ui'))
+    
+    success = ollama_service.set_preferred_model(model_name)
+    if success:
+        flash(f'Model set to: {model_name}', 'success')
+    else:
+        flash(f'Failed to set model: {model_name}', 'error')
+    
+    return redirect(url_for('ollama.models_ui'))
+
+@ollama_bp.route('/ollama/download_pdf', methods=['POST'])
+def download_pdf():
+    """Download PDF via Sci-Hub"""
+    if not scihub_service:
+        return jsonify({'error': 'Sci-Hub service not available'}), 500
+    
+    doi = request.form.get('doi', '').strip()
+    if not doi:
+        return jsonify({'error': 'DOI is required'}), 400
+    
+    try:
+        result = scihub_service.download_pdf(doi)
+        if result['success']:
+            return jsonify({
+                'success': True,
+                'message': 'PDF downloaded successfully',
+                'file_path': result.get('file_path', '')
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Download failed'),
+                'url': result.get('url', '')
+            })
+    except Exception as e:
+        if logger:
+            logger.error(f"PDF download failed for DOI {doi}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@ollama_bp.route('/ollama/download_multiple', methods=['POST'])
+def download_multiple_pdfs():
+    """Download multiple PDFs via Sci-Hub"""
+    if not scihub_service:
+        return jsonify({'error': 'Sci-Hub service not available'}), 500
+    
+    dois = request.json.get('dois', [])
+    if not dois:
+        return jsonify({'error': 'DOIs are required'}), 400
+    
+    results = []
+    for doi in dois:
+        try:
+            result = scihub_service.download_pdf(doi)
+            results.append({
+                'doi': doi,
+                'success': result['success'],
+                'error': result.get('error', ''),
+                'file_path': result.get('file_path', '')
+            })
+        except Exception as e:
+            results.append({
+                'doi': doi,
+                'success': False,
+                'error': str(e)
+            })
+    
+    success_count = sum(1 for r in results if r['success'])
+    return jsonify({
+        'results': results,
+        'total': len(dois),
+        'successful': success_count
+    })
+
+@ollama_bp.route('/ollama/downloaded_files')
+def get_downloaded_files():
+    """Get list of downloaded PDF files"""
+    if not scihub_service:
+        return jsonify({'error': 'Sci-Hub service not available'}), 500
+    
+    try:
+        files = scihub_service.get_downloaded_files()
+        return jsonify({
+            'files': files,
+            'count': len(files),
+            'download_folder': scihub_service.download_folder
+        })
+    except Exception as e:
+        if logger:
+            logger.error(f"Failed to get downloaded files: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@ollama_bp.route('/ollama_status')
+def ollama_status():
+    """Get Ollama status as JSON"""
+    if ollama_service:
+        status = ollama_service.check_status()
+        return jsonify(status)
+    else:
+        return jsonify({'ok': False, 'msg': 'Service not available'})
+
+@ollama_bp.route('/ollama_models')
+def ollama_models():
+    """Get available Ollama models as JSON"""
+    if ollama_service:
+        models = ollama_service.get_available_models()
+        selected = ollama_service.get_selected_model()
+        return jsonify({
+            'models': models,
+            'selected': selected
+        })
+    else:
+        return jsonify({'models': [], 'selected': None})
+
+@ollama_bp.route('/ollama/send_to_workshop', methods=['POST'])
+def send_to_workshop():
+    """Send selected publications to lead workshop"""
+    try:
+        # Get selected publications data
+        publications_data = request.json.get('publications', [])
+        
+        if not publications_data:
+            return jsonify({'error': 'No publications selected'}), 400
+        
+        # Import database functions
+        from models.database import save_lead
+        
+        saved_count = 0
+        saved_lead_ids = []
+        for pub in publications_data:
+            try:
+                # Create lead title from publication title
+                title = pub.get('title', 'Unknown Publication')
+                
+                # Create description from abstract and authors
+                authors = pub.get('authors', [])
+                authors_str = ', '.join(authors) if authors else 'Unknown Authors'
+                abstract = pub.get('abstract', 'No abstract available')
+                description = f"Authors: {authors_str}\n\nAbstract: {abstract}"
+                
+                # Create link from URL or DOI
+                link = pub.get('url', '')
+                if not link and pub.get('doi'):
+                    link = f"https://doi.org/{pub['doi']}"
+                
+                # Create AI summary
+                ai_summary = f"Academic publication from {pub.get('source', 'Unknown Source')}"
+                if pub.get('journal'):
+                    ai_summary += f" in {pub['journal']}"
+                if pub.get('year'):
+                    ai_summary += f" ({pub['year']})"
+                
+                # Save to database
+                lead_id = save_lead(
+                    title=title,
+                    description=description,
+                    link=link,
+                    ai_summary=ai_summary,
+                    source=f"academic_{pub.get('source', 'unknown').lower()}"
+                )
+                
+                if lead_id:
+                    saved_count += 1
+                    saved_lead_ids.append(lead_id)
+                    
+            except Exception as e:
+                if logger:
+                    logger.error(f"Failed to save publication {pub.get('title', 'Unknown')}: {e}")
+                continue
+        
+        if saved_count > 0:
+            return jsonify({
+                'success': True,
+                'message': f'Successfully sent {saved_count} publication(s) to lead workshop',
+                'saved_count': saved_count,
+                'total_count': len(publications_data),
+                'lead_ids': saved_lead_ids,
+                'redirect_url': f'/lead-workshop?lead_ids={",".join(map(str, saved_lead_ids))}'
+            })
+        else:
+            return jsonify({'error': 'Failed to save any publications'}), 500
+            
+    except Exception as e:
+        if logger:
+            logger.error(f"Error sending publications to workshop: {e}")
+        return jsonify({'error': str(e)}), 500
+
+ 

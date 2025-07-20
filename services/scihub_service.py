@@ -1,0 +1,302 @@
+import requests
+from typing import List, Dict, Any, Optional
+import re
+from urllib.parse import quote_plus
+
+try:
+    from utils.logger import get_logger
+    logger = get_logger('scihub_service')
+except ImportError:
+    logger = None
+
+class SciHubService:
+    """Sci-Hub service for accessing academic papers"""
+    
+    def __init__(self):
+        # List of Sci-Hub mirrors to try
+        self.mirrors = [
+            "https://sci-hub.box",
+            "https://sci-hub.se", 
+            "https://sci-hub.st",
+            "https://sci-hub.ru"
+        ]
+        self.base_url = self.mirrors[0]  # Default to first mirror
+        self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': 'LeadFinder/1.0 (https://github.com/your-repo; mailto:your-email@example.com)'
+        })
+    
+    def _ensure_int(self, value, default: int = 10) -> int:
+        """
+        Ensure a value is an integer, with fallback to default
+        
+        Args:
+            value: Value to convert to int
+            default: Default value if conversion fails
+            
+        Returns:
+            Integer value
+        """
+        try:
+            return int(value) if isinstance(value, str) else value
+        except (ValueError, TypeError):
+            return default
+    
+    def search_articles(self, query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+        """
+        Search for open access articles in Sci-Hub
+        
+        Args:
+            query: Search query
+            max_results: Maximum number of results
+            
+        Returns:
+            List of article dictionaries
+        """
+        if logger:
+            logger.info(f"Searching Sci-Hub for: {query}")
+        
+        try:
+            # Note: Sci-Hub doesn't have a public search API, so this is a simplified implementation
+            # In a real implementation, you would need to implement web scraping or use alternative services
+            
+            # For now, return a placeholder with information about the limitation
+            articles = []
+            
+            # Ensure max_results is an integer
+            max_results_int = self._ensure_int(max_results, 5)
+            for i in range(min(max_results_int, 5)):
+                articles.append({
+                    'title': f'Sci-Hub open access result for "{query}" (Placeholder {i+1})',
+                    'authors': ['Sample Author'],
+                    'abstract': f'This is a placeholder for Sci-Hub search results. Sci-Hub provides access to academic papers, but requires specific DOI or URL to access papers.',
+                    'source': 'Sci-Hub',
+                    'year': '2024',
+                    'journal': 'Open Access Journal',
+                    'url': f'https://sci-hub.se/search?q={quote_plus(query)}',
+                    'pdf_url': None
+                })
+            
+            if logger:
+                logger.info(f"Returned {len(articles)} placeholder Sci-Hub results")
+            
+            return articles
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Error searching Sci-Hub: {e}")
+            return []
+    
+    def get_article_by_doi(self, doi: str) -> Optional[Dict[str, Any]]:
+        """
+        Get article by DOI from Sci-Hub
+        
+        Args:
+            doi: Digital Object Identifier
+            
+        Returns:
+            Article details or None
+        """
+        if logger:
+            logger.info(f"Getting Sci-Hub article for DOI: {doi}")
+        
+        try:
+            # This would implement the actual Sci-Hub DOI lookup
+            # For now, return a placeholder
+            return {
+                'title': f'Article with DOI: {doi}',
+                'authors': ['Unknown Author'],
+                'abstract': 'This is a placeholder for Sci-Hub DOI lookup.',
+                'source': 'Sci-Hub',
+                'year': '2024',
+                'journal': 'Unknown Journal',
+                'url': f'https://sci-hub.se/{doi}',
+                'pdf_url': f'https://sci-hub.se/{doi}'
+            }
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Error getting Sci-Hub article for DOI {doi}: {e}")
+            return None
+    
+    def download_pdf_by_doi(self, doi: str, save_to_file: bool = True) -> Optional[bytes]:
+        """
+        Download PDF by DOI from Sci-Hub
+        
+        Args:
+            doi: Digital Object Identifier
+            save_to_file: Whether to save the PDF to disk
+            
+        Returns:
+            PDF content as bytes or None
+        """
+        if logger:
+            logger.info(f"Downloading PDF from Sci-Hub for DOI: {doi}")
+        
+        # Validate DOI format
+        if not doi or not self._is_valid_doi(doi):
+            if logger:
+                logger.warning(f"Invalid DOI format: {doi}")
+            return None
+        
+        try:
+            # Try multiple mirrors
+            for mirror in self.mirrors:
+                scihub_url = f"{mirror}/{doi}"
+                
+                if logger:
+                    logger.info(f"Trying Sci-Hub mirror: {scihub_url}")
+                
+                try:
+                    # First, get the page to see if the article is available
+                    response = self.session.get(scihub_url, timeout=15)
+                    
+                    if response.status_code == 200:
+                        break  # Found working mirror
+                    else:
+                        if logger:
+                            logger.warning(f"Mirror {mirror} returned status {response.status_code} for DOI: {doi}")
+                        continue
+                        
+                except Exception as e:
+                    if logger:
+                        logger.warning(f"Mirror {mirror} failed for DOI {doi}: {e}")
+                    continue
+            else:
+                # All mirrors failed
+                if logger:
+                    logger.error(f"All Sci-Hub mirrors failed for DOI: {doi}")
+                return None
+            
+            # Check if the response is a PDF
+            content_type = response.headers.get('content-type', '').lower()
+            if 'application/pdf' in content_type:
+                if logger:
+                    logger.info(f"Direct PDF download successful for DOI: {doi}")
+                return response.content
+            
+            # If not a direct PDF, the page might contain a PDF link
+            # Look for PDF links in the HTML content
+            import re
+            pdf_patterns = [
+                r'href="([^"]*\.pdf)"',
+                r'src="([^"]*\.pdf)"',
+                r'<iframe[^>]*src="([^"]*\.pdf)"',
+                r'<embed[^>]*src="([^"]*\.pdf)"',
+                r'<a[^>]*href="([^"]*\.pdf)"[^>]*>',
+                r'window\.location\.href\s*=\s*["\']([^"\']*\.pdf)["\']',
+                r'<script[^>]*>.*?["\']([^"\']*\.pdf)["\'].*?</script>'
+            ]
+            
+            html_content = response.text
+            
+            if logger:
+                logger.info(f"Searching for PDF links in HTML content (length: {len(html_content)})")
+            
+            for pattern in pdf_patterns:
+                matches = re.findall(pattern, html_content, re.IGNORECASE | re.DOTALL)
+                for match in matches:
+                    pdf_url = match
+                    if not pdf_url.startswith('http'):
+                        # Handle relative URLs
+                        if pdf_url.startswith('/'):
+                            pdf_url = f"{mirror}{pdf_url}"
+                        else:
+                            pdf_url = f"{mirror}/{pdf_url}"
+                    
+                    if logger:
+                        logger.info(f"Found PDF URL: {pdf_url}")
+                    
+                    try:
+                        # Download the PDF
+                        pdf_response = self.session.get(pdf_url, timeout=30)
+                        if pdf_response.status_code == 200:
+                            content_type = pdf_response.headers.get('content-type', '').lower()
+                            if 'application/pdf' in content_type or 'pdf' in content_type:
+                                if logger:
+                                    logger.info(f"PDF download successful for DOI: {doi}")
+                                
+                                # Save PDF to file if requested
+                                if save_to_file:
+                                    self._save_pdf_to_file(doi, pdf_response.content)
+                                
+                                return pdf_response.content
+                            else:
+                                if logger:
+                                    logger.info(f"URL returned non-PDF content: {content_type}")
+                    except Exception as e:
+                        if logger:
+                            logger.warning(f"Failed to download PDF from {pdf_url}: {e}")
+                        continue
+            
+            # If no PDF found, the article might not be available
+            if logger:
+                logger.info(f"No PDF found for DOI: {doi} on Sci-Hub")
+            return None
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Error downloading PDF from Sci-Hub for DOI {doi}: {e}")
+            return None
+    
+    def _is_valid_doi(self, doi: str) -> bool:
+        """
+        Validate DOI format
+        
+        Args:
+            doi: Digital Object Identifier to validate
+            
+        Returns:
+            True if DOI format is valid, False otherwise
+        """
+        if not doi:
+            return False
+        
+        # Basic DOI validation - should contain at least one slash and be reasonably formatted
+        # DOI format: 10.xxxx/xxxxx
+        doi_pattern = r'^10\.\d{4,}(?:\.\d+)*\/.+$'
+        import re
+        return bool(re.match(doi_pattern, doi.strip()))
+    
+    def _save_pdf_to_file(self, doi: str, pdf_content: bytes) -> str:
+        """
+        Save PDF content to file
+        
+        Args:
+            doi: Digital Object Identifier
+            pdf_content: PDF content as bytes
+            
+        Returns:
+            Path to saved file
+        """
+        try:
+            import os
+            from pathlib import Path
+            
+            # Create filename from DOI
+            safe_doi = doi.replace('/', '_').replace(':', '_')
+            filename = f"{safe_doi}.pdf"
+            
+            # Use configured download folder
+            from config import SCIHUB_FOLDER
+            download_path = Path(SCIHUB_FOLDER)
+            download_path.mkdir(parents=True, exist_ok=True)
+            
+            file_path = download_path / filename
+            
+            # Save the PDF
+            with open(file_path, 'wb') as f:
+                f.write(pdf_content)
+            
+            if logger:
+                logger.info(f"PDF saved to: {file_path}")
+            
+            return str(file_path)
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Failed to save PDF for DOI {doi}: {e}")
+            return ""
+
+# Global service instance
+scihub_service = SciHubService() 

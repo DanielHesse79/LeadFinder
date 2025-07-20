@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Results - LeadFinder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .project-card {
+            border-left: 4px solid #007bff;
+            transition: transform 0.2s;
+        }
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .funding-amount {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .source-badge {
+            font-size: 0.8em;
+        }
+        .keyword-badge {
+            font-size: 0.7em;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+        .search-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .filter-info {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-search"></i> LeadFinder
+                </a>
+                <div class="navbar-nav">
+                    <a class="nav-link" href="/">General Search</a>
+                    <a class="nav-link active" href="/research">Funding</a>
+                    <a class="nav-link" href="/ollama">Publications & Researchers</a>
+                    <a class="nav-link" href="/lead-workshop">Lead Workshop</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- Search Summary -->
+            <div class="search-summary">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3>
+                            <i class="fas fa-search"></i> 
+                            Search results for "{{ query }}"
+                        </h3>
+                        <p class="mb-0">
+                            <i class="fas fa-chart-bar"></i> 
+                            {{ total_results }} projects found
+                            {% if selected_apis %}
+                                from {{ selected_apis|length }} database(s)
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{{ url_for('research.research_home') }}" class="btn btn-light">
+                            <i class="fas fa-arrow-left"></i> New search
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Information -->
+            {% if filters %}
+            <div class="filter-info">
+                <h6><i class="fas fa-filter"></i> Active filters:</h6>
+                <ul class="mb-0">
+                    {% if filters.organization %}
+                    <li>Organization: <strong>{{ filters.organization }}</strong></li>
+                    {% endif %}
+                    {% if filters.min_funding %}
+                    <li>Min funding: <strong>{{ filters.min_funding|int }} SEK</strong></li>
+                    {% endif %}
+                    {% if filters.max_funding %}
+                    <li>Max funding: <strong>{{ filters.max_funding|int }} SEK</strong></li>
+                    {% endif %}
+                    {% if filters.keywords %}
+                    <li>Keywords: <strong>{{ filters.keywords|join(', ') }}</strong></li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Results by Source -->
+            {% for source, projects in results_by_source.items() %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-database"></i> 
+                        {{ source }} 
+                        <span class="badge bg-primary">{{ projects|length }} projects</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for project in projects %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card project-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0">
+                                            <a href="{{ url_for('research.project_details', source=source.lower(), project_id=project.id) }}" 
+                                               class="text-decoration-none">
+                                                {{ project.title[:80] }}{% if project.title|length > 80 %}...{% endif %}
+                                            </a>
+                                        </h6>
+                                        <span class="badge bg-secondary source-badge">{{ project.source }}</span>
+                                    </div>
+                                    
+                                    <p class="card-text text-muted small">
+                                        {{ project.description[:150] }}{% if project.description|length > 150 %}...{% endif %}
+                                    </p>
+                                    
+                                    <div class="row mb-2">
+                                        <div class="col-6">
+                                            <small class="text-muted">
+                                                <i class="fas fa-user"></i> 
+                                                <strong>{{ project.principal_investigator }}</strong>
+                                            </small>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">
+                                                <i class="fas fa-university"></i> 
+                                                {{ project.organization }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if project.funding_amount %}
+                                    <div class="funding-amount mb-2">
+                                        <i class="fas fa-coins"></i> 
+                                        {{ "{:,.0f}".format(project.funding_amount) }} {{ project.currency }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if project.start_date or project.end_date %}
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i>
+                                            {% if project.start_date %}
+                                                {{ project.start_date.strftime('%Y-%m-%d') }}
+                                            {% endif %}
+                                            {% if project.start_date and project.end_date %} - {% endif %}
+                                            {% if project.end_date %}
+                                                {{ project.end_date.strftime('%Y-%m-%d') }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if project.keywords %}
+                                    <div class="mb-2">
+                                        {% for keyword in project.keywords[:5] %}
+                                        <span class="badge bg-light text-dark keyword-badge">{{ keyword }}</span>
+                                        {% endfor %}
+                                        {% if project.keywords|length > 5 %}
+                                        <span class="badge bg-light text-dark keyword-badge">+{{ project.keywords|length - 5 }} more</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if project.url %}
+                                    <div class="mt-auto">
+                                        <a href="{{ project.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-external-link-alt"></i> View project
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- No Results -->
+            {% if total_results == 0 %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4>No results found</h4>
+                <p class="text-muted">
+                    Please try changing the search term or using other filters.
+                </p>
+                <a href="{{ url_for('research.research_home') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back to search
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Export Options -->
+            {% if total_results > 0 %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-download"></i> Export results
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-success w-100" onclick="exportToExcel()">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-info w-100" onclick="exportToCSV()">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-warning w-100" onclick="exportToJSON()">
+                                <i class="fas fa-file-code"></i> JSON
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-secondary w-100" onclick="printResults()">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function exportToExcel() {
+            // Implementation for Excel export
+            alert('Excel export coming soon!');
+        }
+        
+        function exportToCSV() {
+            // Implementation for CSV export
+            alert('CSV export coming soon!');
+        }
+        
+        function exportToJSON() {
+            // Implementation for JSON export
+            alert('JSON export coming soon!');
+        }
+        
+        function printResults() {
+            window.print();
+        }
+        
+        // Add click tracking for project links
+        document.querySelectorAll('.project-card a').forEach(link => {
+            link.addEventListener('click', function() {
+                // Track project view
+                console.log('Project viewed:', this.href);
+            });
+        });
+    </script>
+</body>
+</html> 
