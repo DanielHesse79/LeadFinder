@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
 from typing import List, Dict, Any
 from datetime import datetime
 import os
@@ -291,19 +291,35 @@ def view_downloads():
         else:
             files = []
         
-        # Get list of export files
+        # Get list of export files (PDFs and Markdown)
         export_files = []
         try:
             from config import EXPORT_FOLDER
             export_path = Path(EXPORT_FOLDER)
             if export_path.exists():
+                # Get PDF files
                 for file_path in export_path.glob("*.pdf"):
                     export_files.append({
                         'name': file_path.name,
                         'path': str(file_path),
                         'size': file_path.stat().st_size,
-                        'modified': datetime.fromtimestamp(file_path.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+                        'modified': datetime.fromtimestamp(file_path.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
+                        'type': 'pdf'
                     })
+                
+                # Get Markdown files
+                for file_path in export_path.glob("*.md"):
+                    export_files.append({
+                        'name': file_path.name,
+                        'path': str(file_path),
+                        'size': file_path.stat().st_size,
+                        'modified': datetime.fromtimestamp(file_path.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
+                        'type': 'markdown'
+                    })
+                
+                # Sort by modification time (newest first)
+                export_files.sort(key=lambda x: x['modified'], reverse=True)
+                
         except Exception as e:
             if logger:
                 logger.error(f"Error reading export files: {e}")
@@ -316,6 +332,36 @@ def view_downloads():
             logger.error(f"Error in view_downloads: {e}")
         flash('Error loading downloads', 'error')
         return redirect(url_for('ollama.ollama_home'))
+
+@ollama_bp.route('/download/<path:file_path>')
+def download_file(file_path):
+    """Download a file from the exports folder"""
+    try:
+        from config import EXPORT_FOLDER
+        from pathlib import Path
+        import os
+        
+        # Ensure the file path is within the exports folder
+        export_path = Path(EXPORT_FOLDER).resolve()
+        file_path_obj = Path(file_path).resolve()
+        
+        # Security check: ensure file is within exports folder
+        if not str(file_path_obj).startswith(str(export_path)):
+            return jsonify({'error': 'Access denied'}), 403
+        
+        if not file_path_obj.exists():
+            return jsonify({'error': 'File not found'}), 404
+        
+        return send_file(
+            file_path_obj,
+            as_attachment=True,
+            download_name=file_path_obj.name
+        )
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"Error downloading file {file_path}: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @ollama_bp.route('/ollama/send_pdf_to_workshop', methods=['POST'])
 def send_pdf_to_workshop():

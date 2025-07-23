@@ -139,31 +139,37 @@
             <!-- Export Reports Section -->
             <div class="section-header mt-5">
                 <h3><i class="fas fa-chart-bar"></i> Generated Reports</h3>
-                <p class="mb-0">PDF reports generated from Lead Workshop analyses</p>
+                <p class="mb-0">PDF reports and markdown files generated from Lead Workshop analyses</p>
             </div>
 
             {% if export_files %}
             <div class="row">
                 {% for file in export_files %}
-                <div class="col-md-6 col-lg-4">
-                    <div class="file-card">
-                        <div class="d-flex align-items-start">
-                            <div class="me-3">
-                                <i class="fas fa-chart-bar file-icon" style="color: #28a745;"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">{{ file.name }}</h6>
-                                <div class="file-info">
-                                    <div class="file-size">{{ (file.size / 1024) | round(1) }} KB</div>
-                                    <div>Generated: {{ file.modified }}</div>
-                                </div>
-                                <div class="action-buttons mt-2">
-                                    <a href="file://{{ file.path }}" class="btn btn-success btn-sm" target="_blank">
-                                        <i class="fas fa-download"></i> Download
-                                    </a>
-                                    <button class="btn btn-outline-primary btn-sm" onclick="openFile('{{ file.path }}')">
-                                        <i class="fas fa-eye"></i> View
-                                    </button>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start">
+                                {% if file.type == 'pdf' %}
+                                <i class="fas fa-file-pdf text-danger me-3 mt-1" style="font-size: 1.5rem;"></i>
+                                {% else %}
+                                <i class="fas fa-file-alt text-primary me-3 mt-1" style="font-size: 1.5rem;"></i>
+                                {% endif %}
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-1">{{ file.name }}</h6>
+                                    <p class="card-text text-muted small mb-2">
+                                        <i class="fas fa-calendar"></i> {{ file.modified }}<br>
+                                        <i class="fas fa-weight-hanging"></i> {{ (file.size / 1024) | round(1) }} KB
+                                    </p>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="/download/{{ file.path | urlencode }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                        {% if file.type == 'pdf' %}
+                                        <button class="btn btn-outline-success" onclick="sendToWorkshop('{{ file.path }}')">
+                                            <i class="fas fa-share"></i> Send to Workshop
+                                        </button>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -175,9 +181,9 @@
             <div class="empty-state">
                 <i class="fas fa-chart-bar"></i>
                 <h4>No Generated Reports</h4>
-                <p>No PDF reports have been generated yet.</p>
-                <a href="/lead-workshop" class="btn btn-success">
-                    <i class="fas fa-tools"></i> Go to Lead Workshop
+                <p>No reports have been generated from Lead Workshop analyses yet.</p>
+                <a href="/lead-workshop" class="btn btn-primary">
+                    <i class="fas fa-cogs"></i> Go to Lead Workshop
                 </a>
             </div>
             {% endif %}
@@ -223,7 +229,7 @@
     <script>
         function sendToWorkshop(filePath) {
             if (confirm('Send this PDF to Lead Workshop for processing?')) {
-                fetch('/ollama/send_pdf_to_workshop', {
+                fetch('{{ url_for("ollama.send_pdf_to_workshop") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -245,13 +251,13 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while sending to workshop.');
+                    alert('Error sending PDF to workshop');
                 });
             }
         }
 
         function openFile(filePath) {
-            // Try to open the file in a new tab
+            // Open file in new tab
             window.open('file://' + filePath, '_blank');
         }
 
