@@ -59,6 +59,11 @@ except ImportError:
     autogpt_control_bp = None
 
 try:
+    from routes.webscraper import webscraper_bp
+except ImportError:
+    webscraper_bp = None
+
+try:
     from utils.logger import get_logger
     logger = get_logger('app')
 except ImportError:
@@ -153,6 +158,11 @@ def create_app():
         app.register_blueprint(autogpt_control_bp)
         if logger:
             logger.info("AutoGPT Control blueprint registered")
+    
+    if webscraper_bp:
+        app.register_blueprint(webscraper_bp)
+        if logger:
+            logger.info("WebScraper blueprint registered")
     
     # Error handlers
     @app.errorhandler(404)
