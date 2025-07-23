@@ -41,8 +41,8 @@ RunPod.ai analysis provides structured data including:
 1. Open LeadFinder configuration page (`/config`)
 2. Add the following configuration values:
    - **RUNPOD_API_KEY**: Your RunPod API key
-   - **RUNPOD_ENDPOINT_ID**: Your deployed endpoint ID
-   - **RUNPOD_BASE_URL**: `https://api.runpod.io/v2` (default)
+   - **RUNPOD_ENDPOINT_ID**: Your deployed endpoint ID (e.g., n5ljtp41xfy3oy)
+   - **RUNPOD_BASE_URL**: `https://api.runpod.ai/v2` (default)
    - **RUNPOD_TIMEOUT**: `300` (5 minutes, default)
    - **RUNPOD_MAX_RETRIES**: `3` (default)
    - **RUNPOD_RETRY_DELAY**: `2` (seconds, default)
@@ -51,8 +51,8 @@ RunPod.ai analysis provides structured data including:
 You can also set these as environment variables:
 ```bash
 export RUNPOD_API_KEY="your-api-key-here"
-export RUNPOD_ENDPOINT_ID="your-endpoint-id-here"
-export RUNPOD_BASE_URL="https://api.runpod.io/v2"
+export RUNPOD_ENDPOINT_ID="n5ljtp41xfy3oy"
+export RUNPOD_BASE_URL="https://api.runpod.ai/v2"
 export RUNPOD_TIMEOUT="300"
 export RUNPOD_MAX_RETRIES="3"
 export RUNPOD_RETRY_DELAY="2"

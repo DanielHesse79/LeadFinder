@@ -311,7 +311,7 @@ CONFIG_DEFINITIONS = {
         'description': 'RunPod.ai API base URL',
         'is_secret': False,
         'required': False,
-        'default': 'https://api.runpod.io/v2'
+        'default': 'https://api.runpod.ai/v2'
     },
     'RUNPOD_TIMEOUT': {
         'description': 'RunPod.ai API timeout in seconds',

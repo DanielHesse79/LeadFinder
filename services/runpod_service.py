@@ -71,7 +71,7 @@ class RunPodService:
             return RunPodConfig(
                 api_key=config.get('RUNPOD_API_KEY', ''),
                 endpoint_id=config.get('RUNPOD_ENDPOINT_ID', ''),
-                base_url=config.get('RUNPOD_BASE_URL', 'https://api.runpod.io/v2'),
+                base_url=config.get('RUNPOD_BASE_URL', 'https://api.runpod.ai/v2'),
                 timeout=int(config.get('RUNPOD_TIMEOUT', '300')),
                 max_retries=int(config.get('RUNPOD_MAX_RETRIES', '3')),
                 retry_delay=int(config.get('RUNPOD_RETRY_DELAY', '2'))
@@ -81,7 +81,7 @@ class RunPodService:
             return RunPodConfig(
                 api_key=os.getenv('RUNPOD_API_KEY', ''),
                 endpoint_id=os.getenv('RUNPOD_ENDPOINT_ID', ''),
-                base_url=os.getenv('RUNPOD_BASE_URL', 'https://api.runpod.io/v2'),
+                base_url=os.getenv('RUNPOD_BASE_URL', 'https://api.runpod.ai/v2'),
                 timeout=int(os.getenv('RUNPOD_TIMEOUT', '300')),
                 max_retries=int(os.getenv('RUNPOD_MAX_RETRIES', '3')),
                 retry_delay=int(os.getenv('RUNPOD_RETRY_DELAY', '2'))
@@ -280,10 +280,7 @@ class RunPodService:
         
         payload = {
             "input": {
-                "prompt": prompt,
-                "max_tokens": 2000,
-                "temperature": 0.3,
-                "top_p": 0.9
+                "prompt": prompt
             }
         }
         
