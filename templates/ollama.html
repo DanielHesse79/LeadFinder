@@ -288,6 +288,25 @@
                                     <i class="fas fa-download"></i> View Downloads Page
                                 </a>
                             </div>
+                            
+                            <!-- Download Instructions -->
+                            <div class="mt-3 p-2 bg-light border rounded">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> <strong>How to download publications:</strong><br>
+                                    • Select articles with valid DOIs (starting with "10.") using the checkboxes<br>
+                                    • Click "Download selected articles" to download via Sci-Hub<br>
+                                    • Individual downloads: Click the download button next to each article<br>
+                                    • Downloaded PDFs are saved to your Downloads folder and can be viewed in the Downloads section
+                                </small>
+                            </div>
+                            {% else %}
+                            <div class="mt-2">
+                                <div class="alert alert-warning mb-0">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    <strong>No publications with DOIs found.</strong> 
+                                    Only publications with valid DOIs (starting with "10.") can be downloaded via Sci-Hub.
+                                </div>
+                            </div>
                             {% endif %}
                         </div>
                         
@@ -399,16 +418,18 @@
     <script>
         function downloadSinglePaper(doi, title) {
             if (!doi || !doi.trim() || !doi.startsWith('10.')) {
-                alert('No valid DOI available for this article. DOI must start with "10."');
+                alert('No valid DOI available for this article. DOI must start with "10."\n\nValid DOIs look like: 10.1016/j.cmet.2019.03.009');
                 return;
             }
             
-            if (confirm(`Attempt to download "${title}" via Sci-Hub?`)) {
+            if (confirm(`Attempt to download "${title}" via Sci-Hub?\n\nDOI: ${doi}`)) {
                 // Show loading indicator
                 const button = event.target;
                 const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
                 button.disabled = true;
+                
+                console.log(`Attempting to download single paper: ${doi} - "${title}"`);
                 
                 // Make AJAX request instead of form submission
                 fetch('{{ url_for("ollama.download_pdf") }}', {
@@ -425,7 +446,7 @@
                             const url = window.URL.createObjectURL(blob);
                             const a = document.createElement('a');
                             a.href = url;
-                            a.download = `article_${doi.replace('/', '_')}.pdf`;
+                            a.download = `article_${doi.replace(/[\/\\]/g, '_')}.pdf`;
                             document.body.appendChild(a);
                             a.click();
                             window.URL.revokeObjectURL(url);
@@ -434,6 +455,8 @@
                             // Check if PDF was also saved to server
                             if (response.headers.get('X-PDF-Downloaded')) {
                                 return { success: true, message: 'PDF downloaded and saved to server' };
+                            } else {
+                                return { success: true, message: 'PDF downloaded to browser' };
                             }
                         });
                     } else {
@@ -445,27 +468,27 @@
                     if (data && data.redirect && data.url) {
                         // Redirect to Sci-Hub URL
                         window.open(data.url, '_blank');
-                        alert(`Direct download not available. Opening Sci-Hub in new tab: ${data.url}`);
+                        alert(`✅ PDF opened in Sci-Hub!\n\nDirect download not available, but the article is now open in a new tab.\n\nSci-Hub URL: ${data.url}`);
                     } else if (data && data.error) {
                         // Handle error response
                         if (data.invalid_doi) {
-                            alert(`Invalid DOI: ${data.error}`);
+                            alert(`❌ Invalid DOI: ${data.error}\n\nPlease check that the DOI is correct and starts with "10."`);
                         } else {
-                            alert(`Error: ${data.error}`);
+                            alert(`❌ Download Error: ${data.error}\n\nDOI: ${doi}\n\nThis might be because:\n• The article is not available on Sci-Hub\n• The DOI is incorrect\n• Sci-Hub is temporarily unavailable`);
                         }
                     } else if (data && data.success) {
                         // PDF downloaded successfully
-                        alert(`PDF downloaded successfully! File saved in the folder: scihub_pdfs/`);
+                        alert(`✅ PDF downloaded successfully!\n\n${data.message}\n\nDOI: ${doi}\n\nYou can find downloaded PDFs in the Downloads section.`);
                         
                         // Refresh the page to show updated downloads
                         setTimeout(() => {
                             window.location.reload();
-                        }, 1000);
+                        }, 2000);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred during download. Please try again.');
+                    alert(`❌ Network Error\n\nFailed to download PDF for DOI: ${doi}\n\nError: ${error.message}\n\nPlease check your internet connection and try again.`);
                 })
                 .finally(() => {
                     // Restore button
@@ -481,15 +504,17 @@
                 .filter(doi => doi && doi.trim() !== '' && doi.startsWith('10.'));
             
             if (selectedDois.length === 0) {
-                alert('Please select at least one article with a valid DOI (starting with 10.) for download.');
+                alert('Please select at least one article with a valid DOI (starting with "10.") for download.\n\nValid DOIs look like: 10.1016/j.cmet.2019.03.009');
                 return;
             }
             
-            if (confirm(`Attempt to download ${selectedDois.length} article(s) via Sci-Hub?`)) {
+            // Show which DOIs will be downloaded
+            const doiList = selectedDois.map(doi => `• ${doi}`).join('\n');
+            if (confirm(`Attempt to download ${selectedDois.length} article(s) via Sci-Hub?\n\nSelected DOIs:\n${doiList}`)) {
                 // Show loading indicator
                 const button = event.target;
                 const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
                 button.disabled = true;
                 
                 // Download them one by one with proper handling
@@ -497,9 +522,12 @@
                 const total = selectedDois.length;
                 let successCount = 0;
                 let errorCount = 0;
+                let results = [];
                 
                 selectedDois.forEach((doi, index) => {
                     setTimeout(() => {
+                        console.log(`Attempting to download DOI: ${doi}`);
+                        
                         fetch('{{ url_for("ollama.download_pdf") }}', {
                             method: 'POST',
                             headers: {
@@ -514,12 +542,13 @@
                                     const url = window.URL.createObjectURL(blob);
                                     const a = document.createElement('a');
                                     a.href = url;
-                                    a.download = `article_${doi.replace('/', '_')}.pdf`;
+                                    a.download = `article_${doi.replace(/[\/\\]/g, '_')}.pdf`;
                                     document.body.appendChild(a);
                                     a.click();
                                     window.URL.revokeObjectURL(url);
                                     document.body.removeChild(a);
                                     successCount++;
+                                    results.push({ doi, status: 'success', message: 'PDF downloaded' });
                                 });
                             } else {
                                 // JSON response - handle redirect
@@ -531,22 +560,27 @@
                                 // Open Sci-Hub URL in new tab
                                 window.open(data.url, '_blank');
                                 console.log(`Opened Sci-Hub URL for DOI: ${doi}`);
+                                results.push({ doi, status: 'redirect', message: 'Opened in Sci-Hub' });
                             } else if (data && data.error) {
                                 // Handle error response
                                 if (data.invalid_doi) {
                                     console.warn(`Invalid DOI: ${doi} - ${data.error}`);
+                                    results.push({ doi, status: 'error', message: `Invalid DOI: ${data.error}` });
                                 } else {
                                     console.error(`Error downloading DOI ${doi}: ${data.error}`);
+                                    results.push({ doi, status: 'error', message: data.error });
                                 }
                                 errorCount++;
                             } else if (data && data.success) {
                                 successCount++;
                                 console.log(`Successfully downloaded PDF for DOI: ${doi}`);
+                                results.push({ doi, status: 'success', message: 'PDF downloaded and saved' });
                             }
                         })
                         .catch(error => {
                             console.error('Error downloading DOI:', doi, error);
                             errorCount++;
+                            results.push({ doi, status: 'error', message: 'Network error' });
                         })
                         .finally(() => {
                             completed++;
@@ -555,20 +589,27 @@
                                 button.innerHTML = originalText;
                                 button.disabled = false;
                                 
-                                let message = `Download completed for ${completed} article(s).`;
+                                // Show detailed results
+                                let message = `Download completed for ${completed} article(s).\n\n`;
                                 if (successCount > 0) {
-                                    message += `\nSuccessfully downloaded: ${successCount}`;
+                                    message += `✅ Successfully downloaded: ${successCount}\n`;
                                 }
                                 if (errorCount > 0) {
-                                    message += `\nFailed: ${errorCount}`;
+                                    message += `❌ Failed: ${errorCount}\n`;
                                 }
+                                
+                                // Add detailed results
+                                results.forEach(result => {
+                                    const icon = result.status === 'success' ? '✅' : result.status === 'redirect' ? '🔗' : '❌';
+                                    message += `${icon} ${result.doi}: ${result.message}\n`;
+                                });
                                 
                                 alert(message);
                                 
                                 // Refresh the page to show updated downloads
                                 setTimeout(() => {
                                     window.location.reload();
-                                }, 1000);
+                                }, 2000);
                             }
                         });
                     }, index * 1000); // 1 second delay between downloads
@@ -579,12 +620,19 @@
         function updateDownloadButton() {
             const selectedDois = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
                 .map(checkbox => checkbox.value)
-                .filter(doi => doi);
+                .filter(doi => doi && doi.trim() !== '' && doi.startsWith('10.'));
             
             const downloadButton = document.querySelector('button[onclick="downloadSelectedPapers()"]');
             if (downloadButton) {
-                downloadButton.textContent = `Download selected articles (${selectedDois.length})`;
-                downloadButton.disabled = selectedDois.length === 0;
+                if (selectedDois.length === 0) {
+                    downloadButton.textContent = 'Download selected articles (0)';
+                    downloadButton.disabled = true;
+                    downloadButton.title = 'Select articles with valid DOIs to download';
+                } else {
+                    downloadButton.textContent = `Download selected articles (${selectedDois.length})`;
+                    downloadButton.disabled = false;
+                    downloadButton.title = `Download ${selectedDois.length} article(s) via Sci-Hub`;
+                }
             }
         }
         
