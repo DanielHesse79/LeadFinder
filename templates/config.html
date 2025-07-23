@@ -144,6 +144,14 @@
                             Sensitive data is stored securely in the database.
                         </p>
                         
+                        <!-- Add Show/Hide All Secrets Button -->
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleAllSecrets()">
+                                <i class="fas fa-eye"></i> <span id="toggle-text">Show All Secrets</span>
+                            </button>
+                            <small class="text-muted ms-2">Click to show/hide all API keys at once</small>
+                        </div>
+                        
                         <form method="POST" action="{{ url_for('config.bulk_update_config') }}">
                             {% for key_name, config in configs.items() %}
                             <div class="config-item {% if key_name in missing_configs %}missing{% elif config.has_value %}configured{% endif %}">
@@ -164,11 +172,12 @@
                                     <div class="col-md-6">
                                         <div class="secret-field">
                                             <input type="{% if config.is_secret %}password{% else %}text{% endif %}" 
-                                                   class="form-control" 
+                                                   class="form-control secret-input" 
                                                    id="config_{{ key_name }}"
                                                    name="config_{{ key_name }}"
                                                    value="{{ config.value }}"
-                                                   placeholder="Enter value...">
+                                                   placeholder="Enter value..."
+                                                   data-is-secret="{{ config.is_secret|lower }}">
                                             {% if config.is_secret %}
                                             <button type="button" class="toggle-password" 
                                                     onclick="togglePassword('config_{{ key_name }}')">
@@ -349,6 +358,42 @@
                     .catch(error => {
                         alert('Error during reset: ' + error);
                     });
+            }
+        }
+
+        function toggleAllSecrets() {
+            const toggleText = document.getElementById('toggle-text');
+            const allSecretInputs = document.querySelectorAll('.secret-input');
+            const currentText = toggleText.textContent;
+
+            if (currentText.includes('Hide')) {
+                // Hide all secrets
+                toggleText.textContent = 'Show All Secrets';
+                allSecretInputs.forEach(input => {
+                    if (input.dataset.isSecret === 'true') {
+                        input.type = 'password';
+                        // Update individual toggle buttons
+                        const toggleBtn = input.nextElementSibling;
+                        if (toggleBtn && toggleBtn.classList.contains('toggle-password')) {
+                            const icon = toggleBtn.querySelector('i');
+                            if (icon) icon.className = 'fas fa-eye';
+                        }
+                    }
+                });
+            } else {
+                // Show all secrets
+                toggleText.textContent = 'Hide All Secrets';
+                allSecretInputs.forEach(input => {
+                    if (input.dataset.isSecret === 'true') {
+                        input.type = 'text';
+                        // Update individual toggle buttons
+                        const toggleBtn = input.nextElementSibling;
+                        if (toggleBtn && toggleBtn.classList.contains('toggle-password')) {
+                            const icon = toggleBtn.querySelector('i');
+                            if (icon) icon.className = 'fas fa-eye-slash';
+                        }
+                    }
+                });
             }
         }
         
