@@ -244,7 +244,25 @@
                                         <textarea class="form-control" id="projectContext" rows="3" 
                                                   placeholder="Provide additional context for the analysis..."></textarea>
                                     </div>
-                                                                    <div class="mb-3">
+                                    
+                                    <!-- AI Service Selection -->
+                                    <div class="mb-3">
+                                        <label class="form-label">AI Analysis Service:</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="aiService" id="ollamaService" value="ollama" checked>
+                                            <label class="form-check-label" for="ollamaService">
+                                                <i class="fas fa-server"></i> Ollama (Local) - Fast analysis
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="aiService" id="runpodService" value="runpod">
+                                            <label class="form-check-label" for="runpodService">
+                                                <i class="fas fa-cloud"></i> RunPod.ai (Cloud) - Enhanced analysis with more powerful models
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
                                     <div class="form-check mb-2">
                                         <input class="form-check-input" type="checkbox" id="deleteAfterAnalysis">
                                         <label class="form-check-label" for="deleteAfterAnalysis">
@@ -361,15 +379,43 @@
                     const statusText = document.getElementById('status-text');
                     const statusDetails = document.getElementById('ai-status-details');
                     
-                    if (data.status === 'ok') {
+                    let statusHtml = '<div class="row">';
+                    
+                    // Ollama status
+                    statusHtml += '<div class="col-md-6">';
+                    statusHtml += '<strong><i class="fas fa-server"></i> Ollama (Local):</strong><br>';
+                    if (data.ollama && data.ollama !== 'unavailable') {
+                        statusHtml += '<span class="text-success"><i class="fas fa-check-circle"></i> Available</span>';
+                    } else {
+                        statusHtml += '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Not available</span>';
+                    }
+                    statusHtml += '</div>';
+                    
+                    // RunPod status
+                    statusHtml += '<div class="col-md-6">';
+                    statusHtml += '<strong><i class="fas fa-cloud"></i> RunPod.ai (Cloud):</strong><br>';
+                    if (data.runpod && data.runpod === 'connected') {
+                        statusHtml += '<span class="text-success"><i class="fas fa-check-circle"></i> Available</span>';
+                    } else {
+                        statusHtml += '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Not configured</span>';
+                    }
+                    statusHtml += '</div>';
+                    
+                    statusHtml += '</div>';
+                    
+                    // Overall status
+                    const hasAnyService = (data.ollama && data.ollama !== 'unavailable') || 
+                                        (data.runpod && data.runpod === 'connected');
+                    
+                    if (hasAnyService) {
                         statusIndicator.className = 'status-indicator status-ok';
                         statusText.textContent = 'AI Analysis Ready';
-                        statusDetails.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> AI service is available and ready for comprehensive analysis (up to 30 min per lead)</span>';
                     } else {
                         statusIndicator.className = 'status-indicator status-error';
                         statusText.textContent = 'AI Analysis Unavailable';
-                        statusDetails.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> AI service is not available</span>';
                     }
+                    
+                    statusDetails.innerHTML = statusHtml;
                 })
                 .catch(error => {
                     const statusIndicator = document.getElementById('ai-status');
@@ -477,6 +523,10 @@
             // Get delete after analysis option
             const deleteAfterAnalysis = document.getElementById('deleteAfterAnalysis').checked;
             
+            // Get AI service selection
+            const aiService = document.querySelector('input[name="aiService"]:checked').value;
+            const useRunpod = aiService === 'runpod';
+            
             // Send to backend for analysis
             fetch('/lead-workshop/analyze-leads', {
                 method: 'POST',
@@ -487,7 +537,8 @@
                     lead_ids: leadIds,
                     project_id: projectId,
                     project_context: projectContext,
-                    delete_after_analysis: deleteAfterAnalysis
+                    delete_after_analysis: deleteAfterAnalysis,
+                    use_runpod: useRunpod
                 })
             })
             .then(response => response.json())

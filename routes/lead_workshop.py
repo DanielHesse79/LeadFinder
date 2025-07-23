@@ -18,6 +18,11 @@ except ImportError:
     ollama_service = None
 
 try:
+    from services.runpod_service import runpod_service
+except ImportError:
+    runpod_service = None
+
+try:
     from models.database import db
 except ImportError:
     db = None
@@ -212,7 +217,7 @@ def create_project():
 @lead_workshop_bp.route('/lead-workshop/analyze-leads', methods=['POST'])
 def analyze_leads():
     """Analyze selected leads with AI and save to project"""
-    if not db or not ollama_service:
+    if not db or (not ollama_service and not runpod_service):
         return jsonify({'success': False, 'error': 'Database or AI service not available'}), 500
     
     try:
@@ -221,6 +226,7 @@ def analyze_leads():
         project_id = data.get('project_id')
         project_context = data.get('project_context', '').strip()
         delete_after_analysis = data.get('delete_after_analysis', False)
+        use_runpod = data.get('use_runpod', False)  # New option for RunPod.ai
         
         # Handle different formats of lead_ids (array, string, or comma-separated string)
         lead_ids = []
@@ -269,46 +275,88 @@ def analyze_leads():
         saved_analyses = []
         analysis_summary = []
         
+        # Choose AI service based on user preference and availability
+        ai_service = None
+        if use_runpod and runpod_service and runpod_service.is_available():
+            ai_service = 'runpod'
+            if logger:
+                logger.info("Using RunPod.ai for enhanced analysis")
+        elif ollama_service:
+            ai_service = 'ollama'
+            if logger:
+                logger.info("Using Ollama for analysis")
+        else:
+            return jsonify({'success': False, 'error': 'No AI service available'}), 500
+        
         for i, lead in enumerate(leads_data, 1):
             if logger:
                 logger.info(f"Analyzing lead {i}/{len(leads_data)}: {lead['title'][:50]}...")
             
-            # Create individual analysis prompt for each lead
-            individual_prompt = f"""
-            Project: {project['name']}
-            Context: {project_context if project_context else 'General analysis'}
-            
-            Analyze this specific lead in detail:
-            
-            LEAD: {lead['title']}
-            DESCRIPTION: {lead['description']}
-            LINK: {lead['link']}
-            SOURCE: {lead['source']}
-            
-            Provide a comprehensive analysis with the following format:
-            
-            SCORE: [1-5 relevancy score]
-            JUSTIFICATION: [Detailed explanation of why this score]
-            PEOPLE: [Names, titles, organizations mentioned or "None found"]
-            CONTACT: [Contact details found or "Not available"]
-            PRODUCTS: [Product names, technologies mentioned or "None mentioned"]
-            COMPANY: [Company information or "Not available"]
-            OPPORTUNITIES: [Potential collaboration opportunities or "None identified"]
-            CONCERNS: [Red flags or concerns or "None identified"]
-            ANALYSIS: [Comprehensive analysis and recommendations]
-            
-            Be thorough and specific to this lead. If information is not available, say "Not available" or "Unknown".
-            Focus on extracting specific details like product names, company information, and contact details.
-            """
-            
             try:
-                # Get AI analysis for this individual lead
-                ai_response = ollama_service._call_ollama_with_retry(individual_prompt, max_retries=1)
+                if ai_service == 'runpod':
+                    # Use RunPod.ai for enhanced analysis
+                    result = runpod_service.analyze_lead(lead, project_context)
+                    
+                    if result.success:
+                        # Save RunPod analysis results
+                        analysis_id = db.save_lead_analysis(
+                            project_id=int(project_id),
+                            lead_id=lead['id'],
+                            relevancy_score=result.score,
+                            ai_analysis=result.analysis,
+                            key_opinion_leaders=result.people,
+                            contact_info=result.contact,
+                            notes=f"RunPod Analysis - Products: {result.products}, Company: {result.company}, Opportunities: {result.opportunities}, Concerns: {result.concerns}, Processing Time: {result.processing_time:.2f}s"
+                        )
+                        
+                        saved_analyses.append({
+                            'lead_id': lead['id'],
+                            'analysis_id': analysis_id,
+                            'score': result.score,
+                            'model': result.model_used,
+                            'processing_time': result.processing_time
+                        })
+                        
+                        analysis_summary.append(f"✅ Lead {i}: {lead['title'][:50]}... (Score: {result.score}, RunPod)")
+                    else:
+                        analysis_summary.append(f"❌ Lead {i}: {lead['title'][:50]}... (RunPod failed: {result.analysis})")
                 
-                if not ai_response:
-                    ai_response = "AI analysis failed - no response received"
-                
-                # Parse the AI response to extract structured data
+                else:
+                    # Use Ollama for analysis (existing logic)
+                    individual_prompt = f"""
+                    Project: {project['name']}
+                    Context: {project_context if project_context else 'General analysis'}
+                    
+                    Analyze this specific lead in detail:
+                    
+                    LEAD: {lead['title']}
+                    DESCRIPTION: {lead['description']}
+                    LINK: {lead['link']}
+                    SOURCE: {lead['source']}
+                    
+                    Provide a comprehensive analysis with the following format:
+                    
+                    SCORE: [1-5 relevancy score]
+                    JUSTIFICATION: [Detailed explanation of why this score]
+                    PEOPLE: [Names, titles, organizations mentioned or "None found"]
+                    CONTACT: [Contact details found or "Not available"]
+                    PRODUCTS: [Product names, technologies mentioned or "None mentioned"]
+                    COMPANY: [Company information or "Not available"]
+                    OPPORTUNITIES: [Potential collaboration opportunities or "None identified"]
+                    CONCERNS: [Red flags or concerns or "None identified"]
+                    ANALYSIS: [Comprehensive analysis and recommendations]
+                    
+                    Be thorough and specific to this lead. If information is not available, say "Not available" or "Unknown".
+                    Focus on extracting specific details like product names, company information, and contact details.
+                    """
+                    
+                    # Get AI analysis for this individual lead
+                    ai_response = ollama_service._call_ollama_with_retry(individual_prompt, max_retries=1)
+                    
+                    if not ai_response:
+                        ai_response = "AI analysis failed - no response received"
+                    
+                    # Parse the AI response to extract structured data
                 parsed_data = parse_ai_analysis(ai_response, lead['title'])
                 
                 # Save individual analysis
@@ -553,17 +601,29 @@ def update_analysis():
 @lead_workshop_bp.route('/lead-workshop/api/status')
 def api_status():
     """Check AI service status"""
-    if ollama_service:
-        status = ollama_service.check_status()
+    try:
+        ollama_status = "unavailable"
+        if ollama_service:
+            status = ollama_service.check_status()
+            ollama_status = status.get('msg', 'unknown')
+        
+        runpod_status = "unavailable"
+        if runpod_service:
+            status = runpod_service.get_status()
+            runpod_status = status.get('status', 'unknown') if status.get('available') else 'not configured'
+        
         return jsonify({
-            'status': 'ok' if status.get('ok') else 'error',
-            'message': status.get('msg', 'Unknown status')
+            'ollama': ollama_status,
+            'runpod': runpod_status,
+            'database': 'connected' if db else 'disconnected'
         })
-    else:
+    except Exception as e:
         return jsonify({
-            'status': 'error',
-            'message': 'AI service not available'
-        })
+            'ollama': 'error',
+            'runpod': 'error',
+            'database': 'error',
+            'error': str(e)
+        }), 500
 
 @lead_workshop_bp.route('/lead-workshop/export-pdf/<int:project_id>')
 def export_project_pdf(project_id: int):

@@ -297,6 +297,40 @@ CONFIG_DEFINITIONS = {
         'required': False,
         'default': 'mistral:latest'
     },
+    'RUNPOD_API_KEY': {
+        'description': 'RunPod.ai API key for enhanced AI analysis',
+        'is_secret': True,
+        'required': False
+    },
+    'RUNPOD_ENDPOINT_ID': {
+        'description': 'RunPod.ai endpoint ID for AI analysis',
+        'is_secret': False,
+        'required': False
+    },
+    'RUNPOD_BASE_URL': {
+        'description': 'RunPod.ai API base URL',
+        'is_secret': False,
+        'required': False,
+        'default': 'https://api.runpod.io/v2'
+    },
+    'RUNPOD_TIMEOUT': {
+        'description': 'RunPod.ai API timeout in seconds',
+        'is_secret': False,
+        'required': False,
+        'default': '300'
+    },
+    'RUNPOD_MAX_RETRIES': {
+        'description': 'RunPod.ai maximum retry attempts',
+        'is_secret': False,
+        'required': False,
+        'default': '3'
+    },
+    'RUNPOD_RETRY_DELAY': {
+        'description': 'RunPod.ai retry delay in seconds',
+        'is_secret': False,
+        'required': False,
+        'default': '2'
+    },
     'AUTOGPT_TIMEOUT': {
         'description': 'AutoGPT request timeout in seconds',
         'is_secret': False,
