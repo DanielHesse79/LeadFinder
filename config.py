@@ -229,7 +229,7 @@ CONFIG_DEFINITIONS = {
         'description': 'Flask port number',
         'is_secret': False,
         'required': False,
-        'default': '5050'
+        'default': '5051'
     },
     'RESEARCH_MAX_RESULTS': {
         'description': 'Maximum results per research API',
@@ -367,7 +367,7 @@ SEMANTIC_SCHOLAR_API_KEY = config.get('SEMANTIC_SCHOLAR_API_KEY', '')
 FLASK_SECRET_KEY = config.get('FLASK_SECRET_KEY', required=True)
 FLASK_DEBUG = config.get('FLASK_DEBUG', 'False').lower() == 'true'
 FLASK_HOST = config.get('FLASK_HOST', '0.0.0.0')
-FLASK_PORT = int(config.get('FLASK_PORT', '5050'))
+FLASK_PORT = int(config.get('FLASK_PORT', '5051'))
 
 # Research Configuration
 RESEARCH_MAX_RESULTS = int(config.get('RESEARCH_MAX_RESULTS', '50'))

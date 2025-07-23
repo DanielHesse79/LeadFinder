@@ -8,7 +8,7 @@ import json
 
 def test_autogpt_endpoints():
     """Test all AutoGPT control panel endpoints"""
-    base_url = "http://localhost:5050"
+    base_url = "http://localhost:5051"
     
     print("🤖 Testing AutoGPT Control Panel Endpoints")
     print("=" * 50)

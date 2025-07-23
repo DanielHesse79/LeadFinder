@@ -147,13 +147,44 @@ def download_links():
         url = str(row['Länk'])
         if isinstance(url, str) and url.startswith("http"):
             n_links += 1
-            filename = url.split("/")[-1].split("?")[0] or f"lead_{row['ID']}.html"
+            
+            # Sanitize filename to prevent path traversal and invalid characters
             try:
+                # Extract filename from URL and sanitize it
+                raw_filename = url.split("/")[-1].split("?")[0]
+                if not raw_filename or raw_filename == "":
+                    raw_filename = f"lead_{row['ID']}.html"
+                
+                # Remove any path separators and invalid characters
+                import re
+                # Remove path separators, control characters, and other dangerous chars
+                safe_filename = re.sub(r'[<>:"/\\|?*\x00-\x1f]', '_', raw_filename)
+                # Limit length to prevent issues
+                safe_filename = safe_filename[:100]
+                # Ensure it has a valid extension
+                if not safe_filename.endswith(('.html', '.htm', '.pdf', '.txt')):
+                    safe_filename += '.html'
+                
+                # Additional safety check - ensure filename is not empty or just dots
+                if not safe_filename or safe_filename in ['.', '..']:
+                    safe_filename = f"lead_{row['ID']}.html"
+                
+                filename = safe_filename
+                
                 r = session.get(url, timeout=10)
                 r.raise_for_status()
-                with open(Path(EXPORT_FOLDER) / filename, "wb") as f:
+                
+                # Use Path to safely join and prevent path traversal
+                file_path = Path(EXPORT_FOLDER) / filename
+                # Additional safety check - ensure file is within export folder
+                if not str(file_path.resolve()).startswith(str(Path(EXPORT_FOLDER).resolve())):
+                    logs.append(f"<span style='color:red'>Säkerhetsfel:</span> Ogiltigt filnamn: {filename}")
+                    continue
+                
+                with open(file_path, "wb") as f:
                     f.write(r.content)
                 logs.append(f"<span style='color:green'>Nedladdad:</span> {filename}")
+                
             except Exception as e:
                 logs.append(f"<span style='color:red'>Misslyckades:</span> {url} - {e}")
     

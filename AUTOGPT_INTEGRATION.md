@@ -31,7 +31,7 @@ LeadFinder includes comprehensive AutoGPT integration using your local Ollama an
 ### 1. Access the Control Panel
 Navigate to **AutoGPT Control** in the main navigation menu, or go directly to:
 ```
-http://localhost:5050/autogpt/control
+http://localhost:5051/autogpt/control
 ```
 
 ### 2. Check Status
@@ -223,7 +223,7 @@ python startup_check.py
 ### Health Endpoint
 Check AutoGPT status via API:
 ```bash
-curl http://localhost:5050/health
+curl http://localhost:5051/health
 ```
 
 Response includes AutoGPT status:
@@ -361,7 +361,7 @@ python startup_check.py
 python app.py
 
 # Test control panel
-curl http://localhost:5050/autogpt/status
+curl http://localhost:5051/autogpt/status
 ```
 
 ### Debugging

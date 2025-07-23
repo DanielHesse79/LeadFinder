@@ -3,31 +3,79 @@ Unit tests for configuration module.
 """
 import pytest
 from unittest.mock import patch, MagicMock
-from config import get_config_value, load_config_from_env
+from config import ConfigurationManager, ConfigurationError
 from models.config import ConfigManager
 
 
-class TestConfig:
-    """Test configuration functionality."""
+class TestConfigurationManager:
+    """Test ConfigurationManager class."""
     
-    def test_get_config_value_default(self, mock_env_vars):
+    def test_configuration_manager_initialization(self):
+        """Test ConfigurationManager initialization."""
+        cm = ConfigurationManager()
+        assert cm is not None
+    
+    def test_get_config_with_default(self):
         """Test getting config value with default."""
-        value = get_config_value('TEST_KEY', 'TEST_KEY', 'default_value')
+        cm = ConfigurationManager()
+        value = cm.get('TEST_KEY', 'default_value')
         assert value == 'default_value'
     
-    def test_get_config_value_from_env(self, mock_env_vars):
+    def test_get_config_from_env(self, mock_env_vars):
         """Test getting config value from environment."""
-        value = get_config_value('SERPAPI_KEY', 'SERPAPI_KEY', 'default')
+        cm = ConfigurationManager()
+        value = cm.get('SERPAPI_KEY', 'default')
         assert value == 'test_key'
     
-    @patch('config.os.getenv')
-    def test_load_config_from_env(self, mock_getenv, sample_config):
-        """Test loading configuration from environment."""
-        mock_getenv.side_effect = lambda key, default=None: sample_config.get(key, default)
-        
-        config = load_config_from_env()
-        assert config['SERPAPI_KEY'] == 'test_key'
-        assert config['OLLAMA_BASE_URL'] == 'http://localhost:11434'
+    def test_get_config_required_missing(self):
+        """Test getting required config that is missing."""
+        cm = ConfigurationManager()
+        with pytest.raises(ConfigurationError):
+            cm.get('REQUIRED_KEY', required=True)
+    
+    def test_set_config(self, temp_db):
+        """Test setting configuration."""
+        with patch('models.config.DATABASE_PATH', temp_db):
+            cm = ConfigurationManager()
+            success = cm.set('TEST_KEY', 'test_value', 'Test description')
+            assert success is True
+            value = cm.get('TEST_KEY')
+            assert value == 'test_value'
+    
+    def test_get_source_environment(self, mock_env_vars):
+        """Test getting config source from environment."""
+        cm = ConfigurationManager()
+        source = cm.get_source('SERPAPI_KEY')
+        assert source == 'Environment'
+    
+    def test_get_source_database(self, temp_db):
+        """Test getting config source from database."""
+        with patch('models.config.DATABASE_PATH', temp_db):
+            cm = ConfigurationManager()
+            cm.set('TEST_KEY', 'test_value')
+            source = cm.get_source('TEST_KEY')
+            assert source == 'Database'
+    
+    def test_get_source_default(self):
+        """Test getting config source from default."""
+        cm = ConfigurationManager()
+        source = cm.get_source('NONEXISTENT_KEY')
+        assert source == 'Default'
+    
+    def test_validate_required_configs(self):
+        """Test validating required configurations."""
+        cm = ConfigurationManager()
+        missing = cm.validate_required_configs()
+        # Should include SERPAPI_KEY since it's required but not set in test
+        assert 'SERPAPI_KEY' in missing
+    
+    def test_get_all_configs(self):
+        """Test getting all configurations."""
+        cm = ConfigurationManager()
+        configs = cm.get_all_configs()
+        assert 'SERPAPI_KEY' in configs
+        assert 'OLLAMA_BASE_URL' in configs
+        assert configs['OLLAMA_BASE_URL']['value'] == 'http://localhost:11434'
 
 
 class TestConfigManager:

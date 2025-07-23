@@ -28,25 +28,47 @@ else
     echo "⚠️  Warning: env.$ENVIRONMENT not found, using defaults"
 fi
 
-# Activate virtual environment if it exists
-if [ -d "venv" ]; then
-    echo "🐍 Activating virtual environment..."
-    source venv/bin/activate
-    
-    # Ensure fundNSF is installed in venv
-    echo "📦 Checking fundNSF installation..."
-    if ! venv/bin/python -c "import fundNSF" 2>/dev/null; then
-        echo "📦 Installing fundNSF in virtual environment..."
-        venv/bin/pip install fundNSF
+# Check if virtual environment exists, create if not
+if [ ! -d "venv" ]; then
+    echo "🐍 Virtual environment not found. Creating new virtual environment..."
+    python3 -m venv venv
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to create virtual environment. Please ensure python3 and venv are installed."
+        exit 1
+    fi
+    echo "✅ Virtual environment created successfully"
+fi
+
+# Activate virtual environment
+echo "🐍 Activating virtual environment..."
+source venv/bin/activate
+
+# Check if requirements are installed
+echo "📦 Checking dependencies..."
+if ! venv/bin/python -c "import flask" 2>/dev/null; then
+    echo "📦 Installing dependencies from requirements.txt..."
+    venv/bin/pip install -r requirements.txt
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to install dependencies. Please check requirements.txt and your internet connection."
+        exit 1
+    fi
+    echo "✅ Dependencies installed successfully"
+else
+    echo "✅ Dependencies already installed"
+fi
+
+# Ensure fundNSF is installed in venv
+echo "📦 Checking fundNSF installation..."
+if ! venv/bin/python -c "import fundNSF" 2>/dev/null; then
+    echo "📦 Installing fundNSF in virtual environment..."
+    venv/bin/pip install fundNSF
+    if [ $? -ne 0 ]; then
+        echo "⚠️  Warning: Failed to install fundNSF, but continuing..."
     else
-        echo "✅ fundNSF already installed"
+        echo "✅ fundNSF installed successfully"
     fi
 else
-    echo "❌ Virtual environment not found. Please create it first:"
-    echo "   python3 -m venv venv"
-    echo "   source venv/bin/activate"
-    echo "   pip install -r requirements.txt"
-    exit 1
+    echo "✅ fundNSF already installed"
 fi
 
 # Validate configuration before starting
@@ -85,7 +107,7 @@ fi
 
 # Get configuration values for display
 FLASK_HOST=$(venv/bin/python -c "from config import config; print(config.get('FLASK_HOST', '0.0.0.0'))" 2>/dev/null | tail -n 1 || echo "0.0.0.0")
-FLASK_PORT=$(venv/bin/python -c "from config import config; print(config.get('FLASK_PORT', '5050'))" 2>/dev/null | tail -n 1 || echo "5050")
+FLASK_PORT=$(venv/bin/python -c "from config import config; print(config.get('FLASK_PORT', '5051'))" 2>/dev/null | tail -n 1 || echo "5051")
 FLASK_DEBUG=$(venv/bin/python -c "from config import config; print(config.get('FLASK_DEBUG', 'False'))" 2>/dev/null | tail -n 1 || echo "False")
 LOG_LEVEL=$(venv/bin/python -c "from config import config; print(config.get('LOG_LEVEL', 'INFO'))" 2>/dev/null | tail -n 1 || echo "INFO")
 
@@ -99,6 +121,11 @@ echo "   Environment: $ENVIRONMENT"
 echo ""
 
 echo "🚀 Starting LeadFinder on $FLASK_HOST:$FLASK_PORT"
+echo "🌐 Access the application at: http://localhost:$FLASK_PORT"
+echo "📊 Health check: http://localhost:$FLASK_PORT/health"
+echo ""
+echo "Press Ctrl+C to stop the application"
+echo ""
 
 # Start the application using venv Python
 venv/bin/python app.py 

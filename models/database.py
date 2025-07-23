@@ -299,7 +299,7 @@ class DatabaseConnection:
                 
                 c.execute(f'''SELECT wa.*, l.title, l.description, l.link, l.source, l.ai_summary
                              FROM workshop_analysis wa
-                             JOIN leads l ON wa.lead_id = l.id
+                             LEFT JOIN leads l ON wa.lead_id = l.id
                              WHERE wa.project_id = ?
                              ORDER BY {order_clause}''', (project_id,))
                 return [dict(row) for row in c.fetchall()]

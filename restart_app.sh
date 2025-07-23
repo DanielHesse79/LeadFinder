@@ -51,7 +51,7 @@ fi
 
 # Get configuration values for display
 FLASK_HOST=$(venv/bin/python -c "from config import config; print(config.get('FLASK_HOST', '0.0.0.0'))" 2>/dev/null | tail -n 1 || echo "0.0.0.0")
-FLASK_PORT=$(venv/bin/python -c "from config import config; print(config.get('FLASK_PORT', '5050'))" 2>/dev/null | tail -n 1 || echo "5050")
+FLASK_PORT=$(venv/bin/python -c "from config import config; print(config.get('FLASK_PORT', '5051'))" 2>/dev/null | tail -n 1 || echo "5051")
 FLASK_DEBUG=$(venv/bin/python -c "from config import config; print(config.get('FLASK_DEBUG', 'False'))" 2>/dev/null | tail -n 1 || echo "False")
 LOG_LEVEL=$(venv/bin/python -c "from config import config; print(config.get('LOG_LEVEL', 'INFO'))" 2>/dev/null | tail -n 1 || echo "INFO")
 

@@ -198,7 +198,7 @@ class ConfigManager:
                 'PUBMED_BASE_URL': 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils',
                 'FLASK_DEBUG': 'False',
                 'FLASK_HOST': '0.0.0.0',
-                'FLASK_PORT': '5050',
+                'FLASK_PORT': '5051',
                 'RESEARCH_MAX_RESULTS': '50',
                 'RESEARCH_TIMEOUT': '30',
                 'LOG_LEVEL': 'INFO',

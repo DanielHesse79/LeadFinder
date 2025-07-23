@@ -127,10 +127,10 @@ FLASK_HOST=0.0.0.0
 
 #### Flask Port
 ```bash
-FLASK_PORT=5050
+FLASK_PORT=5051
 ```
 - **Description**: Port for Flask server
-- **Required**: No (default: 5050)
+- **Required**: No (default: 5051)
 - **Usage**: Server port
 
 ### 📊 Research Configuration
@@ -260,7 +260,7 @@ AUTOGPT_TIMEOUT=1800
 # Flask Configuration
 FLASK_SECRET_KEY=your_secret_key_here
 FLASK_HOST=0.0.0.0
-FLASK_PORT=5050
+FLASK_PORT=5051
 
 # Research Configuration
 RESEARCH_MAX_RESULTS=50
@@ -514,7 +514,7 @@ pkill -f "python app.py"
 ./start_app.sh development
 
 # Check configuration via API
-curl http://localhost:5050/config
+curl http://localhost:5051/config
 ```
 
 #### AutoGPT Configuration Issues
@@ -523,7 +523,7 @@ curl http://localhost:5050/config
 curl http://localhost:11434/api/tags
 
 # Test AutoGPT connection
-curl -X POST http://localhost:5050/autogpt/test \
+curl -X POST http://localhost:5051/autogpt/test \
   -d "test_prompt=Hello" \
   -d "model=mistral:latest"
 ```

@@ -213,7 +213,7 @@ app = create_app()
 
 if __name__ == '__main__':
     host = config.get('FLASK_HOST', '0.0.0.0')
-    port = int(config.get('FLASK_PORT', '5050'))
+    port = int(config.get('FLASK_PORT', '5051'))
     debug = config.get('FLASK_DEBUG', 'False').lower() == 'true'
     
     print(f"🚀 Starting LeadFinder on {host}:{port}")

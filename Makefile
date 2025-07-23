@@ -48,11 +48,14 @@ clean: ## Clean up generated files
 	find . -name ".pytest_cache" -type d -exec rm -rf {} + 2>/dev/null || true
 	find . -name ".mypy_cache" -type d -exec rm -rf {} + 2>/dev/null || true
 
-run: ## Run the application
-	venv/bin/python app.py
+run: ## Run the application (production)
+	./start_app.sh production
 
 dev: ## Run in development mode
-	FLASK_DEBUG=True venv/bin/python app.py
+	./start_app.sh development
+
+start: ## Start the application (alias for dev)
+	./start_app.sh development
 
 logs: ## Show application logs
 	tail -f data/logs/leadfinder.log

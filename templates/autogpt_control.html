@@ -163,8 +163,11 @@
                                             <option value="deepseek-coder:latest">DeepSeek Coder</option>
                                         </select>
                                     </div>
-                                    <button class="btn btn-primary" onclick="runTest()">
+                                    <button class="btn btn-primary" id="testButton" onclick="runTest()">
                                         <i class="fas fa-play"></i> Run Test
+                                    </button>
+                                    <button class="btn btn-success" id="quickTestButton" onclick="runQuickTest()">
+                                        <i class="fas fa-bolt"></i> Quick Test (60s)
                                     </button>
                                     <div id="testResult" class="mt-3" style="display: none;">
                                         <div class="alert alert-info">
@@ -204,7 +207,7 @@
                                             <option value="llama2:latest">Llama2 (Latest)</option>
                                         </select>
                                     </div>
-                                    <button class="btn btn-primary" onclick="runAnalysis()">
+                                    <button class="btn btn-primary" id="analysisButton" onclick="runAnalysis()">
                                         <i class="fas fa-search"></i> Analyze
                                     </button>
                                     <div id="analysisResult" class="mt-3" style="display: none;">
@@ -251,7 +254,7 @@
                                             <option value="llama2:latest">Llama2 (Latest)</option>
                                         </select>
                                     </div>
-                                    <button class="btn btn-primary" onclick="runResearch()">
+                                    <button class="btn btn-primary" id="researchButton" onclick="runResearch()">
                                         <i class="fas fa-microscope"></i> Research
                                     </button>
                                     <div id="researchResult" class="mt-3" style="display: none;">
@@ -312,6 +315,16 @@ function runTest() {
         return;
     }
     
+    // Show loading indicator
+    const testButton = document.getElementById('testButton');
+    const originalText = testButton.innerHTML;
+    testButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+    testButton.disabled = true;
+    
+    // Show progress message
+    document.getElementById('testOutput').innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> AutoGPT is processing your request. This may take 30-60 seconds...</div>';
+    document.getElementById('testResult').style.display = 'block';
+    
     const formData = new FormData();
     formData.append('test_prompt', prompt);
     formData.append('model', model);
@@ -323,15 +336,66 @@ function runTest() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            document.getElementById('testOutput').innerHTML = data.output.replace(/\n/g, '<br>');
+            document.getElementById('testOutput').innerHTML = '<div class="alert alert-success"><strong>Success!</strong></div>' + data.output.replace(/\n/g, '<br>');
             document.getElementById('testResult').style.display = 'block';
         } else {
-            alert('Test failed: ' + data.error);
+            document.getElementById('testOutput').innerHTML = '<div class="alert alert-danger"><strong>Error:</strong> ' + data.error + '</div>';
+            document.getElementById('testResult').style.display = 'block';
         }
     })
     .catch(error => {
         console.error('Test failed:', error);
-        alert('Test failed: ' + error.message);
+        document.getElementById('testOutput').innerHTML = '<div class="alert alert-danger"><strong>Error:</strong> ' + error.message + '</div>';
+        document.getElementById('testResult').style.display = 'block';
+    })
+    .finally(() => {
+        // Restore button
+        testButton.innerHTML = originalText;
+        testButton.disabled = false;
+    });
+}
+
+function runQuickTest() {
+    const prompt = document.getElementById('testPrompt').value || 'Hello, this is a quick test.';
+    const model = document.getElementById('testModel').value;
+    
+    // Show loading indicator
+    const quickTestButton = document.getElementById('quickTestButton');
+    const originalText = quickTestButton.innerHTML;
+    quickTestButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Quick Testing...';
+    quickTestButton.disabled = true;
+    
+    // Show progress message
+    document.getElementById('testOutput').innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> AutoGPT is processing your quick test. This should take about 60 seconds...</div>';
+    document.getElementById('testResult').style.display = 'block';
+    
+    const formData = new FormData();
+    formData.append('test_prompt', prompt);
+    formData.append('model', model);
+    
+    fetch('/autogpt/quick-test', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('testOutput').innerHTML = '<div class="alert alert-success"><strong>Quick Test Success!</strong> (Completed in ~60s)</div>' + data.output.replace(/\n/g, '<br>');
+            document.getElementById('testResult').style.display = 'block';
+        } else {
+            document.getElementById('testOutput').innerHTML = '<div class="alert alert-danger"><strong>Quick Test Error:</strong> ' + data.error + '</div>';
+            document.getElementById('testResult').style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Quick test failed:', error);
+        document.getElementById('testOutput').innerHTML = '<div class="alert alert-danger"><strong>Quick Test Error:</strong> ' + error.message + '</div>';
+        document.getElementById('testResult').style.display = 'block';
+    })
+    .finally(() => {
+        // Restore button
+        quickTestButton.innerHTML = originalText;
+        quickTestButton.disabled = false;
     });
 }
 
@@ -345,6 +409,16 @@ function runAnalysis() {
         return;
     }
     
+    // Show loading indicator
+    const analysisButton = document.getElementById('analysisButton');
+    const originalText = analysisButton.innerHTML;
+    analysisButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+    analysisButton.disabled = true;
+    
+    // Show progress message
+    document.getElementById('analysisOutput').innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> AutoGPT is analyzing your text. This may take 30-60 seconds...</div>';
+    document.getElementById('analysisResult').style.display = 'block';
+    
     const formData = new FormData();
     formData.append('text', text);
     formData.append('analysis_type', type);
@@ -357,15 +431,22 @@ function runAnalysis() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            document.getElementById('analysisOutput').innerHTML = data.analysis.replace(/\n/g, '<br>');
+            document.getElementById('analysisOutput').innerHTML = '<div class="alert alert-success"><strong>Analysis Complete!</strong></div>' + data.analysis.replace(/\n/g, '<br>');
             document.getElementById('analysisResult').style.display = 'block';
         } else {
-            alert('Analysis failed: ' + data.error);
+            document.getElementById('analysisOutput').innerHTML = '<div class="alert alert-danger"><strong>Error:</strong> ' + data.error + '</div>';
+            document.getElementById('analysisResult').style.display = 'block';
         }
     })
     .catch(error => {
         console.error('Analysis failed:', error);
-        alert('Analysis failed: ' + error.message);
+        document.getElementById('analysisOutput').innerHTML = '<div class="alert alert-danger"><strong>Error:</strong> ' + error.message + '</div>';
+        document.getElementById('analysisResult').style.display = 'block';
+    })
+    .finally(() => {
+        // Restore button
+        analysisButton.innerHTML = originalText;
+        analysisButton.disabled = false;
     });
 }
 
@@ -380,6 +461,16 @@ function runResearch() {
         return;
     }
     
+    // Show loading indicator
+    const researchButton = document.getElementById('researchButton');
+    const originalText = researchButton.innerHTML;
+    researchButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Researching...';
+    researchButton.disabled = true;
+    
+    // Show progress message
+    document.getElementById('researchOutput').innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> AutoGPT is conducting research. This may take 1-2 minutes...</div>';
+    document.getElementById('researchResult').style.display = 'block';
+    
     const formData = new FormData();
     formData.append('research_topic', topic);
     formData.append('company_name', company);
@@ -393,15 +484,22 @@ function runResearch() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            document.getElementById('researchOutput').innerHTML = data.research.replace(/\n/g, '<br>');
+            document.getElementById('researchOutput').innerHTML = '<div class="alert alert-success"><strong>Research Complete!</strong></div>' + data.research.replace(/\n/g, '<br>');
             document.getElementById('researchResult').style.display = 'block';
         } else {
-            alert('Research failed: ' + data.error);
+            document.getElementById('researchOutput').innerHTML = '<div class="alert alert-danger"><strong>Error:</strong> ' + data.error + '</div>';
+            document.getElementById('researchResult').style.display = 'block';
         }
     })
     .catch(error => {
         console.error('Research failed:', error);
-        alert('Research failed: ' + error.message);
+        document.getElementById('researchOutput').innerHTML = '<div class="alert alert-danger"><strong>Error:</strong> ' + error.message + '</div>';
+        document.getElementById('researchResult').style.display = 'block';
+    })
+    .finally(() => {
+        // Restore button
+        researchButton.innerHTML = originalText;
+        researchButton.disabled = false;
     });
 }
 </script>

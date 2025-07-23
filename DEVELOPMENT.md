@@ -14,39 +14,62 @@ This guide provides comprehensive information for developers working on LeadFind
 
 ### Local Development Setup
 
-1. **Clone the repository**
+**Automated Setup (Recommended)**
 ```bash
+# Clone the repository
 git clone <repository-url>
 cd leadfinder
-```
 
-2. **Create virtual environment**
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Set up environment**
-```bash
+# Configure environment
 cp env.example env.development
 # Edit env.development with your configuration
-```
 
-5. **Start Ollama**
-```bash
+# Start Ollama (required for AI features)
 ollama serve
 ollama pull mistral:latest
-```
 
-6. **Run the application**
-```bash
+# Start the application (automatically handles everything else)
 ./start_app.sh development
 ```
+
+**Manual Setup (Alternative)**
+```bash
+# Clone the repository
+git clone <repository-url>
+cd leadfinder
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment
+cp env.example env.development
+# Edit env.development with your configuration
+
+# Start Ollama
+ollama serve
+ollama pull mistral:latest
+
+# Run the application
+./start_app.sh development
+```
+
+### Starting Development Server
+
+The `start_app.sh` script automatically:
+- ✅ Creates virtual environment if missing
+- ✅ Installs all dependencies from `requirements.txt`
+- ✅ Validates configuration
+- ✅ Starts the Flask development server
+- ✅ Shows access URLs and health check endpoint
+
+**Development URLs:**
+- Main application: `http://localhost:5051`
+- Health check: `http://localhost:5051/health`
+- AutoGPT status: `http://localhost:5051/autogpt/status`
 
 ### Development Environment Variables
 ```bash
@@ -534,13 +557,13 @@ print(f"Tables: {tables}")
 ### API Debugging
 ```bash
 # Test health endpoint
-curl http://localhost:5050/health
+curl http://localhost:5051/health
 
 # Test AutoGPT status
-curl http://localhost:5050/autogpt/status
+curl http://localhost:5051/autogpt/status
 
 # Test AutoGPT functionality
-curl -X POST http://localhost:5050/autogpt/test \
+curl -X POST http://localhost:5051/autogpt/test \
   -d "test_prompt=Hello, test" \
   -d "model=mistral:latest"
 ```
@@ -602,7 +625,7 @@ session.mount("https://", adapter)
 ./start_app.sh development
 
 # Check application status
-curl http://localhost:5050/health
+curl http://localhost:5051/health
 ```
 
 ### Production Deployment
@@ -625,7 +648,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
-EXPOSE 5050
+EXPOSE 5051
 
 CMD ["python", "app.py"]
 ```

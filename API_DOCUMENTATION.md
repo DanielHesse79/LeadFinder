@@ -7,7 +7,7 @@ LeadFinder provides a comprehensive REST API for lead discovery, AI analysis, an
 ## 🔗 Base URL
 
 ```
-http://localhost:5050
+http://localhost:5051
 ```
 
 ## 🔐 Authentication
@@ -493,14 +493,14 @@ Currently, the API does not implement rate limiting, but it's recommended to:
 
 #### Test AutoGPT
 ```bash
-curl -X POST http://localhost:5050/autogpt/test \
+curl -X POST http://localhost:5051/autogpt/test \
   -d "test_prompt=Hello, this is a test" \
   -d "model=mistral:latest"
 ```
 
 #### Search for Leads
 ```bash
-curl -X POST http://localhost:5050/search_ajax \
+curl -X POST http://localhost:5051/search_ajax \
   -d "query=AI in healthcare" \
   -d "use_ai_analysis=on" \
   -d "engines[]=google" \
@@ -509,7 +509,7 @@ curl -X POST http://localhost:5050/search_ajax \
 
 #### Analyze Text
 ```bash
-curl -X POST http://localhost:5050/autogpt/analyze \
+curl -X POST http://localhost:5051/autogpt/analyze \
   -d "text=Company description to analyze..." \
   -d "analysis_type=lead_relevance" \
   -d "model=mistral:latest"
@@ -517,7 +517,7 @@ curl -X POST http://localhost:5050/autogpt/analyze \
 
 #### Get Health Status
 ```bash
-curl http://localhost:5050/health
+curl http://localhost:5051/health
 ```
 
 ### Python Examples
@@ -526,7 +526,7 @@ curl http://localhost:5050/health
 ```python
 import requests
 
-response = requests.post('http://localhost:5050/autogpt/test', data={
+response = requests.post('http://localhost:5051/autogpt/test', data={
     'test_prompt': 'Hello, test',
     'model': 'mistral:latest'
 })
@@ -542,7 +542,7 @@ else:
 ```python
 import requests
 
-response = requests.post('http://localhost:5050/search_ajax', data={
+response = requests.post('http://localhost:5051/search_ajax', data={
     'query': 'AI in healthcare',
     'use_ai_analysis': 'on',
     'engines': ['google', 'bing']
@@ -559,7 +559,7 @@ if response.status_code == 200:
 ```python
 import requests
 
-response = requests.post('http://localhost:5050/autogpt/analyze', data={
+response = requests.post('http://localhost:5051/autogpt/analyze', data={
     'text': 'Company description to analyze...',
     'analysis_type': 'lead_relevance',
     'model': 'mistral:latest'

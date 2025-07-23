@@ -311,3 +311,47 @@ def autogpt_status():
             'status': 'error',
             'error': str(e)
         }), 500 
+
+
+@autogpt_control_bp.route('/autogpt/quick-test', methods=['POST'])
+def quick_test_autogpt():
+    """Quick test AutoGPT functionality with shorter timeout"""
+    if not LeadfinderAutoGPTIntegration:
+        return jsonify({
+            'success': False,
+            'error': 'AutoGPT integration not available'
+        }), 500
+    
+    try:
+        test_prompt = request.form.get('test_prompt', 'Hello, this is a quick test.')
+        model = request.form.get('model', 'mistral:latest')
+        
+        if logger:
+            logger.info(f"Quick testing AutoGPT with model {model}")
+        
+        # Use shorter timeout for quick test
+        autogpt_integration = LeadfinderAutoGPTIntegration(model)
+        result = autogpt_integration.client.execute_text_generation(test_prompt, timeout=60)  # 1 minute timeout
+        
+        if result.get('status') == 'COMPLETED':
+            return jsonify({
+                'success': True,
+                'output': result.get('output', ''),
+                'model': model,
+                'message': 'Quick AutoGPT test completed successfully',
+                'timeout_used': 60
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Unknown error'),
+                'model': model
+            }), 500
+            
+    except Exception as e:
+        if logger:
+            logger.error(f"Quick AutoGPT test failed: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Quick test failed: {str(e)}'
+        }), 500 

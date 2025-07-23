@@ -438,12 +438,24 @@
                     // Extract lead ID from the lead element (we'll add this as a data attribute)
                     const leadId = element.getAttribute('data-lead-id');
                     console.log('Lead element data-lead-id:', leadId);
-                    if (leadId) {
-                        leadIds.push(leadId);
+                    if (leadId && leadId.trim()) {
+                        // Clean the lead ID and ensure it's a valid number
+                        const cleanLeadId = leadId.trim().replace(/\s+/g, '');
+                        if (/^\d+$/.test(cleanLeadId)) {
+                            leadIds.push(cleanLeadId);
+                        } else {
+                            console.warn('Invalid lead ID format:', leadId);
+                        }
                     }
                 });
                 console.log('Collected lead IDs from page:', leadIds);
             }
+            
+            // Clean and validate all lead IDs
+            leadIds = leadIds.filter(id => {
+                const cleanId = id.trim().replace(/\s+/g, '');
+                return /^\d+$/.test(cleanId);
+            });
             
             if (leadIds.length === 0) {
                 alert('No leads selected for analysis');

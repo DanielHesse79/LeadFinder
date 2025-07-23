@@ -50,7 +50,7 @@ def test_name_extraction():
         }
         
         response = requests.post(
-            "http://localhost:5050/search_ajax",
+            "http://localhost:5051/search_ajax",
             json=search_data,
             timeout=30
         )
@@ -85,7 +85,7 @@ def test_name_extraction():
     
     print("\n" + "="*50)
     print("🎯 Manual Test Instructions:")
-    print("1. Go to http://localhost:5050")
+    print("1. Go to http://localhost:5051")
     print("2. Enter a search query with person names")
     print("3. Check 'Enable AutoGPT Analysis'")
     print("4. Submit the search")
@@ -113,7 +113,7 @@ def test_lead_workshop_analysis():
         }
         
         response = requests.post(
-            "http://localhost:5050/lead-workshop/analyze-leads",
+            "http://localhost:5051/lead-workshop/analyze-leads",
             json=test_data,
             timeout=60
         )
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     
     print("\n✅ Test completed!")
     print("\n💡 To manually test:")
-    print("1. Open http://localhost:5050 in your browser")
+    print("1. Open http://localhost:5051 in your browser")
     print("2. Try searching for content with person names")
     print("3. Enable AutoGPT analysis")
     print("4. Check if names are extracted in the AI analysis") 

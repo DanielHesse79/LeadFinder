@@ -37,48 +37,81 @@ LeadFinder is a comprehensive lead discovery and research platform that combines
 
 ## 🚀 Quick Start
 
+> **💡 For the fastest setup, see [QUICK_START.md](QUICK_START.md)**
+
 ### Prerequisites
 - Python 3.8+
 - Ollama with Mistral model
 - SerpAPI key (for web search)
 
-### Installation
+### Installation & Startup
 
-1. **Clone the repository**
+**Option 1: Automated Setup (Recommended)**
 ```bash
+# Clone the repository
 git clone <repository-url>
 cd leadfinder
-```
 
-2. **Create virtual environment**
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Configure environment**
-```bash
+# Configure environment (required)
 cp env.example env.development
 # Edit env.development with your API keys
-```
 
-5. **Start Ollama**
-```bash
+# Start Ollama (required for AI features)
 ollama serve
 ollama pull mistral:latest
-```
 
-6. **Run the application**
-```bash
+# Start the application (automatically handles everything else)
 ./start_app.sh development
 ```
 
-The application will be available at `http://localhost:5050`
+**Option 2: Manual Setup**
+```bash
+# Clone the repository
+git clone <repository-url>
+cd leadfinder
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp env.example env.development
+# Edit env.development with your API keys
+
+# Start Ollama
+ollama serve
+ollama pull mistral:latest
+
+# Run the application
+./start_app.sh development
+```
+
+### Starting the Application
+
+**Use the automated startup script (recommended):**
+```bash
+./start_app.sh [environment]
+```
+
+Where `[environment]` can be:
+- `development` (default) - runs on port 5051 with debug mode
+- `production` - runs on port 5050 with production settings
+- `testing` - runs with test configuration
+
+The script automatically:
+- ✅ Creates virtual environment if missing
+- ✅ Installs all dependencies
+- ✅ Validates configuration
+- ✅ Starts the application
+- ✅ Shows access URLs
+
+**Application URLs:**
+- Main application: `http://localhost:5051` (development) or `http://localhost:5050` (production)
+- Health check: `http://localhost:5051/health`
+- AutoGPT status: `http://localhost:5051/autogpt/status`
 
 ## 🎯 Usage
 
@@ -185,17 +218,17 @@ leadfinder/
 ### Usage Examples
 ```python
 # Test AutoGPT connection
-curl -X POST http://localhost:5050/autogpt/test \
+curl -X POST http://localhost:5051/autogpt/test \
   -d "test_prompt=Hello, test" \
   -d "model=mistral:latest"
 
 # Analyze text for lead relevance
-curl -X POST http://localhost:5050/autogpt/analyze \
+curl -X POST http://localhost:5051/autogpt/analyze \
   -d "text=Company description..." \
   -d "analysis_type=lead_relevance"
 
 # Perform research
-curl -X POST http://localhost:5050/autogpt/research \
+curl -X POST http://localhost:5051/autogpt/research \
   -d "research_topic=AI in healthcare" \
   -d "company_name=YourCompany" \
   -d "industry=Healthcare"
@@ -293,6 +326,7 @@ mypy .
 
 ## 📚 Documentation
 
+- [Quick Start Guide](QUICK_START.md) - Get started in 3 steps
 - [Configuration Guide](CONFIGURATION.md)
 - [AutoGPT Integration](AUTOGPT_INTEGRATION.md)
 - [API Documentation](API_DOCUMENTATION.md)

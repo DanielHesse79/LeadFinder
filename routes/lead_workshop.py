@@ -104,17 +104,33 @@ def parse_ai_analysis(ai_response: str, lead_title: str) -> dict:
 def lead_workshop_home():
     """Lead Workshop home page with project management"""
     # Get lead IDs from query parameters if any
-    lead_ids = request.args.getlist('lead_ids')
+    lead_ids_param = request.args.get('lead_ids', '')
     selected_leads = []
     
-    if lead_ids and db:
+    if logger:
+        logger.info(f"Lead Workshop: lead_ids_param = '{lead_ids_param}'")
+    
+    if lead_ids_param and db:
         try:
+            # Handle both comma-separated string and list formats
+            if isinstance(lead_ids_param, str):
+                # Split comma-separated string
+                lead_ids = [lid.strip() for lid in lead_ids_param.split(',') if lid.strip()]
+            else:
+                # Already a list
+                lead_ids = lead_ids_param
+            
+            if logger:
+                logger.info(f"Lead Workshop: Parsed lead_ids = {lead_ids}")
+            
             # Get leads by ID
             for lead_id in lead_ids:
                 try:
                     lead = db.get_lead_by_id(int(lead_id))
                     if lead:
                         selected_leads.append(lead)
+                        if logger:
+                            logger.info(f"Lead Workshop: Found lead {lead_id}: {lead['title'][:50]}...")
                     else:
                         if logger:
                             logger.warning(f"Lead with ID {lead_id} not found")
@@ -127,6 +143,9 @@ def lead_workshop_home():
         except Exception as e:
             if logger:
                 logger.error(f"Error processing lead IDs: {e}")
+    
+    if logger:
+        logger.info(f"Lead Workshop: Found {len(selected_leads)} selected leads")
     
     # If no specific leads selected, show recent academic publications
     if not selected_leads and db:
@@ -198,10 +217,21 @@ def analyze_leads():
     
     try:
         data = request.get_json()
-        lead_ids = data.get('lead_ids', [])
+        lead_ids_raw = data.get('lead_ids', [])
         project_id = data.get('project_id')
         project_context = data.get('project_context', '').strip()
         delete_after_analysis = data.get('delete_after_analysis', False)
+        
+        # Handle different formats of lead_ids (array, string, or comma-separated string)
+        lead_ids = []
+        if isinstance(lead_ids_raw, str):
+            # If it's a string, split by comma and clean up
+            lead_ids = [id.strip() for id in lead_ids_raw.split(',') if id.strip()]
+        elif isinstance(lead_ids_raw, list):
+            # If it's already a list, use as is
+            lead_ids = lead_ids_raw
+        else:
+            return jsonify({'success': False, 'error': 'Invalid lead_ids format'}), 400
         
         if not lead_ids:
             return jsonify({'success': False, 'error': 'No leads selected'}), 400
@@ -214,12 +244,23 @@ def analyze_leads():
         if not project:
             return jsonify({'success': False, 'error': 'Project not found'}), 404
         
-        # Get leads
+        # Get leads with proper error handling for each ID
         leads_data = []
-        for lead_id in lead_ids:
-            lead = db.get_lead_by_id(int(lead_id))
-            if lead:
-                leads_data.append(lead)
+        for lead_id_str in lead_ids:
+            try:
+                # Clean the lead_id string and convert to int
+                lead_id_clean = lead_id_str.strip().replace('\n', '').replace('\r', '')
+                lead_id_int = int(lead_id_clean)
+                lead = db.get_lead_by_id(lead_id_int)
+                if lead:
+                    leads_data.append(lead)
+                else:
+                    if logger:
+                        logger.warning(f"Lead with ID {lead_id_int} not found in database")
+            except (ValueError, TypeError) as e:
+                if logger:
+                    logger.error(f"Invalid lead ID format: '{lead_id_str}' - {e}")
+                continue
         
         if not leads_data:
             return jsonify({'success': False, 'error': 'No valid leads found'}), 400
@@ -319,14 +360,20 @@ def analyze_leads():
         # Delete leads from workshop if requested
         deleted_leads = []
         if delete_after_analysis:
-            for lead_id in lead_ids:
+            for lead_id_str in lead_ids:
                 try:
-                    success = db.delete_lead(int(lead_id))
+                    # Clean the lead_id string and convert to int
+                    lead_id_clean = lead_id_str.strip().replace('\n', '').replace('\r', '')
+                    lead_id_int = int(lead_id_clean)
+                    success = db.delete_lead(lead_id_int)
                     if success:
-                        deleted_leads.append(lead_id)
+                        deleted_leads.append(lead_id_int)
+                except (ValueError, TypeError) as e:
+                    if logger:
+                        logger.error(f"Error converting lead ID '{lead_id_str}' for deletion: {e}")
                 except Exception as e:
                     if logger:
-                        logger.error(f"Error deleting lead {lead_id} after analysis: {e}")
+                        logger.error(f"Error deleting lead {lead_id_str} after analysis: {e}")
         
         return jsonify({
             'success': True,
@@ -349,23 +396,41 @@ def delete_workshop_leads():
     
     try:
         data = request.get_json()
-        lead_ids = data.get('lead_ids', [])
+        lead_ids_raw = data.get('lead_ids', [])
+        
+        # Handle different formats of lead_ids (array, string, or comma-separated string)
+        lead_ids = []
+        if isinstance(lead_ids_raw, str):
+            # If it's a string, split by comma and clean up
+            lead_ids = [id.strip() for id in lead_ids_raw.split(',') if id.strip()]
+        elif isinstance(lead_ids_raw, list):
+            # If it's already a list, use as is
+            lead_ids = lead_ids_raw
+        else:
+            return jsonify({'success': False, 'error': 'Invalid lead_ids format'}), 400
         
         if not lead_ids:
             return jsonify({'success': False, 'error': 'No lead IDs provided'}), 400
         
         deleted_count = 0
-        for lead_id in lead_ids:
+        for lead_id_str in lead_ids:
             try:
-                success = db.delete_lead(int(lead_id))
+                # Clean the lead_id string and convert to int
+                lead_id_clean = lead_id_str.strip().replace('\n', '').replace('\r', '')
+                lead_id_int = int(lead_id_clean)
+                success = db.delete_lead(lead_id_int)
                 if success:
                     deleted_count += 1
                 else:
                     if logger:
-                        logger.warning(f"Failed to delete lead {lead_id}")
+                        logger.warning(f"Failed to delete lead {lead_id_int}")
+            except (ValueError, TypeError) as e:
+                if logger:
+                    logger.error(f"Error converting lead ID '{lead_id_str}' for deletion: {e}")
+                continue
             except Exception as e:
                 if logger:
-                    logger.error(f"Error deleting lead {lead_id}: {e}")
+                    logger.error(f"Error deleting lead {lead_id_str}: {e}")
                 continue
         
         return jsonify({

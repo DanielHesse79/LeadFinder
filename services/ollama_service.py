@@ -1,5 +1,4 @@
 import requests
-import subprocess
 import threading
 import time
 from typing import Optional, Dict, Any, List
@@ -476,7 +475,7 @@ Sammanfatta kort: företag, relevans för {research_question}"""
             return None
         
         # Use longer timeout for comprehensive analysis
-        timeout = min(int(OLLAMA_TIMEOUT), 180)  # Max 3 minutes for analysis
+        timeout = int(OLLAMA_TIMEOUT)  # Use full timeout for AutoGPT
         
         for attempt in range(max_retries):
             try:

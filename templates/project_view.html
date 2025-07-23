@@ -211,14 +211,24 @@
                                     </div>
                                 </div>
                                 <div class="col-md-7">
-                                    <h5>{{ analysis.title }}</h5>
-                                    <p class="text-muted">{{ analysis.description[:200] }}{% if analysis.description|length > 200 %}...{% endif %}</p>
+                                    <h5>{{ analysis.title or 'Lead information not available' }}</h5>
+                                    {% if analysis.description %}
+                                        <p class="text-muted">{{ analysis.description[:200] }}{% if analysis.description|length > 200 %}...{% endif %}</p>
+                                    {% else %}
+                                        <p class="text-muted"><em>Lead description not available (lead may have been removed from workshop)</em></p>
+                                    {% endif %}
                                     
                                     <div class="d-flex align-items-center mb-2">
-                                        <span class="badge bg-secondary me-2">{{ analysis.source }}</span>
-                                        <a href="{{ analysis.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-external-link-alt"></i> Open
-                                        </a>
+                                        {% if analysis.source %}
+                                            <span class="badge bg-secondary me-2">{{ analysis.source }}</span>
+                                        {% endif %}
+                                        {% if analysis.link %}
+                                            <a href="{{ analysis.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-external-link-alt"></i> Open
+                                            </a>
+                                        {% else %}
+                                            <span class="badge bg-warning me-2">Link not available</span>
+                                        {% endif %}
                                     </div>
                                     
                                     <!-- Relevancy Score -->

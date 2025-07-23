@@ -1,3 +1,53 @@
+# Core Web Framework
+Flask>=2.3.0
+Werkzeug>=2.3.0
+
+# HTTP and API Libraries
 requests>=2.31.0
+urllib3>=2.0.0
+
+# Data Processing and Analysis
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# PDF Generation
+reportlab>=4.0.0
+
+# Data Serialization
 dataclasses-json>=0.6.0
-reportlab>=4.0.0 
+
+# Web Scraping and HTML Parsing
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Testing Framework
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Development and Code Quality
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+
+# Optional: AutoGPT Integration (if using external AutoGPT)
+# autogpt-client>=0.1.0
+
+# Optional: NSF API Integration (if using fundNSF)
+# fundNSF>=0.1.0
+
+# System Dependencies (these are typically installed via system package manager)
+# - sqlite3 (usually included with Python)
+# - threading (built-in Python module)
+# - tempfile (built-in Python module)
+# - pathlib (built-in Python module)
+# - typing (built-in Python module)
+# - dataclasses (built-in Python module)
+# - datetime (built-in Python module)
+# - json (built-in Python module)
+# - re (built-in Python module)
+# - os (built-in Python module)
+# - sys (built-in Python module)
+# - logging (built-in Python module)
+# - abc (built-in Python module)
+# - concurrent.futures (built-in Python module)
+# - urllib.parse (built-in Python module) 
