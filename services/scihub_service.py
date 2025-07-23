@@ -132,16 +132,16 @@ class SciHubService:
     
     def download_pdf(self, doi: str) -> Dict[str, Any]:
         """
-        Download PDF by DOI from Sci-Hub
+        Get Sci-Hub URL for a DOI
         
         Args:
             doi: Digital Object Identifier
             
         Returns:
-            Dictionary with success status and file path or error
+            Dictionary with Sci-Hub URL or error
         """
         if logger:
-            logger.info(f"Downloading PDF from Sci-Hub for DOI: {doi}")
+            logger.info(f"Getting Sci-Hub URL for DOI: {doi}")
         
         # Validate DOI format
         if not doi or not self._is_valid_doi(doi):
@@ -154,119 +154,44 @@ class SciHubService:
             }
         
         try:
-            # Try multiple mirrors
+            # Find a working Sci-Hub mirror
+            working_mirror = None
             for mirror in self.mirrors:
-                scihub_url = f"{mirror}/{doi}"
-                
-                if logger:
-                    logger.info(f"Trying Sci-Hub mirror: {scihub_url}")
-                
                 try:
-                    # First, get the page to see if the article is available
-                    response = self.session.get(scihub_url, timeout=15)
-                    
-                    if response.status_code == 200:
-                        break  # Found working mirror
-                    else:
-                        if logger:
-                            logger.warning(f"Mirror {mirror} returned status {response.status_code} for DOI: {doi}")
-                        continue
-                        
+                    # Test if mirror is accessible
+                    test_url = f"{mirror}/10.1038/nature12373"  # Test with a known DOI
+                    response = self.session.head(test_url, timeout=10)
+                    if response.status_code in [200, 302, 404]:  # Mirror responds
+                        working_mirror = mirror
+                        break
                 except Exception as e:
                     if logger:
-                        logger.warning(f"Mirror {mirror} failed for DOI {doi}: {e}")
+                        logger.debug(f"Mirror {mirror} not accessible: {e}")
                     continue
-            else:
-                # All mirrors failed
+            
+            if not working_mirror:
+                # Fallback to first mirror
+                working_mirror = self.mirrors[0]
                 if logger:
-                    logger.error(f"All Sci-Hub mirrors failed for DOI: {doi}")
-                return {
-                    'success': False,
-                    'error': 'All Sci-Hub mirrors failed',
-                    'url': f"{self.mirrors[0]}/{doi}"
-                }
+                    logger.warning(f"No working mirror found, using fallback: {working_mirror}")
             
-            # Check if the response is a PDF
-            content_type = response.headers.get('content-type', '').lower()
-            if 'application/pdf' in content_type:
-                if logger:
-                    logger.info(f"Direct PDF download successful for DOI: {doi}")
-                
-                # Save PDF to file
-                file_path = self._save_pdf_to_file(doi, response.content)
-                return {
-                    'success': True,
-                    'file_path': file_path,
-                    'message': 'PDF downloaded successfully'
-                }
-            
-            # If not a direct PDF, the page might contain a PDF link
-            # Look for PDF links in the HTML content
-            pdf_patterns = [
-                r'href="([^"]*\.pdf)"',
-                r'src="([^"]*\.pdf)"',
-                r'<iframe[^>]*src="([^"]*\.pdf)"',
-                r'<embed[^>]*src="([^"]*\.pdf)"',
-                r'<a[^>]*href="([^"]*\.pdf)"[^>]*>',
-                r'window\.location\.href\s*=\s*["\']([^"\']*\.pdf)["\']',
-                r'<script[^>]*>.*?["\']([^"\']*\.pdf)["\'].*?</script>'
-            ]
-            
-            html_content = response.text
+            # Create Sci-Hub URL
+            scihub_url = f"{working_mirror}/{doi}"
             
             if logger:
-                logger.info(f"Searching for PDF links in HTML content (length: {len(html_content)})")
+                logger.info(f"Generated Sci-Hub URL: {scihub_url}")
             
-            for pattern in pdf_patterns:
-                matches = re.findall(pattern, html_content, re.IGNORECASE | re.DOTALL)
-                for match in matches:
-                    pdf_url = match
-                    if not pdf_url.startswith('http'):
-                        # Handle relative URLs
-                        if pdf_url.startswith('/'):
-                            pdf_url = f"{mirror}{pdf_url}"
-                        else:
-                            pdf_url = f"{mirror}/{pdf_url}"
-                    
-                    if logger:
-                        logger.info(f"Found PDF URL: {pdf_url}")
-                    
-                    try:
-                        # Download the PDF
-                        pdf_response = self.session.get(pdf_url, timeout=30)
-                        if pdf_response.status_code == 200:
-                            content_type = pdf_response.headers.get('content-type', '').lower()
-                            if 'application/pdf' in content_type or 'pdf' in content_type:
-                                if logger:
-                                    logger.info(f"PDF download successful for DOI: {doi}")
-                                
-                                # Save PDF to file
-                                file_path = self._save_pdf_to_file(doi, pdf_response.content)
-                                return {
-                                    'success': True,
-                                    'file_path': file_path,
-                                    'message': 'PDF downloaded successfully'
-                                }
-                            else:
-                                if logger:
-                                    logger.info(f"URL returned non-PDF content: {content_type}")
-                    except Exception as e:
-                        if logger:
-                            logger.warning(f"Failed to download PDF from {pdf_url}: {e}")
-                        continue
-            
-            # If no PDF found, the article might not be available
-            if logger:
-                logger.info(f"No PDF found for DOI: {doi} on Sci-Hub")
             return {
-                'success': False,
-                'error': 'PDF not found on Sci-Hub',
-                'url': f"{self.mirrors[0]}/{doi}"
+                'success': True,
+                'redirect': True,
+                'url': scihub_url,
+                'message': f'Sci-Hub URL generated for DOI: {doi}',
+                'mirror': working_mirror
             }
             
         except Exception as e:
             if logger:
-                logger.error(f"Error downloading PDF from Sci-Hub for DOI {doi}: {e}")
+                logger.error(f"Error generating Sci-Hub URL for DOI {doi}: {e}")
             return {
                 'success': False,
                 'error': str(e)
