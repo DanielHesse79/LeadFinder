@@ -28,7 +28,7 @@ class RunPodConfig:
     """Configuration for RunPod.ai integration"""
     api_key: str
     endpoint_id: str
-    base_url: str = "https://api.runpod.io/v2"
+    base_url: str = "https://api.runpod.ai/v2"
     timeout: int = 300  # 5 minutes timeout
     max_retries: int = 3
     retry_delay: int = 2
