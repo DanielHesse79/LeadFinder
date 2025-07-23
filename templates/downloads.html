@@ -61,23 +61,21 @@
 <body class="bg-light">
     <div class="container-fluid">
         <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ url_for('leads.show_leads') }}">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="/">
                     <i class="fas fa-search"></i> LeadFinder
                 </a>
-                <div class="navbar-nav ms-auto">
-                    <a class="nav-link" href="{{ url_for('leads.show_leads') }}">
-                        <i class="fas fa-home"></i> Home
-                    </a>
-                    <a class="nav-link" href="{{ url_for('ollama.ollama_home') }}">
-                        <i class="fas fa-book"></i> Publications
-                    </a>
-                    <a class="nav-link" href="{{ url_for('lead_workshop.lead_workshop_home') }}">
-                        <i class="fas fa-tools"></i> Lead Workshop
-                    </a>
-                    <a class="nav-link active" href="{{ url_for('ollama.view_downloads') }}">
+                <div class="navbar-nav">
+                    <a class="nav-link" href="/">General Search</a>
+                    <a class="nav-link" href="/research">Funding</a>
+                    <a class="nav-link" href="/ollama">Publications & Researchers</a>
+                    <a class="nav-link" href="/lead-workshop">Lead Workshop</a>
+                    <a class="nav-link active" href="/ollama/view_downloads">
                         <i class="fas fa-download"></i> Downloads
+                    </a>
+                    <a class="nav-link" href="/config">
+                        <i class="fas fa-cog"></i> Settings
                     </a>
                 </div>
             </div>
@@ -132,7 +130,7 @@
                 <i class="fas fa-file-pdf"></i>
                 <h4>No Sci-Hub Downloads</h4>
                 <p>No PDFs have been downloaded from Sci-Hub yet.</p>
-                <a href="{{ url_for('ollama.ollama_home') }}" class="btn btn-primary">
+                <a href="/ollama" class="btn btn-primary">
                     <i class="fas fa-search"></i> Search Publications
                 </a>
             </div>
@@ -178,7 +176,7 @@
                 <i class="fas fa-chart-bar"></i>
                 <h4>No Generated Reports</h4>
                 <p>No PDF reports have been generated yet.</p>
-                <a href="{{ url_for('lead_workshop.lead_workshop_home') }}" class="btn btn-success">
+                <a href="/lead-workshop" class="btn btn-success">
                     <i class="fas fa-tools"></i> Go to Lead Workshop
                 </a>
             </div>
@@ -194,12 +192,12 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-3">
-                                    <a href="{{ url_for('ollama.ollama_home') }}" class="btn btn-outline-primary w-100 mb-2">
+                                    <a href="/ollama" class="btn btn-outline-primary w-100 mb-2">
                                         <i class="fas fa-search"></i> Search Publications
                                     </a>
                                 </div>
                                 <div class="col-md-3">
-                                    <a href="{{ url_for('lead_workshop.lead_workshop_home') }}" class="btn btn-outline-success w-100 mb-2">
+                                    <a href="/lead-workshop" class="btn btn-outline-success w-100 mb-2">
                                         <i class="fas fa-tools"></i> Lead Workshop
                                     </a>
                                 </div>
@@ -209,7 +207,7 @@
                                     </button>
                                 </div>
                                 <div class="col-md-3">
-                                    <a href="{{ url_for('leads.show_leads') }}" class="btn btn-outline-secondary w-100 mb-2">
+                                    <a href="/" class="btn btn-outline-secondary w-100 mb-2">
                                         <i class="fas fa-home"></i> Back to Home
                                     </a>
                                 </div>

@@ -2,6 +2,8 @@ import requests
 from typing import List, Dict, Any, Optional
 import re
 from urllib.parse import quote_plus
+from pathlib import Path
+from datetime import datetime
 
 try:
     from utils.logger import get_logger
@@ -25,6 +27,15 @@ class SciHubService:
         self.session.headers.update({
             'User-Agent': 'LeadFinder/1.0 (https://github.com/your-repo; mailto:your-email@example.com)'
         })
+        
+        # Set up download folder
+        try:
+            from config import SCIHUB_FOLDER
+            self.download_folder = Path(SCIHUB_FOLDER)
+            self.download_folder.mkdir(parents=True, exist_ok=True)
+        except ImportError:
+            self.download_folder = Path('scihub_pdfs')
+            self.download_folder.mkdir(parents=True, exist_ok=True)
     
     def _ensure_int(self, value, default: int = 10) -> int:
         """
@@ -119,16 +130,15 @@ class SciHubService:
                 logger.error(f"Error getting Sci-Hub article for DOI {doi}: {e}")
             return None
     
-    def download_pdf_by_doi(self, doi: str, save_to_file: bool = True) -> Optional[bytes]:
+    def download_pdf(self, doi: str) -> Dict[str, Any]:
         """
         Download PDF by DOI from Sci-Hub
         
         Args:
             doi: Digital Object Identifier
-            save_to_file: Whether to save the PDF to disk
             
         Returns:
-            PDF content as bytes or None
+            Dictionary with success status and file path or error
         """
         if logger:
             logger.info(f"Downloading PDF from Sci-Hub for DOI: {doi}")
@@ -137,7 +147,11 @@ class SciHubService:
         if not doi or not self._is_valid_doi(doi):
             if logger:
                 logger.warning(f"Invalid DOI format: {doi}")
-            return None
+            return {
+                'success': False,
+                'error': f'Invalid DOI format: {doi}',
+                'invalid_doi': True
+            }
         
         try:
             # Try multiple mirrors
@@ -166,18 +180,28 @@ class SciHubService:
                 # All mirrors failed
                 if logger:
                     logger.error(f"All Sci-Hub mirrors failed for DOI: {doi}")
-                return None
+                return {
+                    'success': False,
+                    'error': 'All Sci-Hub mirrors failed',
+                    'url': f"{self.mirrors[0]}/{doi}"
+                }
             
             # Check if the response is a PDF
             content_type = response.headers.get('content-type', '').lower()
             if 'application/pdf' in content_type:
                 if logger:
                     logger.info(f"Direct PDF download successful for DOI: {doi}")
-                return response.content
+                
+                # Save PDF to file
+                file_path = self._save_pdf_to_file(doi, response.content)
+                return {
+                    'success': True,
+                    'file_path': file_path,
+                    'message': 'PDF downloaded successfully'
+                }
             
             # If not a direct PDF, the page might contain a PDF link
             # Look for PDF links in the HTML content
-            import re
             pdf_patterns = [
                 r'href="([^"]*\.pdf)"',
                 r'src="([^"]*\.pdf)"',
@@ -216,11 +240,13 @@ class SciHubService:
                                 if logger:
                                     logger.info(f"PDF download successful for DOI: {doi}")
                                 
-                                # Save PDF to file if requested
-                                if save_to_file:
-                                    self._save_pdf_to_file(doi, pdf_response.content)
-                                
-                                return pdf_response.content
+                                # Save PDF to file
+                                file_path = self._save_pdf_to_file(doi, pdf_response.content)
+                                return {
+                                    'success': True,
+                                    'file_path': file_path,
+                                    'message': 'PDF downloaded successfully'
+                                }
                             else:
                                 if logger:
                                     logger.info(f"URL returned non-PDF content: {content_type}")
@@ -232,12 +258,76 @@ class SciHubService:
             # If no PDF found, the article might not be available
             if logger:
                 logger.info(f"No PDF found for DOI: {doi} on Sci-Hub")
-            return None
+            return {
+                'success': False,
+                'error': 'PDF not found on Sci-Hub',
+                'url': f"{self.mirrors[0]}/{doi}"
+            }
             
         except Exception as e:
             if logger:
                 logger.error(f"Error downloading PDF from Sci-Hub for DOI {doi}: {e}")
-            return None
+            return {
+                'success': False,
+                'error': str(e)
+            }
+
+    def get_downloaded_files(self) -> List[Dict[str, Any]]:
+        """
+        Get list of downloaded PDF files
+        
+        Returns:
+            List of file dictionaries with metadata
+        """
+        try:
+            files = []
+            if not self.download_folder.exists():
+                return files
+            
+            for file_path in self.download_folder.glob("*.pdf"):
+                try:
+                    stat = file_path.stat()
+                    files.append({
+                        'name': file_path.name,
+                        'path': str(file_path),
+                        'size': stat.st_size,
+                        'size_formatted': self._format_file_size(stat.st_size),
+                        'downloaded_date': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S'),
+                        'modified': stat.st_mtime
+                    })
+                except Exception as e:
+                    if logger:
+                        logger.warning(f"Error reading file {file_path}: {e}")
+                    continue
+            
+            # Sort by modification time (newest first)
+            files.sort(key=lambda x: x['modified'], reverse=True)
+            return files
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Error getting downloaded files: {e}")
+            return []
+
+    def _format_file_size(self, size_bytes: int) -> str:
+        """
+        Format file size in human readable format
+        
+        Args:
+            size_bytes: Size in bytes
+            
+        Returns:
+            Formatted size string
+        """
+        if size_bytes == 0:
+            return "0 B"
+        
+        size_names = ["B", "KB", "MB", "GB"]
+        import math
+        i = int(math.floor(math.log(size_bytes, 1024)))
+        p = math.pow(1024, i)
+        s = round(size_bytes / p, 2)
+        return f"{s} {size_names[i]}"
     
     def _is_valid_doi(self, doi: str) -> bool:
         """
