@@ -12,7 +12,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 
 try:
-    from langchain.llms import Ollama
+    from langchain_community.llms import Ollama
     from langchain.prompts import PromptTemplate
     from langchain.chains import LLMChain
     from langchain.output_parsers import PydanticOutputParser
@@ -22,7 +22,8 @@ try:
     from langchain.chains.question_answering import load_qa_chain
     from pydantic import BaseModel, Field
     LANGCHAIN_AVAILABLE = True
-except ImportError:
+except ImportError as e:
+    print(f"LangChain import error: {e}")
     LANGCHAIN_AVAILABLE = False
 
 try:
