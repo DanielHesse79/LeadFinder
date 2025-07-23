@@ -284,6 +284,9 @@
                                 <button type="button" class="btn btn-outline-info btn-sm ms-2" onclick="showDownloadedFiles()">
                                     <i class="fas fa-folder-open"></i> Show downloaded files
                                 </button>
+                                <a href="{{ url_for('ollama.view_downloads') }}" class="btn btn-outline-secondary btn-sm ms-2">
+                                    <i class="fas fa-download"></i> View Downloads Page
+                                </a>
                             </div>
                             {% endif %}
                         </div>
@@ -395,8 +398,8 @@
     
     <script>
         function downloadSinglePaper(doi, title) {
-            if (!doi) {
-                alert('No DOI available for this article.');
+            if (!doi || !doi.trim() || !doi.startsWith('10.')) {
+                alert('No valid DOI available for this article. DOI must start with "10."');
                 return;
             }
             
@@ -452,7 +455,12 @@
                         }
                     } else if (data && data.success) {
                         // PDF downloaded successfully
-                        alert(`PDF downloaded successfully! File saved in the folder: scihub_downloads/`);
+                        alert(`PDF downloaded successfully! File saved in the folder: scihub_pdfs/`);
+                        
+                        // Refresh the page to show updated downloads
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     }
                 })
                 .catch(error => {
@@ -470,10 +478,10 @@
         function downloadSelectedPapers() {
             const selectedDois = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
                 .map(checkbox => checkbox.value)
-                .filter(doi => doi);
+                .filter(doi => doi && doi.trim() !== '' && doi.startsWith('10.'));
             
             if (selectedDois.length === 0) {
-                alert('Please select at least one article with a DOI for download.');
+                alert('Please select at least one article with a valid DOI (starting with 10.) for download.');
                 return;
             }
             
@@ -487,6 +495,8 @@
                 // Download them one by one with proper handling
                 let completed = 0;
                 const total = selectedDois.length;
+                let successCount = 0;
+                let errorCount = 0;
                 
                 selectedDois.forEach((doi, index) => {
                     setTimeout(() => {
@@ -509,6 +519,7 @@
                                     a.click();
                                     window.URL.revokeObjectURL(url);
                                     document.body.removeChild(a);
+                                    successCount++;
                                 });
                             } else {
                                 // JSON response - handle redirect
@@ -519,6 +530,7 @@
                             if (data && data.redirect && data.url) {
                                 // Open Sci-Hub URL in new tab
                                 window.open(data.url, '_blank');
+                                console.log(`Opened Sci-Hub URL for DOI: ${doi}`);
                             } else if (data && data.error) {
                                 // Handle error response
                                 if (data.invalid_doi) {
@@ -526,10 +538,15 @@
                                 } else {
                                     console.error(`Error downloading DOI ${doi}: ${data.error}`);
                                 }
+                                errorCount++;
+                            } else if (data && data.success) {
+                                successCount++;
+                                console.log(`Successfully downloaded PDF for DOI: ${doi}`);
                             }
                         })
                         .catch(error => {
                             console.error('Error downloading DOI:', doi, error);
+                            errorCount++;
                         })
                         .finally(() => {
                             completed++;
@@ -537,7 +554,21 @@
                                 // All downloads completed
                                 button.innerHTML = originalText;
                                 button.disabled = false;
-                                alert(`Download completed for ${completed} article(s).`);
+                                
+                                let message = `Download completed for ${completed} article(s).`;
+                                if (successCount > 0) {
+                                    message += `\nSuccessfully downloaded: ${successCount}`;
+                                }
+                                if (errorCount > 0) {
+                                    message += `\nFailed: ${errorCount}`;
+                                }
+                                
+                                alert(message);
+                                
+                                // Refresh the page to show updated downloads
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
                             }
                         });
                     }, index * 1000); // 1 second delay between downloads
@@ -558,7 +589,7 @@
         }
         
         function showDownloadedFiles() {
-            fetch('{{ url_for("ollama.download_pdf") }}')
+            fetch('{{ url_for("ollama.get_downloaded_files") }}')
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
