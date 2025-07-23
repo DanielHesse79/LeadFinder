@@ -1,5 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from typing import List, Dict, Any
+from datetime import datetime
+import os
+from pathlib import Path
 
 # Import services with error handling
 try:
@@ -277,6 +280,81 @@ def get_downloaded_files():
         if logger:
             logger.error(f"Failed to get downloaded files: {e}")
         return jsonify({'error': str(e)}), 500
+
+@ollama_bp.route('/ollama/view_downloads')
+def view_downloads():
+    """View downloaded PDFs page"""
+    try:
+        # Get list of downloaded files
+        if scihub_service:
+            files = scihub_service.get_downloaded_files()
+        else:
+            files = []
+        
+        # Get list of export files
+        export_files = []
+        try:
+            from config import EXPORT_FOLDER
+            export_path = Path(EXPORT_FOLDER)
+            if export_path.exists():
+                for file_path in export_path.glob("*.pdf"):
+                    export_files.append({
+                        'name': file_path.name,
+                        'path': str(file_path),
+                        'size': file_path.stat().st_size,
+                        'modified': datetime.fromtimestamp(file_path.stat().st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+                    })
+        except Exception as e:
+            if logger:
+                logger.error(f"Error reading export files: {e}")
+        
+        return render_template('downloads.html', 
+                             downloaded_files=files, 
+                             export_files=export_files)
+    except Exception as e:
+        if logger:
+            logger.error(f"Error in view_downloads: {e}")
+        flash('Error loading downloads', 'error')
+        return redirect(url_for('ollama.ollama_home'))
+
+@ollama_bp.route('/ollama/send_pdf_to_workshop', methods=['POST'])
+def send_pdf_to_workshop():
+    """Send a downloaded PDF to Lead Workshop for processing"""
+    try:
+        data = request.get_json()
+        file_path = data.get('file_path', '')
+        
+        if not file_path or not os.path.exists(file_path):
+            return jsonify({'success': False, 'error': 'File not found'}), 404
+        
+        # Create a lead from the PDF file
+        lead_data = {
+            'title': os.path.basename(file_path),
+            'url': f'file://{file_path}',
+            'source': 'downloaded_pdf',
+            'description': f'PDF file: {os.path.basename(file_path)}',
+            'content': f'Local PDF file available for processing: {file_path}'
+        }
+        
+        # Save to database
+        if db:
+            lead_id = db.save_lead(lead_data)
+            if lead_id:
+                return jsonify({
+                    'success': True, 
+                    'message': 'PDF sent to Lead Workshop',
+                    'lead_id': lead_id,
+                    'redirect_url': url_for('lead_workshop.lead_workshop_home', lead_ids=str(lead_id))
+                })
+            else:
+                return jsonify({'success': False, 'error': 'Failed to save lead'}), 500
+        else:
+            return jsonify({'success': False, 'error': 'Database not available'}), 500
+            
+    except Exception as e:
+        if logger:
+            logger.error(f"Error sending PDF to workshop: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @ollama_bp.route('/ollama_status')
 def ollama_status():

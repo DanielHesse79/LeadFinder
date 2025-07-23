@@ -133,6 +133,9 @@
                         <i class="fas fa-spider"></i> WebScraper
                     </a>
                     <a class="nav-link" href="/lead-workshop">Lead Workshop</a>
+                    <a class="nav-link" href="/ollama/view_downloads">
+                        <i class="fas fa-download"></i> Downloads
+                    </a>
                     <a class="nav-link" href="/autogpt/control">
                         <i class="fas fa-robot"></i> AutoGPT Control
                     </a>
@@ -191,22 +194,27 @@
                             <i class="fas fa-tools"></i> Actions
                         </h4>
                         <div class="row">
-                            <div class="col-md-3 mb-2">
+                            <div class="col-md-2 mb-2">
                                 <a href="{{ url_for('leads.export_to_excel') }}" class="btn btn-success w-100">
                                     <i class="fas fa-file-excel"></i> Export to Excel
                                 </a>
                             </div>
-                            <div class="col-md-3 mb-2">
+                            <div class="col-md-2 mb-2">
                                 <a href="{{ url_for('leads.download_links') }}" class="btn btn-info w-100">
                                     <i class="fas fa-download"></i> Download Content
                                 </a>
                             </div>
-                            <div class="col-md-3 mb-2">
+                            <div class="col-md-2 mb-2">
+                                <a href="{{ url_for('ollama.view_downloads') }}" class="btn btn-secondary w-100">
+                                    <i class="fas fa-folder-open"></i> View Downloads
+                                </a>
+                            </div>
+                            <div class="col-md-2 mb-2">
                                 <a href="{{ url_for('ollama.models_ui') }}" class="btn btn-warning w-100">
                                     <i class="fas fa-cog"></i> Manage AI Models
                                 </a>
                             </div>
-                            <div class="col-md-3 mb-2">
+                            <div class="col-md-2 mb-2">
                                 <a href="{{ url_for('config.config_home') }}" class="btn btn-primary w-100">
                                     <i class="fas fa-key"></i> API Keys
                                 </a>
