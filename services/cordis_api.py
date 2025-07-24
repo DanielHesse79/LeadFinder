@@ -248,7 +248,7 @@ class CORDISAPI(ResearchFundingAPI):
                 keywords=[query, "mock", "fallback"],
                 source=self.name,
                 url=f"https://cordis.europa.eu/project/mock/{i+1}",
-                is_mock=True
+                raw_data={"is_mock": True}
             )
             mock_projects.append(mock_project)
         

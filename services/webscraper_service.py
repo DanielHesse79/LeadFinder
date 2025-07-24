@@ -93,7 +93,14 @@ class WebScraperService:
                 logger.error("Playwright not available")
             return False
         
+        # Clean up any existing browser
+        if self._initialized:
+            await self.close()
+        
         try:
+            if logger:
+                logger.info("Starting Playwright browser initialization...")
+            
             self.playwright = await async_playwright().start()
             self.browser = await self.playwright.chromium.launch(
                 headless=True,
@@ -104,12 +111,23 @@ class WebScraperService:
                     '--disable-accelerated-2d-canvas',
                     '--no-first-run',
                     '--no-zygote',
-                    '--disable-gpu'
+                    '--disable-gpu',
+                    '--disable-web-security',
+                    '--disable-features=VizDisplayCompositor'
                 ]
             )
             self.page = await self.browser.new_page()
-            await self.page.set_user_agent(self.user_agent)
+            # Set user agent and viewport
+            await self.page.set_extra_http_headers({"User-Agent": self.user_agent})
             await self.page.set_viewport_size({"width": 1920, "height": 1080})
+            
+            # Test the page to ensure it's working
+            try:
+                await self.page.goto("data:text/html,<html><body>Test</body></html>", timeout=5000)
+            except Exception as e:
+                if logger:
+                    logger.error(f"Page test failed: {e}")
+                return False
             
             self._initialized = True
             if logger:
@@ -123,12 +141,30 @@ class WebScraperService:
     
     async def close(self):
         """Close browser and cleanup"""
-        if self.page:
-            await self.page.close()
-        if self.browser:
-            await self.browser.close()
-        if self.playwright:
-            await self.playwright.stop()
+        try:
+            if self.page:
+                await self.page.close()
+                self.page = None
+        except Exception as e:
+            if logger:
+                logger.warning(f"Error closing page: {e}")
+        
+        try:
+            if self.browser:
+                await self.browser.close()
+                self.browser = None
+        except Exception as e:
+            if logger:
+                logger.warning(f"Error closing browser: {e}")
+        
+        try:
+            if self.playwright:
+                await self.playwright.stop()
+                self.playwright = None
+        except Exception as e:
+            if logger:
+                logger.warning(f"Error stopping playwright: {e}")
+        
         self._initialized = False
     
     async def scrape_url(self, url: str, content_type: str = "scientific_paper") -> ScrapingResult:

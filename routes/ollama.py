@@ -26,9 +26,20 @@ except ImportError:
     scihub_service = None
 
 try:
+    from services.scihub_enhanced_service import SciHubEnhancedService
+    scihub_enhanced_service = SciHubEnhancedService()
+except ImportError:
+    scihub_enhanced_service = None
+
+try:
     from services.semantic_scholar_service import semantic_scholar_service
 except ImportError:
     semantic_scholar_service = None
+
+try:
+    from models.database import db
+except ImportError:
+    db = None
 
 
 
@@ -40,13 +51,13 @@ except ImportError:
 
 ollama_bp = Blueprint('ollama', __name__)
 
-@ollama_bp.route('/ollama')
+@ollama_bp.route('/')
 def ollama_home():
     """Ollama home page"""
     return render_template('ollama.html', 
                          ollama_status=ollama_service.check_status() if ollama_service else {"ok": False, "msg": "Service not available"})
 
-@ollama_bp.route('/ollama/search', methods=['POST'])
+@ollama_bp.route('/search', methods=['POST'])
 def search_publications():
     """Search publications and researchers"""
     query = request.form.get('query', '').strip()
@@ -105,7 +116,7 @@ def search_publications():
                          search_type=search_type,
                          ollama_status=ollama_service.check_status() if ollama_service else {"ok": False, "msg": "Service not available"})
 
-@ollama_bp.route('/ollama/advanced', methods=['POST'])
+@ollama_bp.route('/advanced', methods=['POST'])
 def advanced_search():
     """Advanced search with filters"""
     query = request.form.get('query', '').strip()
@@ -153,7 +164,7 @@ def advanced_search():
                          search_type='publications',
                          ollama_status=ollama_service.check_status() if ollama_service else {"ok": False, "msg": "Service not available"})
 
-@ollama_bp.route('/ollama/check', methods=['POST'])
+@ollama_bp.route('/check', methods=['POST'])
 def check_ollama():
     """Check Ollama status"""
     if ollama_service:
@@ -166,7 +177,7 @@ def check_ollama():
     
     return redirect(url_for('ollama.ollama_home'))
 
-@ollama_bp.route('/ollama/models')
+@ollama_bp.route('/models')
 def models_ui():
     """Ollama models management UI"""
     if not ollama_service:
@@ -180,7 +191,7 @@ def models_ui():
                          available_models=available_models,
                          selected_model=selected_model)
 
-@ollama_bp.route('/ollama/set_model', methods=['POST'])
+@ollama_bp.route('/set_model', methods=['POST'])
 def set_model():
     """Set preferred Ollama model"""
     if not ollama_service:
@@ -200,9 +211,9 @@ def set_model():
     
     return redirect(url_for('ollama.models_ui'))
 
-@ollama_bp.route('/ollama/download_pdf', methods=['POST'])
+@ollama_bp.route('/download_pdf', methods=['POST'])
 def download_pdf():
-    """Download PDF via Sci-Hub"""
+    """Get Sci-Hub URL for DOI"""
     if not scihub_service:
         return jsonify({'error': 'Sci-Hub service not available'}), 500
     
@@ -215,23 +226,25 @@ def download_pdf():
         if result['success']:
             return jsonify({
                 'success': True,
-                'message': 'PDF downloaded successfully',
-                'file_path': result.get('file_path', '')
+                'redirect': result.get('redirect', False),
+                'url': result.get('url', ''),
+                'message': result.get('message', 'Sci-Hub URL generated successfully'),
+                'mirror': result.get('mirror', '')
             })
         else:
             return jsonify({
                 'success': False,
-                'error': result.get('error', 'Download failed'),
-                'url': result.get('url', '')
+                'error': result.get('error', 'Failed to generate Sci-Hub URL'),
+                'invalid_doi': result.get('invalid_doi', False)
             })
     except Exception as e:
         if logger:
-            logger.error(f"PDF download failed for DOI {doi}: {e}")
+            logger.error(f"Sci-Hub URL generation failed for DOI {doi}: {e}")
         return jsonify({'error': str(e)}), 500
 
-@ollama_bp.route('/ollama/download_multiple', methods=['POST'])
+@ollama_bp.route('/download_multiple', methods=['POST'])
 def download_multiple_pdfs():
-    """Download multiple PDFs via Sci-Hub"""
+    """Get Sci-Hub URLs for multiple DOIs"""
     if not scihub_service:
         return jsonify({'error': 'Sci-Hub service not available'}), 500
     
@@ -246,8 +259,10 @@ def download_multiple_pdfs():
             results.append({
                 'doi': doi,
                 'success': result['success'],
+                'redirect': result.get('redirect', False),
+                'url': result.get('url', ''),
                 'error': result.get('error', ''),
-                'file_path': result.get('file_path', '')
+                'invalid_doi': result.get('invalid_doi', False)
             })
         except Exception as e:
             results.append({
@@ -263,31 +278,84 @@ def download_multiple_pdfs():
         'successful': success_count
     })
 
-@ollama_bp.route('/ollama/downloaded_files')
+@ollama_bp.route('/download_pdf_enhanced', methods=['POST'])
+def download_pdf_enhanced():
+    """Download PDF directly using enhanced Sci-Hub service"""
+    if not scihub_enhanced_service:
+        return jsonify({'error': 'Enhanced Sci-Hub service not available'}), 500
+    
+    identifier = request.form.get('identifier', '').strip()
+    if not identifier:
+        return jsonify({'error': 'Identifier (DOI, PMID, or URL) is required'}), 400
+    
+    try:
+        result = scihub_enhanced_service.download_pdf(identifier)
+        return jsonify(result)
+    except Exception as e:
+        if logger:
+            logger.error(f"Enhanced PDF download failed for {identifier}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@ollama_bp.route('/batch_download', methods=['POST'])
+def batch_download():
+    """Download multiple PDFs using enhanced service"""
+    if not scihub_enhanced_service:
+        return jsonify({'error': 'Enhanced Sci-Hub service not available'}), 500
+    
+    identifiers = request.json.get('identifiers', [])
+    if not identifiers:
+        return jsonify({'error': 'Identifiers are required'}), 400
+    
+    try:
+        result = scihub_enhanced_service.batch_download(identifiers)
+        return jsonify(result)
+    except Exception as e:
+        if logger:
+            logger.error(f"Batch download failed: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@ollama_bp.route('/mirror_status')
+def get_mirror_status():
+    """Get status of Sci-Hub mirrors"""
+    if not scihub_enhanced_service:
+        return jsonify({'error': 'Enhanced Sci-Hub service not available'}), 500
+    
+    try:
+        status = scihub_enhanced_service.get_mirror_status()
+        return jsonify(status)
+    except Exception as e:
+        if logger:
+            logger.error(f"Failed to get mirror status: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@ollama_bp.route('/downloaded_files')
 def get_downloaded_files():
     """Get list of downloaded PDF files"""
-    if not scihub_service:
+    # Try enhanced service first, fallback to original service
+    service = scihub_enhanced_service or scihub_service
+    if not service:
         return jsonify({'error': 'Sci-Hub service not available'}), 500
     
     try:
-        files = scihub_service.get_downloaded_files()
+        files = service.get_downloaded_files()
         return jsonify({
             'files': files,
             'count': len(files),
-            'download_folder': scihub_service.download_folder
+            'download_folder': str(service.download_folder)
         })
     except Exception as e:
         if logger:
             logger.error(f"Failed to get downloaded files: {e}")
         return jsonify({'error': str(e)}), 500
 
-@ollama_bp.route('/ollama/view_downloads')
+@ollama_bp.route('/view_downloads')
 def view_downloads():
     """View downloaded PDFs page"""
     try:
-        # Get list of downloaded files
-        if scihub_service:
-            files = scihub_service.get_downloaded_files()
+        # Get list of downloaded files (try enhanced service first)
+        service = scihub_enhanced_service or scihub_service
+        if service:
+            files = service.get_downloaded_files()
         else:
             files = []
         
@@ -363,7 +431,7 @@ def download_file(file_path):
             logger.error(f"Error downloading file {file_path}: {e}")
         return jsonify({'error': str(e)}), 500
 
-@ollama_bp.route('/ollama/send_pdf_to_workshop', methods=['POST'])
+@ollama_bp.route('/send_pdf_to_workshop', methods=['POST'])
 def send_pdf_to_workshop():
     """Send a downloaded PDF to Lead Workshop for processing"""
     try:
@@ -384,7 +452,14 @@ def send_pdf_to_workshop():
         
         # Save to database
         if db:
-            lead_id = db.save_lead(lead_data)
+            # Extract the required fields for save_lead
+            title = lead_data.get('title', 'Unknown PDF')
+            description = lead_data.get('description', '')
+            link = lead_data.get('url', '')
+            ai_summary = lead_data.get('content', '')
+            source = lead_data.get('source', 'downloaded_pdf')
+            
+            lead_id = db.save_lead(title, description, link, ai_summary, source)
             if lead_id:
                 return jsonify({
                     'success': True, 
@@ -424,7 +499,7 @@ def ollama_models():
     else:
         return jsonify({'models': [], 'selected': None})
 
-@ollama_bp.route('/ollama/send_to_workshop', methods=['POST'])
+@ollama_bp.route('/send_to_workshop', methods=['POST'])
 def send_to_workshop():
     """Send selected publications to lead workshop"""
     try:

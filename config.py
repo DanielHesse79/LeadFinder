@@ -68,7 +68,7 @@ class ConfigurationManager:
         # 2. Database value (fallback)
         if self._db_config:
             db_value = self._db_config.get_config(key)
-            if db_value is not None:
+            if db_value is not None and db_value != '':
                 self._cache[key] = db_value
                 return db_value
         
@@ -415,6 +415,38 @@ LOG_FILE = config.get('LOG_FILE', 'leadfinder.log')
 REQUEST_POOL_SIZE = int(config.get('REQUEST_POOL_SIZE', '10'))
 REQUEST_TIMEOUT = int(config.get('REQUEST_TIMEOUT', '10'))
 MAX_TEXT_LENGTH = int(config.get('MAX_TEXT_LENGTH', '1000'))
+
+# Database Connection Pool Configuration
+try:
+    DB_POOL_MAX_CONNECTIONS = int(config.get('DB_POOL_MAX_CONNECTIONS', '10'))
+except (TypeError, ValueError):
+    DB_POOL_MAX_CONNECTIONS = 10
+
+try:
+    DB_POOL_CONNECTION_TIMEOUT = int(config.get('DB_POOL_CONNECTION_TIMEOUT', '30'))
+except (TypeError, ValueError):
+    DB_POOL_CONNECTION_TIMEOUT = 30
+
+try:
+    DB_POOL_HEALTH_CHECK_INTERVAL = int(config.get('DB_POOL_HEALTH_CHECK_INTERVAL', '300'))
+except (TypeError, ValueError):
+    DB_POOL_HEALTH_CHECK_INTERVAL = 300
+
+# Cache Configuration
+try:
+    CACHE_MAX_SIZE = int(config.get('CACHE_MAX_SIZE', '1000'))
+except (TypeError, ValueError):
+    CACHE_MAX_SIZE = 1000
+
+try:
+    CACHE_DEFAULT_TTL = int(config.get('CACHE_DEFAULT_TTL', '300'))
+except (TypeError, ValueError):
+    CACHE_DEFAULT_TTL = 300
+
+try:
+    CACHE_CLEANUP_INTERVAL = int(config.get('CACHE_CLEANUP_INTERVAL', '60'))
+except (TypeError, ValueError):
+    CACHE_CLEANUP_INTERVAL = 60
 
 # Export settings
 EXPORT_FOLDER = config.get('EXPORT_FOLDER', 'exports')

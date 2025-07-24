@@ -7,6 +7,7 @@ This module provides routes for controlling and monitoring AutoGPT functionality
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
 from typing import Dict, Any
 import logging
+import time
 
 # Import AutoGPT integration
 try:
@@ -24,6 +25,15 @@ try:
     logger = get_logger('autogpt_control')
 except ImportError:
     logger = None
+
+try:
+    from utils.progress_manager import get_progress_manager, ProgressContext, ProgressStatus, ANALYSIS_STEPS, RESEARCH_STEPS
+except ImportError:
+    get_progress_manager = None
+    ProgressContext = None
+    ProgressStatus = None
+    ANALYSIS_STEPS = None
+    RESEARCH_STEPS = None
 
 autogpt_control_bp = Blueprint('autogpt_control', __name__)
 
@@ -103,7 +113,7 @@ def test_autogpt():
 
 @autogpt_control_bp.route('/autogpt/analyze', methods=['POST'])
 def analyze_with_autogpt():
-    """Analyze text with AutoGPT"""
+    """Analyze text with AutoGPT and progress tracking"""
     if not LeadfinderAutoGPTIntegration:
         return jsonify({
             'success': False,
@@ -124,59 +134,119 @@ def analyze_with_autogpt():
         if logger:
             logger.info(f"Analyzing text with AutoGPT: {analysis_type}")
         
-        autogpt_integration = LeadfinderAutoGPTIntegration(model)
+        # Create progress tracking
+        operation_id = None
+        if get_progress_manager:
+            progress_manager = get_progress_manager()
+            operation_id = progress_manager.create_operation(
+                name=f"AI Analysis: {analysis_type}",
+                description=f"Analyzing text with {model}",
+                steps=ANALYSIS_STEPS
+            )
+            progress_manager.start_operation(operation_id)
         
-        # Create analysis prompt based on type
-        if analysis_type == 'lead_relevance':
-            prompt = f"""
-            Analyze this lead for business relevance:
+        try:
+            # Step 1: Initialize analysis
+            if operation_id:
+                progress_manager.update_step(operation_id, "step_1", 0.5, ProgressStatus.RUNNING, 
+                                           {"analysis_type": analysis_type, "model": model})
             
-            {text_to_analyze}
+            autogpt_integration = LeadfinderAutoGPTIntegration(model)
             
-            Please provide:
-            1. Relevance score (1-10)
-            2. Key insights
-            3. Potential opportunities
-            4. Recommended next steps
-            """
-        elif analysis_type == 'company_research':
-            prompt = f"""
-            Research and analyze this company information:
+            if operation_id:
+                progress_manager.update_step(operation_id, "step_1", 1.0, ProgressStatus.COMPLETED)
+                progress_manager.update_step(operation_id, "step_2", 0.0, ProgressStatus.RUNNING)
             
-            {text_to_analyze}
+            # Step 2: Text processing
+            text_length = len(text_to_analyze)
+            if operation_id:
+                progress_manager.update_step(operation_id, "step_2", 0.5, ProgressStatus.RUNNING,
+                                           {"text_length": text_length})
             
-            Please provide:
-            1. Company overview
-            2. Key decision makers
-            3. Recent developments
-            4. Business opportunities
-            5. Contact strategies
-            """
-        else:
-            prompt = f"""
-            Analyze this text and provide insights:
+            # Create analysis prompt based on type
+            if analysis_type == 'lead_relevance':
+                prompt = f"""
+                Analyze this lead for business relevance:
+                
+                {text_to_analyze}
+                
+                Please provide:
+                1. Relevance score (1-10)
+                2. Key insights
+                3. Potential opportunities
+                4. Recommended next steps
+                """
+            elif analysis_type == 'company_research':
+                prompt = f"""
+                Research and analyze this company information:
+                
+                {text_to_analyze}
+                
+                Please provide:
+                1. Company overview
+                2. Key decision makers
+                3. Recent developments
+                4. Business opportunities
+                5. Contact strategies
+                """
+            else:
+                prompt = f"""
+                Analyze this text and provide insights:
+                
+                {text_to_analyze}
+                
+                Please provide a comprehensive analysis with key points and recommendations.
+                """
             
-            {text_to_analyze}
+            if operation_id:
+                progress_manager.update_step(operation_id, "step_2", 1.0, ProgressStatus.COMPLETED)
+                progress_manager.update_step(operation_id, "step_3", 0.0, ProgressStatus.RUNNING)
             
-            Please provide a comprehensive analysis with key points and recommendations.
-            """
-        
-        result = autogpt_integration.client.execute_text_generation(prompt)
-        
-        if result.get('status') == 'COMPLETED':
-            return jsonify({
-                'success': True,
-                'analysis': result.get('output', ''),
-                'analysis_type': analysis_type,
-                'model': model
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'error': result.get('error', 'Analysis failed'),
-                'analysis_type': analysis_type,
-                'model': model
-            }), 500
+            # Step 3: AI processing
+            result = autogpt_integration.client.execute_text_generation(prompt)
+            
+            if operation_id:
+                progress_manager.update_step(operation_id, "step_3", 1.0, ProgressStatus.COMPLETED,
+                                           {"ai_status": result.get('status')})
+                progress_manager.update_step(operation_id, "step_4", 0.0, ProgressStatus.RUNNING)
+            
+            # Step 4: Result processing
+            if result.get('status') == 'COMPLETED':
+                analysis_output = result.get('output', '')
+                if operation_id:
+                    progress_manager.update_step(operation_id, "step_4", 1.0, ProgressStatus.COMPLETED,
+                                               {"output_length": len(analysis_output)})
+                    progress_manager.update_step(operation_id, "step_5", 0.0, ProgressStatus.RUNNING)
+                
+                # Step 5: Save results (if needed)
+                if operation_id:
+                    progress_manager.update_step(operation_id, "step_5", 1.0, ProgressStatus.COMPLETED)
+                    progress_manager.complete_operation(operation_id)
+                
+                return jsonify({
+                    'success': True,
+                    'analysis': analysis_output,
+                    'analysis_type': analysis_type,
+                    'model': model,
+                    'operation_id': operation_id
+                })
+            else:
+                error_msg = result.get('error', 'Analysis failed')
+                if operation_id:
+                    progress_manager.complete_operation(operation_id, error_msg)
+                
+                return jsonify({
+                    'success': False,
+                    'error': error_msg,
+                    'analysis_type': analysis_type,
+                    'model': model,
+                    'operation_id': operation_id
+                }), 500
+                
+        except Exception as e:
+            if operation_id:
+                progress_manager.complete_operation(operation_id, str(e))
+            raise
             
     except Exception as e:
         if logger:

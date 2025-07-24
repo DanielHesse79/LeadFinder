@@ -27,10 +27,41 @@ GET /health
 ```json
 {
   "status": "healthy",
-  "database": "connected",
+  "timestamp": "2025-07-18T10:30:00Z",
+  "system": {
+    "cpu_usage": 15.2,
+    "memory_usage": 45.8,
+    "disk_usage": 23.1,
+    "network_active": true
+  },
+  "application": {
+    "database_pool": {
+      "active_connections": 2,
+      "total_connections": 5,
+      "max_connections": 10,
+      "status": "healthy"
+    },
+    "cache": {
+      "entries": 45,
+      "hit_rate": 78.5,
+      "memory_usage": "2.3MB",
+      "status": "healthy"
+    },
+    "error_handling": {
+      "total_errors": 3,
+      "error_rate": 0.1,
+      "last_error": "2025-07-18T10:25:00Z",
+      "status": "healthy"
+    },
+    "search_services": {
+      "available_services": 8,
+      "response_time": 1.2,
+      "status": "healthy"
+    }
+  },
+  "alerts": [],
   "configuration": "valid",
-  "autogpt": "ready",
-  "missing_configs": []
+  "autogpt": "ready"
 }
 ```
 

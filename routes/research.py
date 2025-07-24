@@ -151,8 +151,8 @@ def api_search():
                 'organization': project.organization,
                 'funding_amount': project.funding_amount,
                 'currency': project.currency,
-                'start_date': project.start_date.isoformat() if project.start_date else None,
-                'end_date': project.end_date.isoformat() if project.end_date else None,
+                'start_date': project.start_date.isoformat() if project.start_date and hasattr(project.start_date, 'isoformat') else None,
+                'end_date': project.end_date.isoformat() if project.end_date and hasattr(project.end_date, 'isoformat') else None,
                 'keywords': project.keywords,
                 'source': project.source,
                 'url': project.url

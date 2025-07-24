@@ -12,6 +12,8 @@ echo "🚀 Starting LeadFinder app in $ENVIRONMENT environment..."
 # Stop any existing app instances
 echo "🛑 Stopping any existing app instances..."
 pkill -f "python app.py" || true
+pkill -f "venv/bin/python app.py" || true
+pkill -f "app.py" || true
 sleep 2
 
 # Set Flask environment

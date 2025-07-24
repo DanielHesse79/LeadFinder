@@ -1,5 +1,11 @@
 {% extends "leads.html" %}
 
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/progress-tracker.css') }}">
+<script src="{{ url_for('static', filename='js/progress-tracker.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -20,7 +26,12 @@
                     <div class="alert alert-danger">{{ error }}</div>
                     {% endif %}
                     
-                    <form method="POST" action="{{ url_for('search.perform_search') }}">
+                    <!-- Progress Tracking Container -->
+                    <div id="search-progress-container"></div>
+                    
+                    <form method="POST" action="{{ url_for('search.perform_search_ajax') }}" 
+                          data-progress-tracking="true" 
+                          data-progress-container="search-progress-container">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">

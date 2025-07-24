@@ -35,6 +35,9 @@ black>=23.0.0
 flake8>=6.0.0
 mypy>=1.0.0
 
+# System Monitoring
+psutil>=5.9.0
+
 # Optional: AutoGPT Integration (if using external AutoGPT)
 # autogpt-client>=0.1.0
 

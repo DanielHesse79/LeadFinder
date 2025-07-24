@@ -82,15 +82,34 @@ def scrape_urls():
             }), 500
         
         # Run scraping asynchronously
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        
         try:
+            # Get or create event loop
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            # Initialize webscraper if needed
+            if not webscraper_service._initialized:
+                init_success = loop.run_until_complete(webscraper_service.initialize())
+                if not init_success:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Failed to initialize WebScraper browser'
+                    }), 500
+            
+            # Run scraping
             scraping_results = loop.run_until_complete(
                 webscraper_service.scrape_multiple_urls(urls, [content_type] * len(urls))
             )
-        finally:
-            loop.close()
+        except Exception as e:
+            if logger:
+                logger.error(f"Scraping error: {e}")
+            return jsonify({
+                'success': False,
+                'error': f'Scraping failed: {str(e)}'
+            }), 500
         
         # Process results
         processed_results = []
@@ -302,15 +321,36 @@ def test_scraping():
             }), 500
         
         # Run test scraping
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        
         try:
+            # Create new event loop for async operations
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            # Initialize webscraper if needed
+            if not webscraper_service._initialized:
+                init_success = loop.run_until_complete(webscraper_service.initialize())
+                if not init_success:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Failed to initialize WebScraper browser'
+                    }), 500
+            
+            # Run test scraping
             result = loop.run_until_complete(
                 webscraper_service.scrape_url(test_url, "general")
             )
+        except Exception as e:
+            if logger:
+                logger.error(f"Test scraping error: {e}")
+            return jsonify({
+                'success': False,
+                'error': f'Test failed: {str(e)}'
+            }), 500
         finally:
-            loop.close()
+            try:
+                loop.close()
+            except:
+                pass
         
         if result.success:
             return jsonify({
@@ -366,15 +406,34 @@ def batch_scraping():
             }), 500
         
         # Run batch scraping
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        
         try:
+            # Get or create event loop
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            # Initialize webscraper if needed
+            if not webscraper_service._initialized:
+                init_success = loop.run_until_complete(webscraper_service.initialize())
+                if not init_success:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Failed to initialize WebScraper browser'
+                    }), 500
+        
+            # Run batch scraping
             scraping_results = loop.run_until_complete(
                 webscraper_service.scrape_multiple_urls(urls, content_types)
             )
-        finally:
-            loop.close()
+        except Exception as e:
+            if logger:
+                logger.error(f"Batch scraping error: {e}")
+            return jsonify({
+                'success': False,
+                'error': f'Batch scraping failed: {str(e)}'
+            }), 500
         
         # Process results
         processed_results = []

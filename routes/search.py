@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from typing import List, Dict, Any
 import logging
+import time
 
 # Import services with error handling
 try:
@@ -41,6 +42,14 @@ try:
     logger = get_logger('search')
 except ImportError:
     logger = None
+
+try:
+    from utils.progress_manager import get_progress_manager, ProgressContext, ProgressStatus, SEARCH_STEPS
+except ImportError:
+    get_progress_manager = None
+    ProgressContext = None
+    ProgressStatus = None
+    SEARCH_STEPS = None
 
 try:
     from leadfinder_autogpt_integration import LeadfinderAutoGPTIntegration
@@ -244,7 +253,7 @@ def perform_search():
 
 @search_bp.route('/search_ajax', methods=['POST'])
 def perform_search_ajax():
-    """AJAX version of search with better error handling"""
+    """AJAX version of search with progress tracking"""
     try:
         # Safe form access with validation
         query = request.form.get('query', '').strip()
@@ -265,64 +274,130 @@ def perform_search_ajax():
         if logger:
             logger.info(f"AJAX Search: {query} with engines {selected_engines}")
         
-        # Collect leads
-        leads = collect_leads(query, selected_engines, max_leads=10)
+        # Create progress tracking
+        operation_id = None
+        if get_progress_manager:
+            progress_manager = get_progress_manager()
+            operation_id = progress_manager.create_operation(
+                name=f"Search: {query[:50]}...",
+                description=f"Searching for '{query}' across {len(selected_engines)} engines",
+                steps=SEARCH_STEPS
+            )
+            progress_manager.start_operation(operation_id)
         
-        if not leads:
-            return jsonify({'success': False, 'error': 'No results found for your search'}), 404
-        
-        # Add AI analysis if requested
-        if use_ai_analysis:
-            # Use AutoGPT if available, otherwise fall back to Ollama
-            if AUTOGPT_AVAILABLE and autogpt_integration:
-                try:
-                    # Enhanced search with AutoGPT
-                    enhanced_results = autogpt_integration.enhance_search_results(leads, query)
-                    if enhanced_results and enhanced_results.get('status') == 'COMPLETED':
-                        # AutoGPT provided analysis, use it
-                        for i, lead in enumerate(leads):
-                            lead['ai_summary'] = f"AutoGPT Analysis: {enhanced_results.get('output', '')[:200]}..."
-                    else:
-                        # Fall back to regular AI analysis
-                        leads = analyze_leads_with_ai(leads, research_question)
-                except Exception as e:
-                    if logger:
-                        logger.warning(f"AutoGPT analysis failed, falling back to Ollama: {e}")
-                    leads = analyze_leads_with_ai(leads, research_question)
-            else:
-                # Use regular Ollama analysis
-                leads = analyze_leads_with_ai(leads, research_question)
-        else:
-            for lead in leads:
-                if research_question == "general search":
-                    lead['ai_summary'] = "Manual review required - standard search"
-                else:
-                    lead['ai_summary'] = f"Manual review required for: {research_question}"
-        
-        # Save leads
+        leads = []
         saved_count = 0
-        for lead in leads:
-            if db:
-                success = db.save_lead(
-                    lead['title'], 
-                    lead['snippet'], 
-                    lead['link'], 
-                    lead.get('ai_summary', ''), 
-                    source=lead['source']
-                )
-                if success:
-                    saved_count += 1
         
-        # Save search history
-        if db:
-            engines_str = ','.join(selected_engines)
-            db.save_search_history(query, research_question, engines_str, saved_count)
+        try:
+            # Step 1: Initialize search
+            if operation_id:
+                progress_manager.update_step(operation_id, "step_1", 0.5, ProgressStatus.RUNNING, 
+                                           {"query": query, "engines": selected_engines})
+            
+            # Step 2: Web search
+            if operation_id:
+                progress_manager.update_step(operation_id, "step_1", 1.0, ProgressStatus.COMPLETED)
+                progress_manager.update_step(operation_id, "step_2", 0.0, ProgressStatus.RUNNING)
+            
+            leads = collect_leads(query, selected_engines, max_leads=10)
+            
+            if not leads:
+                if operation_id:
+                    progress_manager.complete_operation(operation_id, "No results found")
+                return jsonify({'success': False, 'error': 'No results found for your search'}), 404
+            
+            if operation_id:
+                progress_manager.update_step(operation_id, "step_2", 1.0, ProgressStatus.COMPLETED,
+                                           {"results_found": len(leads)})
+            
+            # Step 3: Research search (if applicable)
+            if search_type in ['both', 'research'] and operation_id:
+                progress_manager.update_step(operation_id, "step_3", 0.0, ProgressStatus.RUNNING)
+                # Add research search logic here
+                progress_manager.update_step(operation_id, "step_3", 1.0, ProgressStatus.COMPLETED)
+            
+            # Step 4: Funding search (if applicable)
+            if search_type in ['both', 'funding'] and operation_id:
+                progress_manager.update_step(operation_id, "step_4", 0.0, ProgressStatus.RUNNING)
+                # Add funding search logic here
+                progress_manager.update_step(operation_id, "step_4", 1.0, ProgressStatus.COMPLETED)
+            
+            # Step 5: AI analysis
+            if use_ai_analysis:
+                if operation_id:
+                    progress_manager.update_step(operation_id, "step_5", 0.0, ProgressStatus.RUNNING)
+                
+                # Use AutoGPT if available, otherwise fall back to Ollama
+                if AUTOGPT_AVAILABLE and autogpt_integration:
+                    try:
+                        # Enhanced search with AutoGPT
+                        enhanced_results = autogpt_integration.enhance_search_results(leads, query)
+                        if enhanced_results and enhanced_results.get('status') == 'COMPLETED':
+                            # AutoGPT provided analysis, use it
+                            for i, lead in enumerate(leads):
+                                lead['ai_summary'] = f"AutoGPT Analysis: {enhanced_results.get('output', '')[:200]}..."
+                        else:
+                            # Fall back to regular AI analysis
+                            leads = analyze_leads_with_ai(leads, research_question)
+                    except Exception as e:
+                        if logger:
+                            logger.warning(f"AutoGPT analysis failed, falling back to Ollama: {e}")
+                        leads = analyze_leads_with_ai(leads, research_question)
+                else:
+                    # Use regular Ollama analysis
+                    leads = analyze_leads_with_ai(leads, research_question)
+                
+                if operation_id:
+                    progress_manager.update_step(operation_id, "step_5", 1.0, ProgressStatus.COMPLETED,
+                                               {"analyzed_leads": len(leads)})
+            else:
+                for lead in leads:
+                    if research_question == "general search":
+                        lead['ai_summary'] = "Manual review required - standard search"
+                    else:
+                        lead['ai_summary'] = f"Manual review required for: {research_question}"
+                
+                if operation_id:
+                    progress_manager.update_step(operation_id, "step_5", 1.0, ProgressStatus.COMPLETED,
+                                               {"manual_review": len(leads)})
+            
+            # Step 6: Save results
+            if operation_id:
+                progress_manager.update_step(operation_id, "step_6", 0.0, ProgressStatus.RUNNING)
+            
+            for lead in leads:
+                if db:
+                    success = db.save_lead(
+                        lead['title'], 
+                        lead['snippet'], 
+                        lead['link'], 
+                        lead.get('ai_summary', ''), 
+                        source=lead['source']
+                    )
+                    if success:
+                        saved_count += 1
+            
+            # Save search history
+            if db:
+                engines_str = ','.join(selected_engines)
+                db.save_search_history(query, research_question, engines_str, saved_count)
+            
+            if operation_id:
+                progress_manager.update_step(operation_id, "step_6", 1.0, ProgressStatus.COMPLETED,
+                                           {"saved_leads": saved_count})
+                progress_manager.complete_operation(operation_id)
+            
+        except Exception as e:
+            if operation_id:
+                progress_manager.complete_operation(operation_id, str(e))
+            raise
         
         return jsonify({
             'success': True,
             'message': f'Search completed! {saved_count} leads saved.',
             'saved_count': saved_count,
-            'total_leads': len(leads)
+            'total_leads': len(leads),
+            'operation_id': operation_id
         })
         
     except Exception as e:

@@ -171,7 +171,15 @@ class ResearchServiceManager:
             all_projects.extend(projects)
         
         # Sort by funding amount (highest first) if available
-        all_projects.sort(key=lambda p: p.funding_amount or 0, reverse=True)
+        def get_funding_amount(project):
+            try:
+                if project.funding_amount is None:
+                    return 0
+                return float(project.funding_amount) if isinstance(project.funding_amount, str) else project.funding_amount
+            except (ValueError, TypeError):
+                return 0
+        
+        all_projects.sort(key=get_funding_amount, reverse=True)
         
         logger.info(f"Combined {len(all_projects)} projects from all APIs")
         return all_projects
@@ -270,20 +278,50 @@ class ResearchServiceManager:
             
             # Funding amount filter
             if 'min_funding' in filters and project.funding_amount:
-                if project.funding_amount < filters['min_funding']:
+                try:
+                    funding_amount = float(project.funding_amount) if isinstance(project.funding_amount, str) else project.funding_amount
+                    min_funding = float(filters['min_funding']) if isinstance(filters['min_funding'], str) else filters['min_funding']
+                    if funding_amount < min_funding:
+                        continue
+                except (ValueError, TypeError):
+                    # Skip if we can't convert to float
                     continue
             
             if 'max_funding' in filters and project.funding_amount:
-                if project.funding_amount > filters['max_funding']:
+                try:
+                    funding_amount = float(project.funding_amount) if isinstance(project.funding_amount, str) else project.funding_amount
+                    max_funding = float(filters['max_funding']) if isinstance(filters['max_funding'], str) else filters['max_funding']
+                    if funding_amount > max_funding:
+                        continue
+                except (ValueError, TypeError):
+                    # Skip if we can't convert to float
                     continue
             
             # Date range filter
             if 'start_date' in filters and project.start_date:
-                if project.start_date < filters['start_date']:
+                try:
+                    if isinstance(filters['start_date'], str):
+                        from datetime import datetime
+                        filter_start_date = datetime.fromisoformat(filters['start_date'].replace('Z', '+00:00'))
+                    else:
+                        filter_start_date = filters['start_date']
+                    if project.start_date < filter_start_date:
+                        continue
+                except (ValueError, TypeError):
+                    # Skip if we can't parse the date
                     continue
             
             if 'end_date' in filters and project.end_date:
-                if project.end_date > filters['end_date']:
+                try:
+                    if isinstance(filters['end_date'], str):
+                        from datetime import datetime
+                        filter_end_date = datetime.fromisoformat(filters['end_date'].replace('Z', '+00:00'))
+                    else:
+                        filter_end_date = filters['end_date']
+                    if project.end_date > filter_end_date:
+                        continue
+                except (ValueError, TypeError):
+                    # Skip if we can't parse the date
                     continue
             
             # Keyword filter

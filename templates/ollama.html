@@ -278,7 +278,10 @@
                             {% set has_dois = publications | selectattr('doi') | list | length > 0 %}
                             {% if has_dois %}
                             <div class="mt-2">
-                                <button type="button" class="btn btn-success btn-sm" onclick="downloadSelectedPapers()">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="downloadSelectedPapersEnhanced()">
+                                    <i class="fas fa-download"></i> Download selected PDFs
+                                </button>
+                                <button type="button" class="btn btn-success btn-sm ms-2" onclick="downloadSelectedPapers()">
                                     <i class="fas fa-external-link-alt"></i> Open selected in Sci-Hub
                                 </button>
                                 <button type="button" class="btn btn-outline-info btn-sm ms-2" onclick="showDownloadedFiles()">
@@ -293,11 +296,11 @@
                             <div class="mt-3 p-2 bg-light border rounded">
                                 <small class="text-muted">
                                     <i class="fas fa-info-circle"></i> <strong>How to access publications via Sci-Hub:</strong><br>
+                                    • <strong>Enhanced Download:</strong> Direct PDF downloads (experimental)<br>
+                                    • <strong>Open in Browser:</strong> Opens Sci-Hub in new tab for manual download<br>
                                     • Select articles with valid DOIs (starting with "10.") using the checkboxes<br>
-                                    • Click "Download selected articles" to open them in Sci-Hub<br>
-                                    • Individual access: Click the download button next to each article<br>
-                                    • Sci-Hub will open in a new tab where you can view/download the PDF<br>
-                                    • Note: This opens Sci-Hub links, not direct downloads (due to Sci-Hub's anti-bot measures)
+                                    • Try enhanced download first, fallback to browser opening if it fails<br>
+                                    • Note: Enhanced downloads may fail due to Sci-Hub's anti-bot measures
                                 </small>
                             </div>
                             {% else %}
@@ -358,10 +361,16 @@
                                                 <small>Select for Sci-Hub</small>
                                             </label>
                                         </div>
-                                        <button type="button" class="btn btn-outline-success btn-sm download-btn" 
-                                                data-doi="{{ pub.doi }}" data-title="{{ pub.title }}">
-                                            <i class="fas fa-external-link-alt"></i> Open in Sci-Hub
-                                        </button>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-primary btn-sm enhanced-download-btn" 
+                                                    data-doi="{{ pub.doi }}" data-title="{{ pub.title }}">
+                                                <i class="fas fa-download"></i> Download PDF
+                                            </button>
+                                            <button type="button" class="btn btn-outline-success btn-sm download-btn" 
+                                                    data-doi="{{ pub.doi }}" data-title="{{ pub.title }}">
+                                                <i class="fas fa-external-link-alt"></i> Open in Sci-Hub
+                                            </button>
+                                        </div>
                                         {% elif pub.doi %}
                                         <small class="text-muted">DOI: {{ pub.doi }} (not Sci-Hub compatible)</small>
                                         {% endif %}
@@ -426,8 +435,80 @@
                     downloadSinglePaper(doi, title);
                 });
             });
+            
+            // Add event listeners for enhanced download buttons
+            document.querySelectorAll('.enhanced-download-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const doi = this.getAttribute('data-doi');
+                    const title = this.getAttribute('data-title');
+                    downloadSinglePaperEnhanced(doi, title);
+                });
+            });
         });
 
+        function downloadSinglePaperEnhanced(doi, title) {
+            if (!doi || !doi.trim() || !doi.startsWith('10.')) {
+                alert('No valid DOI available for this article. DOI must start with "10."\n\nValid DOIs look like: 10.1016/j.cmet.2019.03.009');
+                return;
+            }
+            
+            if (confirm(`Download "${title}" directly?\n\nDOI: ${doi}\n\nThis will attempt to download the PDF directly. If it fails, you can still open it in Sci-Hub.`)) {
+                // Show loading indicator
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+                button.disabled = true;
+                
+                console.log(`Attempting to download PDF: ${doi} - "${title}"`);
+                
+                // Make AJAX request to enhanced download endpoint
+                fetch('{{ url_for("ollama.download_pdf_enhanced") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `identifier=${encodeURIComponent(doi)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.success && data.file_path) {
+                        // Success - PDF downloaded
+                        alert(`✅ PDF downloaded successfully!\n\nDOI: ${doi}\n\nFile saved: ${data.file_path}\n\nMirror used: ${data.mirror}\n\nThe PDF has been saved to your downloads folder.`);
+                        
+                        // Optionally refresh the downloads page
+                        setTimeout(() => {
+                            if (confirm('Would you like to view your downloads?')) {
+                                window.location.href = '{{ url_for("ollama.view_downloads") }}';
+                            }
+                        }, 1000);
+                        
+                    } else if (data && data.redirect && data.url) {
+                        // Fallback to opening in browser
+                        if (confirm(`Direct download failed. Open "${title}" in Sci-Hub instead?\n\nDOI: ${doi}`)) {
+                            window.open(data.url, '_blank');
+                            alert(`✅ Article opened in Sci-Hub!\n\nDOI: ${doi}\n\nSci-Hub URL: ${data.url}\n\nThe article should now be open in a new tab where you can view and download the PDF.`);
+                        }
+                    } else if (data && data.error) {
+                        // Handle error response
+                        if (data.invalid_identifier) {
+                            alert(`❌ Invalid DOI: ${data.error}\n\nPlease check that the DOI is correct and starts with "10."`);
+                        } else {
+                            alert(`❌ Download failed: ${data.error}\n\nDOI: ${doi}\n\nThis might be because:\n• The article is not available on Sci-Hub\n• The DOI is incorrect\n• Sci-Hub is temporarily unavailable\n• Anti-bot measures are blocking the download`);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(`❌ Network Error\n\nFailed to download PDF for DOI: ${doi}\n\nError: ${error.message}\n\nPlease check your internet connection and try again.`);
+                })
+                .finally(() => {
+                    // Restore button
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                });
+            }
+        }
+        
         function downloadSinglePaper(doi, title) {
             if (!doi || !doi.trim() || !doi.startsWith('10.')) {
                 alert('No valid DOI available for this article. DOI must start with "10."\n\nValid DOIs look like: 10.1016/j.cmet.2019.03.009');
@@ -469,6 +550,79 @@
                 .catch(error => {
                     console.error('Error:', error);
                     alert(`❌ Network Error\n\nFailed to open article for DOI: ${doi}\n\nError: ${error.message}\n\nPlease check your internet connection and try again.`);
+                })
+                .finally(() => {
+                    // Restore button
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                });
+            }
+        }
+        
+        function downloadSelectedPapersEnhanced() {
+            const selectedDois = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value)
+                .filter(doi => doi && doi.trim() !== '' && doi.startsWith('10.'));
+            
+            if (selectedDois.length === 0) {
+                alert('Please select at least one article with a valid DOI (starting with "10.") to download.\n\nValid DOIs look like: 10.1016/j.cmet.2019.03.009');
+                return;
+            }
+            
+            // Show which DOIs will be downloaded
+            const doiList = selectedDois.map(doi => `• ${doi}`).join('\n');
+            if (confirm(`Download ${selectedDois.length} PDF(s)?\n\nSelected DOIs:\n${doiList}\n\nThis will attempt to download PDFs directly. If any fail, you can still open them in Sci-Hub.`)) {
+                // Show loading indicator
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+                button.disabled = true;
+                
+                // Use batch download endpoint
+                fetch('{{ url_for("ollama.batch_download") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ identifiers: selectedDois })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.results) {
+                        const successful = data.successful || 0;
+                        const failed = data.failed || 0;
+                        const total = data.total || selectedDois.length;
+                        
+                        let message = `Download completed!\n\n`;
+                        message += `✅ Successfully downloaded: ${successful}\n`;
+                        message += `❌ Failed: ${failed}\n`;
+                        message += `📊 Total: ${total}\n\n`;
+                        
+                        if (successful > 0) {
+                            message += `The PDFs have been saved to your downloads folder.\n\n`;
+                        }
+                        
+                        if (failed > 0) {
+                            message += `Failed downloads can be opened in Sci-Hub using the "Open in Sci-Hub" button.\n\n`;
+                        }
+                        
+                        alert(message);
+                        
+                        // Optionally refresh the downloads page
+                        if (successful > 0) {
+                            setTimeout(() => {
+                                if (confirm('Would you like to view your downloads?')) {
+                                    window.location.href = '{{ url_for("ollama.view_downloads") }}';
+                                }
+                            }, 1000);
+                        }
+                    } else {
+                        alert(`❌ Batch download failed: ${data.error || 'Unknown error'}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(`❌ Network Error\n\nFailed to download PDFs.\n\nError: ${error.message}\n\nPlease check your internet connection and try again.`);
                 })
                 .finally(() => {
                     // Restore button

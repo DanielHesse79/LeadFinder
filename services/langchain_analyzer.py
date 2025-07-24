@@ -14,7 +14,6 @@ from datetime import datetime
 try:
     from langchain_community.llms import Ollama
     from langchain.prompts import PromptTemplate
-    from langchain.chains import LLMChain
     from langchain.output_parsers import PydanticOutputParser
     from langchain.schema import Document
     from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -221,12 +220,10 @@ class LangChainAnalyzer:
             # Create analysis prompt
             analysis_prompt = self._create_scientific_paper_prompt(research_context)
             
-            # Create LLM chain
-            chain = LLMChain(llm=self.llm, prompt=analysis_prompt)
-            
-            # Analyze content
+            # Analyze content using modern LangChain syntax
             combined_content = " ".join([doc.page_content for doc in docs])
-            result = chain.run(content=combined_content, context=research_context)
+            result = analysis_prompt.format(content=combined_content, context=research_context)
+            result = self.llm(result)
             
             # Parse structured data
             structured_data = self._parse_scientific_paper_result(result)
@@ -288,11 +285,9 @@ class LangChainAnalyzer:
             # Create analysis prompt
             analysis_prompt = self._create_research_profile_prompt(research_context)
             
-            # Create LLM chain
-            chain = LLMChain(llm=self.llm, prompt=analysis_prompt)
-            
-            # Analyze content
-            result = chain.run(content=content, context=research_context)
+            # Analyze content using modern LangChain syntax
+            result = analysis_prompt.format(content=content, context=research_context)
+            result = self.llm(result)
             
             # Parse structured data
             structured_data = self._parse_research_profile_result(result)
@@ -354,11 +349,9 @@ class LangChainAnalyzer:
             # Create analysis prompt
             analysis_prompt = self._create_institution_prompt(research_context)
             
-            # Create LLM chain
-            chain = LLMChain(llm=self.llm, prompt=analysis_prompt)
-            
-            # Analyze content
-            result = chain.run(content=content, context=research_context)
+            # Analyze content using modern LangChain syntax
+            result = analysis_prompt.format(content=content, context=research_context)
+            result = self.llm(result)
             
             # Parse structured data
             structured_data = self._parse_institution_result(result)
@@ -628,8 +621,8 @@ class LangChainAnalyzer:
                 template="Summarize the following content in 2-3 sentences:\n\n{content}"
             )
             
-            chain = LLMChain(llm=self.llm, prompt=summary_prompt)
-            result = chain.run(content=content[:2000])  # Limit content length
+            result = summary_prompt.format(content=content[:2000])  # Limit content length
+            result = self.llm(result)
             
             return result
             

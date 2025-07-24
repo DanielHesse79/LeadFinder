@@ -97,6 +97,64 @@ OLLAMA_TIMEOUT=180
 - **Required**: No (default: 180)
 - **Usage**: AI model requests
 
+### 🗄️ Database Configuration
+
+#### Database Pool Max Connections
+```bash
+DB_POOL_MAX_CONNECTIONS=10
+```
+- **Description**: Maximum number of database connections in the pool
+- **Required**: No (default: 10)
+- **Values**: Integer
+- **Usage**: Controls concurrent database access
+
+#### Database Pool Connection Timeout
+```bash
+DB_POOL_CONNECTION_TIMEOUT=30
+```
+- **Description**: Timeout for getting a connection from the pool in seconds
+- **Required**: No (default: 30)
+- **Values**: Integer (seconds)
+- **Usage**: Prevents hanging when pool is exhausted
+
+#### Database Pool Health Check Interval
+```bash
+DB_POOL_HEALTH_CHECK_INTERVAL=300
+```
+- **Description**: Interval between database connection health checks in seconds
+- **Required**: No (default: 300)
+- **Values**: Integer (seconds)
+- **Usage**: Maintains pool health and removes stale connections
+
+### 💾 Cache Configuration
+
+#### Cache Max Size
+```bash
+CACHE_MAX_SIZE=1000
+```
+- **Description**: Maximum number of cache entries
+- **Required**: No (default: 1000)
+- **Values**: Integer
+- **Usage**: Controls memory usage of the cache
+
+#### Cache Default TTL
+```bash
+CACHE_DEFAULT_TTL=300
+```
+- **Description**: Default time-to-live for cache entries in seconds
+- **Required**: No (default: 300)
+- **Values**: Integer (seconds)
+- **Usage**: Controls how long entries stay in cache
+
+#### Cache Cleanup Interval
+```bash
+CACHE_CLEANUP_INTERVAL=60
+```
+- **Description**: Interval between cache cleanup operations in seconds
+- **Required**: No (default: 60)
+- **Values**: Integer (seconds)
+- **Usage**: Removes expired entries and maintains cache efficiency
+
 ### 🌐 Flask Configuration
 
 #### Flask Environment

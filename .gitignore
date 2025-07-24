@@ -121,12 +121,14 @@ celerybeat.pid
 # mkdocs documentation
 /site
 
-# Environment files
+# Environment files - CRITICAL: Never commit files with real API keys
 .env
 .env.local
 .env.production
 .env.development
 .env.testing
+env.*.local
+*.env.local
 
 # Security reports
 bandit-report.json

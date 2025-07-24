@@ -59,6 +59,11 @@ except ImportError:
     autogpt_control_bp = None
 
 try:
+    from routes.progress import progress_bp
+except ImportError:
+    progress_bp = None
+
+try:
     from routes.webscraper import webscraper_bp
 except ImportError:
     webscraper_bp = None
@@ -68,6 +73,31 @@ try:
     logger = get_logger('app')
 except ImportError:
     logger = None
+
+# Import error handling system
+try:
+    from utils.error_handler import register_flask_error_handlers, get_error_health_status
+except ImportError:
+    register_flask_error_handlers = None
+    get_error_health_status = None
+
+# Import cache manager
+try:
+    from utils.cache_manager import get_cache_health_status
+except ImportError:
+    get_cache_health_status = None
+
+# Import unified search service
+try:
+    from services.unified_search_service import get_unified_search_health_status
+except ImportError:
+    get_unified_search_health_status = None
+
+# Import health monitoring
+try:
+    from utils.health_monitor import get_comprehensive_health_status
+except ImportError:
+    get_comprehensive_health_status = None
 
 def create_app():
     """Create and configure the Flask application"""
@@ -130,7 +160,7 @@ def create_app():
             logger.info("Search blueprint registered")
     
     if ollama_bp:
-        app.register_blueprint(ollama_bp)
+        app.register_blueprint(ollama_bp, url_prefix='/ollama')
         if logger:
             logger.info("Ollama blueprint registered")
     
@@ -159,24 +189,33 @@ def create_app():
         if logger:
             logger.info("AutoGPT Control blueprint registered")
     
+    if progress_bp:
+        app.register_blueprint(progress_bp)
+        if logger:
+            logger.info("Progress tracking blueprint registered")
+    
     if webscraper_bp:
         app.register_blueprint(webscraper_bp)
         if logger:
             logger.info("WebScraper blueprint registered")
     
-    # Error handlers
-    @app.errorhandler(404)
-    def not_found_error(error):
-        return render_template('404.html'), 404
-    
-    @app.errorhandler(500)
-    def internal_error(error):
-        return render_template('500.html'), 500
-    
-    @app.errorhandler(ConfigurationError)
-    def configuration_error(error):
-        flash(f'Configuration error: {error}', 'error')
-        return redirect(url_for('config.config_home'))
+    # Register comprehensive error handlers
+    if register_flask_error_handlers:
+        register_flask_error_handlers(app)
+    else:
+        # Fallback error handlers
+        @app.errorhandler(404)
+        def not_found_error(error):
+            return render_template('404.html'), 404
+        
+        @app.errorhandler(500)
+        def internal_error(error):
+            return render_template('500.html'), 500
+        
+        @app.errorhandler(ConfigurationError)
+        def configuration_error(error):
+            flash(f'Configuration error: {error}', 'error')
+            return redirect(url_for('config.config_home'))
     
     # Health check endpoint
     @app.route('/health')
@@ -186,6 +225,17 @@ def create_app():
             # Check database connection
             from models.database import db
             db.get_lead_count()
+            
+            # Check database connection pool
+            db_pool_status = 'unavailable'
+            db_pool_stats = {}
+            try:
+                from models.database_pool import get_db_pool
+                pool = get_db_pool()
+                db_pool_stats = pool.get_pool_stats()
+                db_pool_status = 'ready'
+            except Exception as e:
+                db_pool_status = f'unavailable: {str(e)}'
             
             # Check configuration
             missing_configs = config.validate_required_configs()
@@ -200,13 +250,28 @@ def create_app():
             except Exception as e:
                 autogpt_status = f'unavailable: {str(e)}'
             
-            return jsonify({
-                'status': 'healthy',
-                'database': 'connected',
-                'configuration': 'valid' if not missing_configs else 'missing_required',
-                'autogpt': autogpt_status,
-                'missing_configs': missing_configs
-            })
+            # Use comprehensive health monitoring if available
+            if get_comprehensive_health_status:
+                health_status = get_comprehensive_health_status()
+                return jsonify(health_status)
+            else:
+                # Fallback to basic health checks
+                error_health = get_error_health_status() if get_error_health_status else {'status': 'unavailable'}
+                cache_health = get_cache_health_status() if get_cache_health_status else {'status': 'unavailable'}
+                search_health = get_unified_search_health_status() if get_unified_search_health_status else {'status': 'unavailable'}
+                
+                return jsonify({
+                    'status': 'healthy',
+                    'database': 'connected',
+                    'database_pool': db_pool_status,
+                    'database_pool_stats': db_pool_stats,
+                    'configuration': 'valid' if not missing_configs else 'missing_required',
+                    'autogpt': autogpt_status,
+                    'error_handling': error_health,
+                    'cache': cache_health,
+                    'search_services': search_health,
+                    'missing_configs': missing_configs
+                })
         except Exception as e:
             return jsonify({
                 'status': 'unhealthy',
