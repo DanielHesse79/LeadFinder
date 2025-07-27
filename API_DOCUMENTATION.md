@@ -2,7 +2,7 @@
 
 ## Overview
 
-LeadFinder provides a comprehensive REST API for lead discovery, AI analysis, and research funding. The API supports both synchronous and asynchronous operations, with real-time status monitoring and AutoGPT integration.
+LeadFinder provides a comprehensive REST API for lead discovery, AI analysis, research funding, and RAG (Retrieval-Augmented Generation). The API supports both synchronous and asynchronous operations, with real-time status monitoring, AutoGPT integration, and advanced RAG capabilities.
 
 ## 🔗 Base URL
 
@@ -27,7 +27,7 @@ GET /health
 ```json
 {
   "status": "healthy",
-  "timestamp": "2025-07-18T10:30:00Z",
+  "timestamp": "2025-07-28T10:30:00Z",
   "system": {
     "cpu_usage": 15.2,
     "memory_usage": 45.8,
@@ -50,18 +50,25 @@ GET /health
     "error_handling": {
       "total_errors": 3,
       "error_rate": 0.1,
-      "last_error": "2025-07-18T10:25:00Z",
+      "last_error": "2025-07-28T10:25:00Z",
       "status": "healthy"
     },
     "search_services": {
       "available_services": 8,
       "response_time": 1.2,
       "status": "healthy"
+    },
+    "rag_system": {
+      "status": "healthy",
+      "vector_store": "connected",
+      "embedding_service": "available",
+      "total_documents": 1250
     }
   },
   "alerts": [],
   "configuration": "valid",
-  "autogpt": "ready"
+  "autogpt": "ready",
+  "rag": "ready"
 }
 ```
 
@@ -76,7 +83,36 @@ GET /autogpt/status
   "enabled": true,
   "status": "ready",
   "model": "mistral:latest",
-  "last_test": "AutoGPT test completed successfully..."
+  "last_test": "AutoGPT test completed successfully...",
+  "response_time": 2.3,
+  "error_rate": 0.02
+}
+```
+
+#### Get RAG Status
+```http
+GET /rag/status
+```
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "components": {
+    "embedding_service": "available",
+    "vector_store": "connected",
+    "ollama_service": "ready"
+  },
+  "stats": {
+    "total_documents": 1250,
+    "total_chunks": 3420,
+    "collection_size": "45.2MB"
+  },
+  "performance": {
+    "average_response_time": 1.8,
+    "success_rate": 0.95,
+    "cache_hit_rate": 0.78
+  }
 }
 ```
 
@@ -91,46 +127,183 @@ Content-Type: application/x-www-form-urlencoded
 **Parameters:**
 - `query` (string, required): Search query
 - `research_question` (string, optional): Research question for AI analysis
-- `search_type` (string, optional): "articles", "profiles", or "both"
+- `engines[]` (array, optional): Search engines (google, bing, duckduckgo, pubmed)
 - `use_ai_analysis` (boolean, optional): Enable AI analysis
-- `engines[]` (array, optional): Search engines to use
+- `use_rag_search` (boolean, optional): Enable RAG search
+- `rag_top_k` (integer, optional): Number of RAG results (default: 5)
+- `rag_method` (string, optional): RAG method (vector, hybrid, conversational)
 
 **Response:**
 ```json
 {
   "success": true,
-  "message": "Search completed! 5 leads saved.",
-  "redirect": "/"
+  "message": "Search completed! 15 leads saved.",
+  "saved_count": 15,
+  "total_leads": 15,
+  "operation_id": "search_12345",
+  "rag_results": {
+    "documents_found": 8,
+    "generated_response": "Based on the search results...",
+    "confidence_score": 0.85
+  }
 }
 ```
 
-#### AJAX Search
+#### AJAX Search with Progress Tracking
 ```http
 POST /search_ajax
 Content-Type: application/x-www-form-urlencoded
 ```
 
-**Parameters:** Same as `/search`
+**Parameters:** Same as `/search` with additional progress tracking
 
 **Response:**
 ```json
 {
   "success": true,
-  "leads": [
-    {
-      "title": "Lead Title",
-      "snippet": "Lead description...",
-      "link": "https://example.com",
-      "ai_summary": "AI analysis of the lead...",
-      "source": "google"
-    }
-  ],
-  "total_results": 5,
-  "saved_count": 5
+  "message": "Search completed! 15 leads saved.",
+  "saved_count": 15,
+  "total_leads": 15,
+  "operation_id": "search_12345",
+  "progress": {
+    "current_step": "AI Analysis",
+    "progress_percentage": 75,
+    "estimated_time_remaining": "30s"
+  }
 }
 ```
 
-### 🤖 AutoGPT Control Panel
+### 🧠 RAG (Retrieval-Augmented Generation) Endpoints
+
+#### RAG Search
+```http
+POST /rag/search
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "query": "What are the latest AI trends in healthcare?",
+  "top_k": 5,
+  "retrieval_method": "hybrid",
+  "similarity_threshold": 0.7
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "query": "What are the latest AI trends in healthcare?",
+  "response": "Based on the available information, the latest AI trends in healthcare include...",
+  "sources": [
+    {
+      "title": "AI in Healthcare Research",
+      "source": "research_paper",
+      "relevance_score": 0.85,
+      "chunk_preview": "Recent developments in AI-powered diagnostic tools..."
+    }
+  ],
+  "confidence_score": 0.78,
+  "processing_time": 2.3,
+  "chunks_retrieved": 5,
+  "model_used": "mistral:latest",
+  "retrieval_method": "hybrid"
+}
+```
+
+#### Context Retrieval Only
+```http
+POST /rag/retrieve
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "query": "machine learning applications",
+  "top_k": 3,
+  "similarity_threshold": 0.7
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "query": "machine learning applications",
+  "context": [
+    {
+      "content": "Machine learning applications in healthcare...",
+      "source": "research_paper",
+      "relevance_score": 0.92,
+      "metadata": {
+        "title": "ML in Healthcare",
+        "author": "Dr. Smith",
+        "year": 2024
+      }
+    }
+  ],
+  "processing_time": 0.5,
+  "retrieval_method": "vector"
+}
+```
+
+#### Document Ingestion
+```http
+POST /rag/ingest
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "document_type": "lead",
+  "document": {
+    "id": 123,
+    "title": "AI Healthcare Startup",
+    "description": "Company developing AI-powered diagnostic tools...",
+    "source": "serp",
+    "ai_summary": "High potential for collaboration in medical AI..."
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "document_id": "lead_123",
+  "chunks_created": 3,
+  "processing_time": 2.5,
+  "embedding_model": "all-MiniLM-L6-v2"
+}
+```
+
+#### RAG Statistics
+```http
+GET /rag/stats
+```
+
+**Response:**
+```json
+{
+  "total_searches": 1250,
+  "total_ingestions": 450,
+  "average_response_time": 1.8,
+  "success_rate": 0.95,
+  "popular_queries": [
+    "AI trends",
+    "healthcare technology",
+    "machine learning applications"
+  ],
+  "storage_usage": "45.2MB",
+  "embedding_model": "all-MiniLM-L6-v2"
+}
+```
+
+### 🤖 AutoGPT Endpoints
 
 #### Test AutoGPT
 ```http
@@ -146,9 +319,9 @@ Content-Type: application/x-www-form-urlencoded
 ```json
 {
   "success": true,
-  "output": "Test response from AutoGPT...",
+  "test_result": "AutoGPT test completed successfully...",
   "model": "mistral:latest",
-  "message": "AutoGPT test completed successfully"
+  "response_time": 2.3
 }
 ```
 
@@ -160,20 +333,21 @@ Content-Type: application/x-www-form-urlencoded
 
 **Parameters:**
 - `text` (string, required): Text to analyze
-- `analysis_type` (string, optional): "general", "lead_relevance", or "company_research"
+- `analysis_type` (string, optional): Type of analysis (general, lead_relevance, company_research)
 - `model` (string, optional): AI model to use
 
 **Response:**
 ```json
 {
   "success": true,
-  "analysis": "Detailed analysis of the text...",
+  "analysis": "This company shows strong potential for collaboration...",
   "analysis_type": "lead_relevance",
-  "model": "mistral:latest"
+  "confidence_score": 0.85,
+  "processing_time": 3.2
 }
 ```
 
-#### Perform Research
+#### Research Leads
 ```http
 POST /autogpt/research
 Content-Type: application/x-www-form-urlencoded
@@ -181,17 +355,16 @@ Content-Type: application/x-www-form-urlencoded
 
 **Parameters:**
 - `research_topic` (string, required): Research topic
-- `company_name` (string, optional): Company name for lead research
-- `industry` (string, optional): Target industry
-- `model` (string, optional): AI model to use
+- `company_name` (string, optional): Company name
+- `industry` (string, optional): Industry focus
 
 **Response:**
 ```json
 {
   "success": true,
-  "research": "Comprehensive research results...",
-  "topic": "AI in healthcare",
-  "model": "mistral:latest"
+  "research_results": "Comprehensive research analysis...",
+  "leads_found": 12,
+  "processing_time": 45.2
 }
 ```
 
@@ -202,43 +375,34 @@ Content-Type: application/x-www-form-urlencoded
 GET /leads
 ```
 
-**Query Parameters:**
-- `page` (integer, optional): Page number
-- `per_page` (integer, optional): Items per page
-- `source` (string, optional): Filter by source
-- `search` (string, optional): Search in leads
-
 **Response:**
 ```json
 {
+  "success": true,
   "leads": [
     {
       "id": 1,
-      "title": "Lead Title",
-      "description": "Lead description",
+      "title": "AI Healthcare Startup",
+      "description": "Company developing AI-powered diagnostic tools...",
       "link": "https://example.com",
-      "ai_summary": "AI analysis...",
-      "source": "google",
-      "created_at": "2025-07-18T19:30:00Z"
+      "ai_summary": "High potential for collaboration...",
+      "source": "serp",
+      "created_at": "2025-07-28T10:30:00Z"
     }
   ],
-  "total": 100,
-  "page": 1,
-  "per_page": 20
+  "total_count": 150
 }
 ```
 
-#### Get Lead Count
+#### Export Leads
 ```http
-GET /leads/count
+GET /leads/export
 ```
 
-**Response:**
-```json
-{
-  "count": 100
-}
-```
+**Parameters:**
+- `format` (string, optional): Export format (excel, pdf, csv)
+
+**Response:** File download
 
 #### Delete Lead
 ```http
@@ -253,87 +417,32 @@ DELETE /leads/{lead_id}
 }
 ```
 
-#### Export Leads
-```http
-GET /leads/export
-```
-
-**Query Parameters:**
-- `format` (string, optional): "excel" or "csv"
-- `source` (string, optional): Filter by source
-
-**Response:** File download
-
 ### 🔬 Research Funding
 
-#### Search Research Projects
+#### Search Funding Opportunities
 ```http
-POST /research/search
+POST /research/funding
 Content-Type: application/x-www-form-urlencoded
 ```
 
 **Parameters:**
 - `query` (string, required): Search query
-- `apis[]` (array, optional): APIs to search
-- `max_results` (integer, optional): Maximum results
+- `apis[]` (array, optional): APIs to search (swecris, cordis, nih, nsf)
 
 **Response:**
 ```json
 {
-  "query": "epigenetics",
-  "results_by_source": {
-    "SweCRIS": [
-      {
-        "id": "project-1",
-        "title": "Project Title",
-        "description": "Project description...",
-        "principal_investigator": "Dr. John Doe",
-        "organization": "University of Example",
-        "funding_amount": 500000,
-        "currency": "SEK",
-        "start_date": "2024-01-01",
-        "end_date": "2027-12-31",
-        "keywords": ["epigenetics", "diabetes"],
-        "source": "SweCRIS",
-        "url": "https://example.com/project"
-      }
-    ]
-  },
-  "total_results": 25,
-  "selected_apis": ["SweCRIS", "CORDIS"]
-}
-```
-
-#### API Research Search
-```http
-GET /research/api/search
-```
-
-**Query Parameters:**
-- `query` (string, required): Search query
-- `max_results` (integer, optional): Maximum results
-- `apis[]` (array, optional): APIs to search
-
-**Response:**
-```json
-{
-  "projects": [
+  "success": true,
+  "results": [
     {
-      "id": "project-1",
-      "title": "Project Title",
-      "description": "Project description...",
-      "principal_investigator": "Dr. John Doe",
-      "organization": "University of Example",
-      "funding_amount": 500000,
-      "currency": "SEK",
-      "start_date": "2024-01-01",
-      "end_date": "2027-12-31",
-      "keywords": ["epigenetics", "diabetes"],
-      "source": "SweCRIS",
-      "url": "https://example.com/project"
+      "title": "AI in Healthcare Research Grant",
+      "funding_amount": "500000",
+      "deadline": "2025-12-31",
+      "source": "swecris",
+      "description": "Research grant for AI applications in healthcare..."
     }
   ],
-  "total": 25
+  "total_results": 25
 }
 ```
 
@@ -347,34 +456,27 @@ Content-Type: application/x-www-form-urlencoded
 
 **Parameters:**
 - `query` (string, required): Search query
-- `search_type` (string, optional): "articles", "profiles", or "both"
-- `sources[]` (array, optional): Sources to search
+- `source` (string, optional): Source (pubmed, semantic_scholar, orcid)
 
 **Response:**
 ```json
 {
+  "success": true,
   "publications": [
     {
-      "title": "Publication Title",
-      "authors": ["Author 1", "Author 2"],
-      "abstract": "Abstract text...",
-      "doi": "10.1234/example",
-      "source": "pubmed",
-      "url": "https://example.com/paper"
+      "title": "AI Applications in Healthcare",
+      "authors": ["Dr. Smith", "Dr. Johnson"],
+      "journal": "Nature Medicine",
+      "year": 2024,
+      "doi": "10.1038/s41591-024-00000-0",
+      "abstract": "Recent advances in AI applications..."
     }
   ],
-  "researchers": [
-    {
-      "name": "Dr. John Doe",
-      "affiliation": "University of Example",
-      "orcid": "0000-0000-0000-0000",
-      "source": "orcid"
-    }
-  ]
+  "total_results": 15
 }
 ```
 
-### 🎛️ Configuration
+### ⚙️ Configuration
 
 #### Get Configuration
 ```http
@@ -384,104 +486,36 @@ GET /config
 **Response:**
 ```json
 {
-  "configs": [
-    {
-      "key": "SERPAPI_KEY",
-      "value": "***",
-      "description": "SerpAPI key for Google search",
-      "is_secret": true,
-      "required": true,
-      "source": "Environment"
-    }
-  ]
+  "success": true,
+  "config": {
+    "SERPAPI_KEY": "configured",
+    "OLLAMA_BASE_URL": "http://localhost:11434",
+    "AUTOGPT_ENABLED": true,
+    "RAG_ENABLED": true
+  }
 }
 ```
 
 #### Update Configuration
 ```http
 POST /config/update
-Content-Type: application/x-www-form-urlencoded
+Content-Type: application/json
 ```
 
-**Parameters:**
-- `key` (string, required): Configuration key
-- `value` (string, required): Configuration value
+**Request Body:**
+```json
+{
+  "key": "OLLAMA_MODEL",
+  "value": "mistral:latest",
+  "description": "AI model for text generation"
+}
+```
 
 **Response:**
 ```json
 {
   "success": true,
   "message": "Configuration updated successfully"
-}
-```
-
-### 🔧 Ollama Management
-
-#### Check Ollama Status
-```http
-POST /ollama/check
-```
-
-**Response:**
-```json
-{
-  "ok": true,
-  "msg": "Ollama is running",
-  "models": ["mistral:latest", "llama2:latest"]
-}
-```
-
-#### Get Available Models
-```http
-GET /ollama/models
-```
-
-**Response:**
-```json
-{
-  "models": [
-    {
-      "name": "mistral:latest",
-      "size": "4.1GB",
-      "modified_at": "2025-07-18T10:00:00Z"
-    }
-  ],
-  "selected_model": "mistral:latest"
-}
-```
-
-### 🏭 Lead Workshop
-
-#### Get Workshop Status
-```http
-GET /lead-workshop/api/status
-```
-
-**Response:**
-```json
-{
-  "status": "idle",
-  "current_project": null,
-  "total_projects": 5
-}
-```
-
-#### Analyze Leads
-```http
-POST /lead-workshop/analyze-leads
-Content-Type: application/x-www-form-urlencoded
-```
-
-**Parameters:**
-- `lead_ids[]` (array, required): Lead IDs to analyze
-- `analysis_type` (string, optional): Type of analysis
-
-**Response:**
-```json
-{
-  "success": true,
-  "analysis": "Analysis results...",
-  "project_id": "project-123"
 }
 ```
 
@@ -492,7 +526,8 @@ Content-Type: application/x-www-form-urlencoded
 {
   "success": false,
   "error": "Error description",
-  "code": "ERROR_CODE"
+  "code": "ERROR_CODE",
+  "timestamp": "2025-07-28T10:30:00Z"
 }
 ```
 
@@ -510,6 +545,13 @@ Content-Type: application/x-www-form-urlencoded
 - `TIMEOUT_ERROR`: Request timed out
 - `ANALYSIS_FAILED`: Text analysis failed
 - `RESEARCH_FAILED`: Research operation failed
+
+### RAG-Specific Errors
+- `RAG_NOT_AVAILABLE`: RAG system not available
+- `VECTOR_STORE_ERROR`: Vector database error
+- `EMBEDDING_FAILED`: Embedding generation failed
+- `CONTEXT_NOT_FOUND`: No relevant context found
+- `GENERATION_FAILED`: Response generation failed
 
 ## 🔄 Rate Limiting
 
@@ -535,7 +577,18 @@ curl -X POST http://localhost:5051/search_ajax \
   -d "query=AI in healthcare" \
   -d "use_ai_analysis=on" \
   -d "engines[]=google" \
-  -d "engines[]=bing"
+  -d "engines[]=pubmed"
+```
+
+#### RAG Search
+```bash
+curl -X POST http://localhost:5051/rag/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "What are the latest AI trends?",
+    "top_k": 5,
+    "retrieval_method": "hybrid"
+  }'
 ```
 
 #### Analyze Text
@@ -564,9 +617,24 @@ response = requests.post('http://localhost:5051/autogpt/test', data={
 
 if response.status_code == 200:
     result = response.json()
-    print(f"Test successful: {result['output']}")
-else:
-    print(f"Test failed: {response.text}")
+    print(f"Test result: {result['test_result']}")
+```
+
+#### Perform RAG Search
+```python
+import requests
+
+response = requests.post('http://localhost:5051/rag/search', json={
+    'query': 'What are the latest AI trends in healthcare?',
+    'top_k': 5,
+    'retrieval_method': 'hybrid'
+})
+
+if response.status_code == 200:
+    result = response.json()
+    print(f"Response: {result['response']}")
+    print(f"Confidence: {result['confidence_score']}")
+    print(f"Sources: {len(result['sources'])}")
 ```
 
 #### Search for Leads
@@ -574,62 +642,72 @@ else:
 import requests
 
 response = requests.post('http://localhost:5051/search_ajax', data={
-    'query': 'AI in healthcare',
+    'query': 'AI healthcare companies',
     'use_ai_analysis': 'on',
-    'engines': ['google', 'bing']
+    'engines[]': ['google', 'pubmed']
 })
 
 if response.status_code == 200:
     result = response.json()
-    print(f"Found {result['total_results']} leads")
-    for lead in result['leads']:
-        print(f"- {lead['title']}")
+    print(f"Found {result['saved_count']} leads")
 ```
 
-#### Analyze Text
+#### Get Application Health
 ```python
 import requests
 
-response = requests.post('http://localhost:5051/autogpt/analyze', data={
-    'text': 'Company description to analyze...',
-    'analysis_type': 'lead_relevance',
-    'model': 'mistral:latest'
-})
-
+response = requests.get('http://localhost:5051/health')
 if response.status_code == 200:
-    result = response.json()
-    print(f"Analysis: {result['analysis']}")
+    health = response.json()
+    print(f"Status: {health['status']}")
+    print(f"Database: {health['application']['database_pool']['status']}")
+    print(f"RAG: {health['application']['rag_system']['status']}")
 ```
 
-## 🔮 Future API Features
+## 🔒 Security Considerations
 
-### Planned Endpoints
-- **Webhook support** for real-time notifications
-- **Batch operations** for multiple leads
-- **Advanced filtering** and sorting options
-- **Export templates** customization
-- **User management** and authentication
-- **API rate limiting** and quotas
+### CSRF Protection
+All POST requests require CSRF tokens. Include the token from the page's meta tag:
+```html
+<meta name="csrf-token" content="your_csrf_token_here">
+```
 
-### Integration Features
-- **OAuth2 authentication** for external integrations
-- **GraphQL support** for complex queries
-- **WebSocket support** for real-time updates
-- **File upload** for bulk data import
-- **Scheduled operations** for automated tasks
+### API Key Management
+- Store API keys in environment variables
+- Never expose keys in client-side code
+- Rotate keys regularly
+- Monitor API usage for unusual activity
 
-## 🆘 Support
+### Input Validation
+- All inputs are validated server-side
+- SQL injection protection through parameterized queries
+- XSS protection through input sanitization
+- Rate limiting recommendations for production use
 
-For API issues:
-1. Check the health endpoint: `GET /health`
-2. Review application logs: `data/logs/leadfinder.log`
-3. Test AutoGPT functionality: `POST /autogpt/test`
-4. Verify configuration: `GET /config`
-5. Check Ollama status: `POST /ollama/check`
+## 📈 Performance Tips
 
-## 📚 Related Documentation
+### Optimizing Requests
+1. **Use appropriate timeouts** for long-running operations
+2. **Implement caching** for repeated requests
+3. **Batch operations** when possible
+4. **Use async requests** for multiple operations
 
-- [Configuration Guide](CONFIGURATION.md)
-- [AutoGPT Integration](AUTOGPT_INTEGRATION.md)
-- [Development Guide](DEVELOPMENT.md)
-- [Deployment Guide](DEPLOYMENT.md) 
+### Monitoring Performance
+1. **Check health endpoint** regularly
+2. **Monitor response times** for degradation
+3. **Track error rates** and investigate spikes
+4. **Monitor resource usage** (CPU, memory, disk)
+
+## 🤝 Contributing
+
+When contributing to the API:
+
+1. **Follow REST conventions** for endpoint design
+2. **Add comprehensive error handling** for new endpoints
+3. **Include input validation** for all parameters
+4. **Add tests** for new functionality
+5. **Update documentation** for API changes
+
+## 📄 License
+
+This API is part of the LeadFinder project and follows the same licensing terms. 

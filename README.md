@@ -5,7 +5,7 @@ LeadFinder is a comprehensive lead discovery and research platform that combines
 ## ✨ Features
 
 ### 🔍 **Intelligent Search**
-- **Multi-engine search** (Google, Bing, DuckDuckGo)
+- **Multi-engine search** (Google, Bing, DuckDuckGo, PubMed)
 - **AI-powered analysis** using local Mistral model via Ollama
 - **Unified search interface** combining standard and research modes
 - **AutoGPT integration** for comprehensive lead research
@@ -106,69 +106,25 @@ cp env.example env.development
 ollama serve
 ollama pull mistral:latest
 
-# Run the application
-./start_app.sh development
+# Start the application
+python app.py
 ```
 
-### Starting the Application
+### Environment Configuration
 
-**Use the automated startup script (recommended):**
+**Required API Keys:**
 ```bash
-./start_app.sh [environment]
+# Required for web search
+SERPAPI_KEY=your_serpapi_key_here
+
+# Required for Flask
+FLASK_SECRET_KEY=your_secret_key_here
+
+# Optional: For enhanced research capabilities
+SEMANTIC_SCHOLAR_API_KEY=your_semantic_scholar_key
+NIH_API_KEY=your_nih_key
+NSF_API_KEY=your_nsf_key
 ```
-
-Where `[environment]` can be:
-- `development` (default) - runs on port 5051 with debug mode
-- `production` - runs on port 5050 with production settings
-- `testing` - runs with test configuration
-
-The script automatically:
-- ✅ Creates virtual environment if missing
-- ✅ Installs all dependencies
-- ✅ Validates configuration
-- ✅ Starts the application
-- ✅ Shows access URLs
-
-**Application URLs:**
-- Main application: `http://localhost:5051` (development) or `http://localhost:5050` (production)
-- Health check: `http://localhost:5051/health`
-- AutoGPT status: `http://localhost:5051/autogpt/status`
-- **🆕 RAG Search Interface**: `http://localhost:5051/rag/search`
-
-## 🎯 Usage
-
-### General Search
-1. Navigate to the main page
-2. Enter your search terms
-3. Select search engines
-4. Enable AutoGPT analysis for AI insights
-5. View and save discovered leads
-
-### 🆕 RAG Search
-1. Navigate to **RAG Search** in the navigation or visit `/rag/search`
-2. Enter your question or query
-3. Adjust settings (top-k results, retrieval method)
-4. Get AI-generated responses with source references
-5. View context snippets and confidence scores
-
-### AutoGPT Control Panel
-1. Click "AutoGPT Control" in the navigation
-2. Monitor AutoGPT status and configuration
-3. Test different AI models and prompts
-4. Analyze text for lead relevance
-5. Perform comprehensive research
-
-### Research Funding
-1. Go to "Funding" page
-2. Enter research keywords
-3. Select funding databases
-4. View funding opportunities and projects
-
-### Lead Workshop
-1. Select leads from your database
-2. Create research projects
-3. Use AutoGPT for enhanced analysis
-4. Generate reports and insights
 
 ## 🧠 RAG (Retrieval-Augmented Generation)
 
@@ -356,58 +312,41 @@ leadfinder/
 │   ├── unified_search.py      # Unified search service
 │   ├── research_service.py    # Research funding service
 │   ├── ingestion_service.py   # 🆕 Document ingestion service
-│   ├── vector_store_service.py # 🆕 Vector database management
-│   ├── retrieval_service.py   # 🆕 Context retrieval service
-│   ├── rag_generator.py       # 🆕 RAG response generation
-│   └── embedding_service.py   # 🆕 Text embedding service
-├── models/                     # Data models
-│   └── database.py            # Updated with RAG tables
+│   ├── vector_store.py        # 🆕 Vector database service
+│   ├── embedding_service.py   # 🆕 Embedding generation service
+│   ├── rag_search_service.py  # 🆕 RAG search service
+│   └── rag_generator.py       # 🆕 RAG response generation
+├── models/                     # Database models
+│   ├── database.py            # Database operations
+│   └── database_pool.py       # 🆕 Connection pooling
+├── utils/                      # Utility functions
+│   ├── logger.py              # Logging utilities
+│   ├── error_handler.py       # 🆕 Error handling system
+│   ├── cache_manager.py       # 🆕 Caching system
+│   ├── progress_manager.py    # 🆕 Progress tracking
+│   └── performance.py         # Performance utilities
 ├── templates/                  # HTML templates
-│   └── rag_search.html        # 🆕 RAG search interface
+│   ├── base.html              # Base template
+│   ├── navigation.html        # Navigation component
+│   ├── dashboard.html         # Dashboard interface
+│   ├── search_form.html       # Search interface
+│   ├── leads.html             # Lead management
+│   ├── rag_search.html        # 🆕 RAG search interface
+│   └── autogpt_control.html   # AutoGPT control panel
 ├── static/                     # Static assets
-├── data/                       # Database and logs
-├── test_rag_implementation.py # 🆕 RAG test suite
-└── migrate_existing_data_to_rag.py # 🆕 Data migration script
+│   ├── css/                   # Stylesheets
+│   ├── js/                    # JavaScript
+│   └── images/                # Images and icons
+├── tests/                      # Test files
+├── data/                       # Data storage
+│   ├── vector_db/             # 🆕 ChromaDB vector database
+│   └── logs/                  # Application logs
+└── docs/                       # Documentation
 ```
 
-## 🤖 AutoGPT Integration
+## 🔍 Search Modes
 
-### Features
-- **Local AI processing** using Ollama and Mistral
-- **Comprehensive lead research** with multi-step analysis
-- **Text analysis** for lead relevance and opportunities
-- **Research automation** for industry and company analysis
-- **Real-time monitoring** and control
-
-### Control Panel Features
-- **Status monitoring** of AutoGPT functionality
-- **Model testing** with custom prompts
-- **Text analysis** with different analysis types
-- **Research automation** for comprehensive discovery
-- **Configuration management** for models and timeouts
-
-### Usage Examples
-```python
-# Test AutoGPT connection
-curl -X POST http://localhost:5051/autogpt/test \
-  -d "test_prompt=Hello, test" \
-  -d "model=mistral:latest"
-
-# Analyze text for lead relevance
-curl -X POST http://localhost:5051/autogpt/analyze \
-  -d "text=Company description..." \
-  -d "analysis_type=lead_relevance"
-
-# Perform research
-curl -X POST http://localhost:5051/autogpt/research \
-  -d "research_topic=AI in healthcare" \
-  -d "company_name=YourCompany" \
-  -d "industry=Healthcare"
-```
-
-## 🔍 Search Functionality
-
-### Search Modes
+### Available Search Types
 1. **Quick Search**: Standard web search with optional AI analysis
 2. **Research Mode**: Comprehensive research with AutoGPT
 3. **Unified Search**: Combined approach with caching
@@ -417,6 +356,7 @@ curl -X POST http://localhost:5051/autogpt/research \
 - Google (default)
 - Bing
 - DuckDuckGo
+- PubMed (scientific articles)
 
 ### AI Analysis Types
 - **General Analysis**: Basic text analysis
@@ -513,6 +453,7 @@ mypy .
 - [Deployment Guide](DEPLOYMENT.md)
 - [Development Guide](DEVELOPMENT.md)
 - **🆕 [RAG Documentation](RAG_DOCUMENTATION.md)** - Complete RAG guide
+- **🆕 [Documentation Summary](DOCUMENTATION_SUMMARY.md)** - Complete documentation overview
 
 ## 🤝 Contributing
 
@@ -548,4 +489,7 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and updates.
 - **Added comprehensive RAG API endpoints**
 - **Created RAG web interface**
 - **Implemented data migration tools**
-- **Added RAG testing suite** 
+- **Added RAG testing suite**
+- **Fixed PubMed search integration**
+- **Resolved template routing issues**
+- **Enhanced error handling and security** 
