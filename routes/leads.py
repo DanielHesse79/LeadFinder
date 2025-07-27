@@ -46,15 +46,33 @@ leads_bp = Blueprint('leads', __name__)
 
 @leads_bp.route('/')
 def show_leads():
-    """Display all leads"""
-    if db:
-        leads = db.get_all_leads()
-        lead_count = db.get_lead_count()
-        search_history = db.get_search_history(5)
-    else:
-        leads = []
-        lead_count = 0
-        search_history = []
+    """Display all leads with enhanced table"""
+    if not db:
+        return "Database not available", 500
+    
+    # Get pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    offset = (page - 1) * per_page
+    
+    # Get all leads for statistics
+    all_leads = db.get_all_leads()
+    total_leads = len(all_leads)
+    
+    # Calculate pagination
+    total_pages = (total_leads + per_page - 1) // per_page
+    start_index = offset
+    end_index = min(offset + per_page, total_leads)
+    
+    # Get paginated leads
+    leads = all_leads[start_index:end_index]
+    
+    # Calculate statistics
+    high_quality_count = sum(1 for lead in all_leads if lead.get('ai_summary'))
+    filtered_count = len(leads)
+    
+    # Get search history for recent activity
+    search_history = db.get_search_history(5) if db else []
     
     # Ensure ollama status is checked
     if ollama_service:
@@ -70,14 +88,22 @@ def show_leads():
     except Exception as e:
         autogpt_available = False
     
-    return render_template('leads.html', 
+    return render_template('leads_enhanced.html', 
                          leads=leads, 
-                         lead_count=lead_count,
+                         total_leads=total_leads,
+                         filtered_count=filtered_count,
+                         high_quality_count=high_quality_count,
                          search_history=search_history,
                          ollama_status=ollama_status,
                          engines=SERP_ENGINES,
                          selected_engines=["google"],
-                         autogpt_available=autogpt_available)
+                         autogpt_available=autogpt_available,
+                         # Pagination data
+                         current_page=page,
+                         total_pages=total_pages,
+                         start_index=start_index,
+                         end_index=end_index,
+                         per_page=per_page)
 
 @leads_bp.route('/export')
 def export_to_excel():

@@ -79,6 +79,11 @@ except ImportError:
     dashboard_bp = None
 
 try:
+    from routes.reports import reports_bp
+except ImportError:
+    reports_bp = None
+
+try:
     from utils.logger import get_logger
     logger = get_logger('app')
 except ImportError:
@@ -216,6 +221,7 @@ def create_app():
     
     if dashboard_bp:
         app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
+    app.register_blueprint(reports_bp, url_prefix='/reports')
         if logger:
             logger.info("Dashboard blueprint registered")
     
