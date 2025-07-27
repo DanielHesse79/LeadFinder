@@ -539,7 +539,8 @@ class DatabaseConnection:
     
     def get_rag_stats(self) -> Dict[str, Any]:
         """Get RAG system statistics"""
-        stats = {}
+        try:
+            stats = {}
         
         # Get chunk statistics
         chunk_query = '''
@@ -576,13 +577,29 @@ class DatabaseConnection:
         
         if session_results:
             session_stats = dict(session_results[0])
+            # Ensure values are not None before using round()
+            avg_processing_time = session_stats.get('avg_processing_time', 0) or 0
+            avg_confidence_score = session_stats.get('avg_confidence_score', 0) or 0
+            
             stats.update({
-                'total_sessions': session_stats.get('total_sessions', 0),
-                'avg_processing_time': round(session_stats.get('avg_processing_time', 0), 3),
-                'avg_confidence_score': round(session_stats.get('avg_confidence_score', 0), 3)
+                'total_sessions': session_stats.get('total_sessions', 0) or 0,
+                'avg_processing_time': round(avg_processing_time, 3),
+                'avg_confidence_score': round(avg_confidence_score, 3)
             })
         
         return stats
+        
+        except Exception as e:
+            if logger:
+                logger.error(f"Error getting RAG stats: {str(e)}")
+            return {
+                'total_chunks': 0,
+                'total_documents': 0,
+                'total_sources': 0,
+                'total_sessions': 0,
+                'avg_processing_time': 0.0,
+                'avg_confidence_score': 0.0
+            }
 
     def get_lead_stats(self) -> Dict[str, Any]:
         """Get lead management statistics"""

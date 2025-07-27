@@ -121,12 +121,18 @@ def get_dashboard_stats():
         # Calculate uptime (placeholder)
         uptime = 99.8  # Placeholder
         
+        # Ensure all values are numbers, not None
+        total_leads = lead_stats.get('total_leads', 0) or 0
+        total_searches = lead_stats.get('total_searches', 0) or 0
+        ai_analyses = lead_stats.get('ai_analyses', 0) or 0
+        rag_queries = rag_stats.get('total_sessions', 0) or 0
+        
         return {
-            'total_leads': lead_stats.get('total_leads', 0),
+            'total_leads': total_leads,
             'rag_documents': rag_documents,
-            'total_searches': lead_stats.get('total_searches', 0),
-            'ai_analyses': lead_stats.get('ai_analyses', 0),
-            'rag_queries': rag_stats.get('total_sessions', 0),  # Use total_sessions instead of total_searches
+            'total_searches': total_searches,
+            'ai_analyses': ai_analyses,
+            'rag_queries': rag_queries,
             'success_rate': success_rate,
             'avg_response_time': avg_response_time,
             'uptime': uptime
