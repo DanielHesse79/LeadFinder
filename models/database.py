@@ -107,6 +107,46 @@ class DatabaseConnection:
                 FOREIGN KEY (analysis_id) REFERENCES workshop_analysis (id)
             )
         ''')
+        
+        # RAG Document Chunks table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS rag_document_chunks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                chunk_id TEXT UNIQUE NOT NULL,
+                doc_id TEXT NOT NULL,
+                source TEXT NOT NULL,
+                content_chunk TEXT NOT NULL,
+                embedding_id TEXT,
+                chunk_index INTEGER DEFAULT 0,
+                total_chunks INTEGER DEFAULT 1,
+                metadata TEXT,  -- JSON string for additional metadata
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # RAG Search Sessions table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS rag_search_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT UNIQUE,
+                query TEXT NOT NULL,
+                rag_response TEXT,
+                traditional_results_count INTEGER DEFAULT 0,
+                rag_results_count INTEGER DEFAULT 0,
+                processing_time REAL,
+                confidence_score REAL,
+                retrieval_method TEXT,
+                model_used TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Create indexes for better performance
+        c.execute('CREATE INDEX IF NOT EXISTS idx_rag_chunks_doc_id ON rag_document_chunks(doc_id)')
+        c.execute('CREATE INDEX IF NOT EXISTS idx_rag_chunks_source ON rag_document_chunks(source)')
+        c.execute('CREATE INDEX IF NOT EXISTS idx_rag_sessions_query ON rag_search_sessions(query)')
+        c.execute('CREATE INDEX IF NOT EXISTS idx_rag_sessions_created ON rag_search_sessions(created_at)')
     
     def _get_connection(self):
         """Helper to get a connection with error handling (fallback method)"""
@@ -408,6 +448,207 @@ class DatabaseConnection:
                 c.execute(query, params)
                 result = c.fetchone()
                 return dict(result) if result else None
+    
+    # RAG-related methods
+    def save_rag_chunk(self, chunk_id: str, doc_id: str, source: str, content_chunk: str, 
+                      embedding_id: str = None, chunk_index: int = 0, total_chunks: int = 1, 
+                      metadata: str = None) -> bool:
+        """Save a RAG document chunk to the database"""
+        query = '''
+            INSERT OR REPLACE INTO rag_document_chunks 
+            (chunk_id, doc_id, source, content_chunk, embedding_id, chunk_index, total_chunks, metadata)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        '''
+        params = (chunk_id, doc_id, source, content_chunk, embedding_id, chunk_index, total_chunks, metadata)
+        
+        if self.pool:
+            affected_rows = self.pool.execute_update(query, params)
+            return affected_rows > 0
+        else:
+            # Fallback to direct connection
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                c.execute(query, params)
+                conn.commit()
+                return c.rowcount > 0
+    
+    def get_rag_chunks_by_doc_id(self, doc_id: str) -> List[Dict[str, Any]]:
+        """Get all chunks for a specific document"""
+        query = '''
+            SELECT * FROM rag_document_chunks 
+            WHERE doc_id = ? 
+            ORDER BY chunk_index
+        '''
+        params = (doc_id,)
+        
+        if self.pool:
+            results = self.pool.execute_query(query, params)
+            return [dict(row) for row in results]
+        else:
+            # Fallback to direct connection
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                c.execute(query, params)
+                results = c.fetchall()
+                return [dict(row) for row in results]
+    
+    def save_rag_search_session(self, session_id: str, query: str, rag_response: str = None,
+                               traditional_results_count: int = 0, rag_results_count: int = 0,
+                               processing_time: float = 0.0, confidence_score: float = 0.0,
+                               retrieval_method: str = None, model_used: str = None) -> bool:
+        """Save a RAG search session to the database"""
+        query = '''
+            INSERT INTO rag_search_sessions 
+            (session_id, query, rag_response, traditional_results_count, rag_results_count, 
+             processing_time, confidence_score, retrieval_method, model_used)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        '''
+        params = (session_id, query, rag_response, traditional_results_count, rag_results_count,
+                 processing_time, confidence_score, retrieval_method, model_used)
+        
+        if self.pool:
+            affected_rows = self.pool.execute_update(query, params)
+            return affected_rows > 0
+        else:
+            # Fallback to direct connection
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                c.execute(query, params)
+                conn.commit()
+                return c.rowcount > 0
+    
+    def get_rag_search_sessions(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get recent RAG search sessions"""
+        query = '''
+            SELECT * FROM rag_search_sessions 
+            ORDER BY created_at DESC 
+            LIMIT ?
+        '''
+        params = (limit,)
+        
+        if self.pool:
+            results = self.pool.execute_query(query, params)
+            return [dict(row) for row in results]
+        else:
+            # Fallback to direct connection
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                c.execute(query, params)
+                results = c.fetchall()
+                return [dict(row) for row in results]
+    
+    def get_rag_stats(self) -> Dict[str, Any]:
+        """Get RAG system statistics"""
+        stats = {}
+        
+        # Get chunk statistics
+        chunk_query = '''
+            SELECT 
+                COUNT(*) as total_chunks,
+                COUNT(DISTINCT doc_id) as total_documents,
+                COUNT(DISTINCT source) as total_sources
+            FROM rag_document_chunks
+        '''
+        
+        # Get session statistics
+        session_query = '''
+            SELECT 
+                COUNT(*) as total_sessions,
+                AVG(processing_time) as avg_processing_time,
+                AVG(confidence_score) as avg_confidence_score
+            FROM rag_search_sessions
+        '''
+        
+        if self.pool:
+            chunk_results = self.pool.execute_query(chunk_query)
+            session_results = self.pool.execute_query(session_query)
+        else:
+            # Fallback to direct connection
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                c.execute(chunk_query)
+                chunk_results = c.fetchall()
+                c.execute(session_query)
+                session_results = c.fetchall()
+        
+        if chunk_results:
+            stats.update(dict(chunk_results[0]))
+        
+        if session_results:
+            session_stats = dict(session_results[0])
+            stats.update({
+                'total_sessions': session_stats.get('total_sessions', 0),
+                'avg_processing_time': round(session_stats.get('avg_processing_time', 0), 3),
+                'avg_confidence_score': round(session_stats.get('avg_confidence_score', 0), 3)
+            })
+        
+        return stats
+
+    def get_lead_stats(self) -> Dict[str, Any]:
+        """Get lead management statistics"""
+        try:
+            if self.pool:
+                with self.pool.get_connection() as conn:
+                    c = conn.cursor()
+                    return self._get_lead_stats_with_cursor(c)
+            else:
+                with self._get_connection() as conn:
+                    c = conn.cursor()
+                    return self._get_lead_stats_with_cursor(c)
+        except Exception as e:
+            if logger:
+                logger.error(f"Error getting lead stats: {str(e)}")
+            return {
+                'total_leads': 0,
+                'total_searches': 0,
+                'ai_analyses': 0,
+                'leads_by_source': {},
+                'recent_activity': []
+            }
+
+    def _get_lead_stats_with_cursor(self, c) -> Dict[str, Any]:
+        """Get lead statistics using the provided cursor"""
+        # Get total leads
+        c.execute('SELECT COUNT(*) FROM leads')
+        total_leads = c.fetchone()[0]
+        
+        # Get total searches
+        c.execute('SELECT COUNT(*) FROM search_history')
+        total_searches = c.fetchone()[0]
+        
+        # Get AI analyses (leads with AI summaries)
+        c.execute('SELECT COUNT(*) FROM leads WHERE ai_summary IS NOT NULL AND ai_summary != ""')
+        ai_analyses = c.fetchone()[0]
+        
+        # Get leads by source
+        c.execute('SELECT source, COUNT(*) FROM leads GROUP BY source')
+        leads_by_source = dict(c.fetchall())
+        
+        # Get recent activity (last 5 leads)
+        c.execute('''
+            SELECT title, source, created_at 
+            FROM leads 
+            ORDER BY created_at DESC 
+            LIMIT 5
+        ''')
+        recent_leads = c.fetchall()
+        
+        recent_activity = []
+        for lead in recent_leads:
+            recent_activity.append({
+                'type': 'lead',
+                'title': lead[0],
+                'source': lead[1],
+                'created_at': lead[2]
+            })
+        
+        return {
+            'total_leads': total_leads,
+            'total_searches': total_searches,
+            'ai_analyses': ai_analyses,
+            'leads_by_source': leads_by_source,
+            'recent_activity': recent_activity
+        }
 
 # Global database instance
 db = DatabaseConnection()
@@ -432,4 +673,37 @@ def get_search_history(limit: int = 10) -> List[Dict[str, Any]]:
     return db.get_search_history(limit)
 
 def get_lead_count() -> int:
-    return db.get_lead_count() 
+    return db.get_lead_count()
+
+# RAG-related database methods
+def save_rag_chunk(chunk_id: str, doc_id: str, source: str, content_chunk: str, 
+                  embedding_id: str = None, chunk_index: int = 0, total_chunks: int = 1, 
+                  metadata: str = None) -> bool:
+    """Save a RAG document chunk to the database"""
+    return db.save_rag_chunk(chunk_id, doc_id, source, content_chunk, embedding_id, 
+                            chunk_index, total_chunks, metadata)
+
+def get_rag_chunks_by_doc_id(doc_id: str) -> List[Dict[str, Any]]:
+    """Get all chunks for a specific document"""
+    return db.get_rag_chunks_by_doc_id(doc_id)
+
+def save_rag_search_session(session_id: str, query: str, rag_response: str = None,
+                           traditional_results_count: int = 0, rag_results_count: int = 0,
+                           processing_time: float = 0.0, confidence_score: float = 0.0,
+                           retrieval_method: str = None, model_used: str = None) -> bool:
+    """Save a RAG search session to the database"""
+    return db.save_rag_search_session(session_id, query, rag_response, traditional_results_count,
+                                     rag_results_count, processing_time, confidence_score,
+                                     retrieval_method, model_used)
+
+def get_rag_search_sessions(limit: int = 10) -> List[Dict[str, Any]]:
+    """Get recent RAG search sessions"""
+    return db.get_rag_search_sessions(limit)
+
+def get_rag_stats() -> Dict[str, Any]:
+    """Get RAG system statistics"""
+    return db.get_rag_stats()
+
+def get_lead_stats() -> Dict[str, Any]:
+    """Get lead management statistics"""
+    return db.get_lead_stats() 

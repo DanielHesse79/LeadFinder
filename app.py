@@ -69,6 +69,16 @@ except ImportError:
     webscraper_bp = None
 
 try:
+    from routes.rag_routes import rag_bp
+except ImportError:
+    rag_bp = None
+
+try:
+    from routes.dashboard import dashboard_bp
+except ImportError:
+    dashboard_bp = None
+
+try:
     from utils.logger import get_logger
     logger = get_logger('app')
 except ImportError:
@@ -198,6 +208,16 @@ def create_app():
         app.register_blueprint(webscraper_bp)
         if logger:
             logger.info("WebScraper blueprint registered")
+    
+    if rag_bp:
+        app.register_blueprint(rag_bp)
+        if logger:
+            logger.info("RAG blueprint registered")
+    
+    if dashboard_bp:
+        app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
+        if logger:
+            logger.info("Dashboard blueprint registered")
     
     # Register comprehensive error handlers
     if register_flask_error_handlers:

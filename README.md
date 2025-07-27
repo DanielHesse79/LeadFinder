@@ -1,6 +1,6 @@
 # 🤖 LeadFinder - AI-Powered Lead Discovery Platform
 
-LeadFinder is a comprehensive lead discovery and research platform that combines web search, AI analysis, and research funding databases to help you find and analyze potential business leads.
+LeadFinder is a comprehensive lead discovery and research platform that combines web search, AI analysis, and research funding databases to help you find and analyze potential business leads. **Now featuring advanced RAG (Retrieval-Augmented Generation) capabilities for intelligent, context-aware responses.**
 
 ## ✨ Features
 
@@ -10,6 +10,16 @@ LeadFinder is a comprehensive lead discovery and research platform that combines
 - **Unified search interface** combining standard and research modes
 - **AutoGPT integration** for comprehensive lead research
 - **Consolidated search services** with parallel execution and AI relevance scoring
+- **🆕 RAG-powered search** with semantic understanding and context-aware responses
+
+### 🧠 **RAG (Retrieval-Augmented Generation)**
+- **Semantic document search** using vector embeddings and ChromaDB
+- **Intelligent context retrieval** from your knowledge base
+- **AI-generated responses** with source references and citations
+- **Document ingestion pipeline** for leads, research papers, and search results
+- **Hybrid search capabilities** combining traditional and semantic search
+- **Knowledge base management** with automatic chunking and embedding
+- **Real-time RAG search** via web interface and API endpoints
 
 ### 🛡️ **System Reliability**
 - **Comprehensive error handling** with custom exception hierarchy
@@ -30,6 +40,7 @@ LeadFinder is a comprehensive lead discovery and research platform that combines
 - **AI analysis** of lead relevance and opportunities
 - **Export capabilities** (Excel, PDF)
 - **Lead workshop** for project-based analysis
+- **🆕 RAG-enhanced lead analysis** with contextual insights
 
 ### 🔬 **Research Funding**
 - **Multi-API integration** (SweCRIS, CORDIS, NIH, NSF)
@@ -122,6 +133,7 @@ The script automatically:
 - Main application: `http://localhost:5051` (development) or `http://localhost:5050` (production)
 - Health check: `http://localhost:5051/health`
 - AutoGPT status: `http://localhost:5051/autogpt/status`
+- **🆕 RAG Search Interface**: `http://localhost:5051/rag/search`
 
 ## 🎯 Usage
 
@@ -131,6 +143,13 @@ The script automatically:
 3. Select search engines
 4. Enable AutoGPT analysis for AI insights
 5. View and save discovered leads
+
+### 🆕 RAG Search
+1. Navigate to **RAG Search** in the navigation or visit `/rag/search`
+2. Enter your question or query
+3. Adjust settings (top-k results, retrieval method)
+4. Get AI-generated responses with source references
+5. View context snippets and confidence scores
 
 ### AutoGPT Control Panel
 1. Click "AutoGPT Control" in the navigation
@@ -150,6 +169,126 @@ The script automatically:
 2. Create research projects
 3. Use AutoGPT for enhanced analysis
 4. Generate reports and insights
+
+## 🧠 RAG (Retrieval-Augmented Generation)
+
+### What is RAG?
+RAG combines the power of large language models with your own knowledge base to provide accurate, contextual responses. Instead of relying solely on the model's training data, RAG retrieves relevant information from your documents and uses it to generate informed answers.
+
+### Key Benefits
+- **Accurate Responses**: Based on your actual data, not just training data
+- **Source Transparency**: Every response includes references to source documents
+- **Up-to-date Information**: Reflects your current knowledge base
+- **Contextual Understanding**: Understands the specific context of your queries
+- **Hybrid Search**: Combines semantic and traditional keyword search
+
+### RAG Features
+
+#### Document Ingestion
+- **Automatic Processing**: Ingests leads, research papers, search results, and workshop analyses
+- **Smart Chunking**: Breaks documents into optimal-sized chunks for retrieval
+- **Embedding Generation**: Creates vector representations using SentenceTransformers
+- **Metadata Preservation**: Maintains source information and document relationships
+
+#### Vector Search
+- **Semantic Similarity**: Finds relevant content based on meaning, not just keywords
+- **ChromaDB Integration**: Fast, scalable vector database for document storage
+- **Connection Pooling**: Efficient resource management for high-performance search
+- **Configurable Retrieval**: Adjustable top-k results and similarity thresholds
+
+#### AI Generation
+- **Context-Aware Responses**: Uses retrieved context to generate informed answers
+- **Source Citations**: Includes references to source documents
+- **Confidence Scoring**: Provides confidence levels for generated responses
+- **Prompt Engineering**: Optimized prompts for accurate, helpful responses
+
+### RAG API Endpoints
+
+#### Main RAG Search
+```bash
+POST /rag/search
+Content-Type: application/json
+
+{
+  "query": "What are the latest AI trends in healthcare?",
+  "top_k": 5,
+  "retrieval_method": "hybrid"
+}
+```
+
+#### Context Retrieval Only
+```bash
+POST /rag/retrieve
+Content-Type: application/json
+
+{
+  "query": "machine learning applications",
+  "top_k": 3
+}
+```
+
+#### Document Ingestion
+```bash
+POST /rag/ingest
+Content-Type: application/json
+
+{
+  "documents": [
+    {
+      "content": "Document content...",
+      "source": "research_paper",
+      "metadata": {"title": "AI in Healthcare", "author": "Dr. Smith"}
+    }
+  ]
+}
+```
+
+#### System Status
+```bash
+GET /rag/status    # RAG system health
+GET /rag/stats     # Usage statistics
+GET /rag/health    # Detailed health check
+```
+
+### RAG Configuration
+
+#### Environment Variables
+```bash
+# RAG Configuration
+RAG_ENABLED=True
+RAG_MODEL=mistral:latest
+RAG_EMBEDDING_MODEL=all-MiniLM-L6-v2
+RAG_CHUNK_SIZE=1000
+RAG_CHUNK_OVERLAP=200
+RAG_SIMILARITY_THRESHOLD=0.7
+RAG_TOP_K=5
+
+# ChromaDB Configuration
+CHROMADB_HOST=localhost
+CHROMADB_PORT=8000
+CHROMADB_COLLECTION=leadfinder_docs
+```
+
+#### Advanced Settings
+- **Chunk Size**: Adjust document chunking for optimal retrieval
+- **Similarity Threshold**: Control relevance filtering
+- **Top-K Results**: Number of context snippets to retrieve
+- **Retrieval Method**: Choose between vector-only, hybrid, or traditional search
+
+### Data Migration
+
+To populate your RAG knowledge base with existing data:
+
+```bash
+# Run the migration script
+python migrate_existing_data_to_rag.py
+
+# This will:
+# - Process existing leads from the database
+# - Ingest search history and workshop analyses
+# - Generate embeddings and store in ChromaDB
+# - Verify the migration was successful
+```
 
 ## 🔧 Configuration
 
@@ -174,6 +313,18 @@ SWECRIS_API_KEY=your_swecris_key
 CORDIS_API_KEY=your_cordis_key
 NIH_API_KEY=your_nih_key
 NSF_API_KEY=your_nsf_key
+
+# RAG Configuration (New)
+RAG_ENABLED=True
+RAG_MODEL=mistral:latest
+RAG_EMBEDDING_MODEL=all-MiniLM-L6-v2
+RAG_CHUNK_SIZE=1000
+RAG_CHUNK_OVERLAP=200
+RAG_SIMILARITY_THRESHOLD=0.7
+RAG_TOP_K=5
+CHROMADB_HOST=localhost
+CHROMADB_PORT=8000
+CHROMADB_COLLECTION=leadfinder_docs
 ```
 
 ### AutoGPT Models
@@ -197,16 +348,26 @@ leadfinder/
 │   ├── autogpt_control.py     # AutoGPT control panel
 │   ├── research.py            # Research funding routes
 │   ├── ollama.py              # Publication search routes
-│   └── config.py              # Configuration management routes
+│   ├── config.py              # Configuration management routes
+│   └── rag_routes.py          # 🆕 RAG API endpoints
 ├── services/                   # Business logic services
 │   ├── serp_service.py        # Web search service
 │   ├── ollama_service.py      # Ollama AI service
 │   ├── unified_search.py      # Unified search service
-│   └── research_service.py    # Research funding service
+│   ├── research_service.py    # Research funding service
+│   ├── ingestion_service.py   # 🆕 Document ingestion service
+│   ├── vector_store_service.py # 🆕 Vector database management
+│   ├── retrieval_service.py   # 🆕 Context retrieval service
+│   ├── rag_generator.py       # 🆕 RAG response generation
+│   └── embedding_service.py   # 🆕 Text embedding service
 ├── models/                     # Data models
+│   └── database.py            # Updated with RAG tables
 ├── templates/                  # HTML templates
+│   └── rag_search.html        # 🆕 RAG search interface
 ├── static/                     # Static assets
-└── data/                       # Database and logs
+├── data/                       # Database and logs
+├── test_rag_implementation.py # 🆕 RAG test suite
+└── migrate_existing_data_to_rag.py # 🆕 Data migration script
 ```
 
 ## 🤖 AutoGPT Integration
@@ -250,6 +411,7 @@ curl -X POST http://localhost:5051/autogpt/research \
 1. **Quick Search**: Standard web search with optional AI analysis
 2. **Research Mode**: Comprehensive research with AutoGPT
 3. **Unified Search**: Combined approach with caching
+4. **🆕 RAG Search**: Semantic search with AI-generated responses
 
 ### Search Engines
 - Google (default)
@@ -268,6 +430,7 @@ curl -X POST http://localhost:5051/autogpt/research \
 - AI analysis results storage
 - Search history tracking
 - Export capabilities
+- **🆕 RAG document chunks** with vector embeddings
 
 ### Export Formats
 - Excel (.xlsx)
@@ -298,7 +461,11 @@ curl -X POST http://localhost:5051/autogpt/research \
 
 ### Running Tests
 ```bash
+# Run all tests
 python -m pytest tests/
+
+# Run RAG-specific tests
+python test_rag_implementation.py
 ```
 
 ### Code Quality
@@ -320,10 +487,13 @@ mypy .
 - **Caching** for search results
 - **Concurrent processing** for multiple APIs
 - **Configurable timeouts** for different operations
+- **🆕 Vector search optimization** with ChromaDB
+- **🆕 Embedding caching** for improved response times
 
 ### Monitoring
 - **Health check endpoint**: `/health`
 - **AutoGPT status**: `/autogpt/status`
+- **🆕 RAG status**: `/rag/status`
 - **Application logs**: `data/logs/leadfinder.log`
 
 ## 🔒 Security
@@ -342,6 +512,7 @@ mypy .
 - [API Documentation](API_DOCUMENTATION.md)
 - [Deployment Guide](DEPLOYMENT.md)
 - [Development Guide](DEVELOPMENT.md)
+- **🆕 [RAG Documentation](RAG_DOCUMENTATION.md)** - Complete RAG guide
 
 ## 🤝 Contributing
 
@@ -361,8 +532,20 @@ For issues and questions:
 1. Check the documentation
 2. Review the logs in `data/logs/`
 3. Test AutoGPT functionality via the control panel
-4. Create an issue with detailed information
+4. **🆕 Test RAG functionality** via `/rag/status`
+5. Create an issue with detailed information
 
 ## 🔄 Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for version history and updates. 
+See [CHANGELOG.md](CHANGELOG.md) for version history and updates.
+
+### Recent Updates (RAG Implementation)
+- **Added RAG (Retrieval-Augmented Generation) capabilities**
+- **Implemented vector search with ChromaDB**
+- **Created document ingestion pipeline**
+- **Added semantic search with AI-generated responses**
+- **Integrated RAG with existing lead management**
+- **Added comprehensive RAG API endpoints**
+- **Created RAG web interface**
+- **Implemented data migration tools**
+- **Added RAG testing suite** 

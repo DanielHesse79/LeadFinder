@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Search - LeadFinder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .search-container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+        .result-card {
+            border-left: 4px solid #007bff;
+            margin-bottom: 1rem;
+        }
+        .confidence-high { border-left-color: #28a745; }
+        .confidence-medium { border-left-color: #ffc107; }
+        .confidence-low { border-left-color: #dc3545; }
+        .loading {
+            display: none;
+        }
+        .context-item {
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .context-meta {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-container">
+            <div class="text-center mb-4">
+                <h1><i class="fas fa-search"></i> RAG Search</h1>
+                <p class="text-muted">Retrieval-Augmented Generation for intelligent lead discovery</p>
+            </div>
+
+            <!-- Search Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form id="ragSearchForm">
+                        <div class="mb-3">
+                            <label for="query" class="form-label">Search Query</label>
+                            <textarea class="form-control" id="query" name="query" rows="3" 
+                                      placeholder="Enter your research question or search query..." required></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="topK" class="form-label">Number of Results</label>
+                                <select class="form-select" id="topK" name="topK">
+                                    <option value="3">3 results</option>
+                                    <option value="5" selected>5 results</option>
+                                    <option value="10">10 results</option>
+                                    <option value="15">15 results</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="retrievalMethod" class="form-label">Retrieval Method</label>
+                                <select class="form-select" id="retrievalMethod" name="retrievalMethod">
+                                    <option value="vector">Vector Search</option>
+                                    <option value="hybrid">Hybrid Search</option>
+                                    <option value="fallback">Traditional Search</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading text-center mt-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Searching and generating response...</p>
+            </div>
+
+            <!-- Results -->
+            <div id="results" class="mt-4" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-robot"></i> AI Response</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="aiResponse"></div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> Processing time: <span id="processingTime"></span>s
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <small class="text-muted">
+                                    Confidence: <span id="confidenceScore"></span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Context Sources -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5><i class="fas fa-list"></i> Context Sources</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="contextSources"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Display -->
+            <div id="error" class="alert alert-danger mt-4" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="errorMessage"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('ragSearchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const query = document.getElementById('query').value.trim();
+            const topK = parseInt(document.getElementById('topK').value);
+            const retrievalMethod = document.getElementById('retrievalMethod').value;
+            
+            if (!query) {
+                showError('Please enter a search query');
+                return;
+            }
+            
+            // Show loading
+            showLoading(true);
+            hideError();
+            hideResults();
+            
+            try {
+                const response = await fetch('/rag/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        top_k: topK,
+                        use_hybrid: retrievalMethod === 'hybrid'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    showError(data.error || 'Search failed');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        });
+        
+        function displayResults(data) {
+            // Display AI response
+            document.getElementById('aiResponse').innerHTML = formatResponse(data.response);
+            document.getElementById('processingTime').textContent = data.processing_time;
+            document.getElementById('confidenceScore').textContent = formatConfidence(data.confidence_score);
+            
+            // Display context sources
+            const contextContainer = document.getElementById('contextSources');
+            if (data.context && data.context.length > 0) {
+                contextContainer.innerHTML = data.context.map((item, index) => `
+                    <div class="context-item">
+                        <div class="context-meta">
+                            <strong>Source ${index + 1}</strong> 
+                            ${item.title ? `- ${item.title}` : ''}
+                            ${item.source ? `(${item.source})` : ''}
+                            <span class="float-end">Relevance: ${(item.similarity_score * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="mt-2">${truncateText(item.content, 200)}</div>
+                    </div>
+                `).join('');
+            } else {
+                contextContainer.innerHTML = '<p class="text-muted">No context sources available</p>';
+            }
+            
+            showResults();
+        }
+        
+        function formatResponse(response) {
+            // Simple formatting - you can enhance this
+            return response.replace(/\n/g, '<br>');
+        }
+        
+        function formatConfidence(score) {
+            const percentage = (score * 100).toFixed(1);
+            let color = 'text-danger';
+            if (score >= 0.7) color = 'text-success';
+            else if (score >= 0.4) color = 'text-warning';
+            
+            return `<span class="${color}">${percentage}%</span>`;
+        }
+        
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function showResults() {
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        function hideResults() {
+            document.getElementById('results').style.display = 'none';
+        }
+        
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+        
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+    </script>
+</body>
+</html> 
