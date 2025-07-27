@@ -408,7 +408,7 @@ def perform_search_ajax():
 @search_bp.route('/search_form')
 def search_form():
     """Display search form"""
-    return render_template('search_form.html', 
+    return render_template('search_form_standalone.html', 
                          engines=SERP_ENGINES,
                          research_question=DEFAULT_RESEARCH_QUESTION,
                          autogpt_available=AUTOGPT_AVAILABLE) 

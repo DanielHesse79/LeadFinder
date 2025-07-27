@@ -541,8 +541,8 @@ class DatabaseConnection:
         """Get RAG system statistics"""
         try:
             stats = {}
-        
-        # Get chunk statistics
+            
+            # Get chunk statistics
         chunk_query = '''
             SELECT 
                 COUNT(*) as total_chunks,
