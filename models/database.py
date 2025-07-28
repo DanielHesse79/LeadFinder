@@ -543,63 +543,54 @@ class DatabaseConnection:
             stats = {}
             
             # Get chunk statistics
-        chunk_query = '''
-            SELECT 
-                COUNT(*) as total_chunks,
-                COUNT(DISTINCT doc_id) as total_documents,
-                COUNT(DISTINCT source) as total_sources
-            FROM rag_document_chunks
-        '''
-        
-        # Get session statistics
-        session_query = '''
-            SELECT 
-                COUNT(*) as total_sessions,
-                AVG(processing_time) as avg_processing_time,
-                AVG(confidence_score) as avg_confidence_score
-            FROM rag_search_sessions
-        '''
-        
-        if self.pool:
-            chunk_results = self.pool.execute_query(chunk_query)
-            session_results = self.pool.execute_query(session_query)
-        else:
-            # Fallback to direct connection
-            with self._get_connection() as conn:
-                c = conn.cursor()
-                c.execute(chunk_query)
-                chunk_results = c.fetchall()
-                c.execute(session_query)
-                session_results = c.fetchall()
-        
-        if chunk_results:
-            stats.update(dict(chunk_results[0]))
-        
-        if session_results:
-            session_stats = dict(session_results[0])
-            # Ensure values are not None before using round()
-            avg_processing_time = session_stats.get('avg_processing_time', 0) or 0
-            avg_confidence_score = session_stats.get('avg_confidence_score', 0) or 0
+            chunk_query = '''
+                SELECT 
+                    COUNT(*) as total_chunks,
+                    COUNT(DISTINCT doc_id) as total_documents,
+                    COUNT(DISTINCT source) as total_sources
+                FROM rag_document_chunks
+            '''
             
-            stats.update({
-                'total_sessions': session_stats.get('total_sessions', 0) or 0,
-                'avg_processing_time': round(avg_processing_time, 3),
-                'avg_confidence_score': round(avg_confidence_score, 3)
-            })
-        
-        return stats
-        
+            # Get session statistics
+            session_query = '''
+                SELECT 
+                    COUNT(*) as total_sessions,
+                    AVG(processing_time) as avg_processing_time,
+                    AVG(confidence_score) as avg_confidence_score
+                FROM rag_search_sessions
+            '''
+            
+            if self.pool:
+                chunk_results = self.pool.execute_query(chunk_query)
+                session_results = self.pool.execute_query(session_query)
+            else:
+                # Fallback to direct connection
+                with self._get_connection() as conn:
+                    c = conn.cursor()
+                    c.execute(chunk_query)
+                    chunk_results = c.fetchall()
+                    c.execute(session_query)
+                    session_results = c.fetchall()
+            
+            if chunk_results:
+                stats.update(dict(chunk_results[0]))
+            
+            if session_results:
+                session_stats = dict(session_results[0])
+                # Ensure values are not None before using round()
+                avg_processing_time = session_stats.get('avg_processing_time', 0) or 0
+                avg_confidence_score = session_stats.get('avg_confidence_score', 0) or 0
+                
+                stats.update({
+                    'total_sessions': session_stats.get('total_sessions', 0) or 0,
+                    'avg_processing_time': round(avg_processing_time, 3),
+                    'avg_confidence_score': round(avg_confidence_score, 3)
+                })
+            
+            return stats
         except Exception as e:
-            if logger:
-                logger.error(f"Error getting RAG stats: {str(e)}")
-            return {
-                'total_chunks': 0,
-                'total_documents': 0,
-                'total_sources': 0,
-                'total_sessions': 0,
-                'avg_processing_time': 0.0,
-                'avg_confidence_score': 0.0
-            }
+            logger.error(f"Error getting RAG stats: {e}")
+            return {}
 
     def get_lead_stats(self) -> Dict[str, Any]:
         """Get lead management statistics"""

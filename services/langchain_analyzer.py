@@ -21,9 +21,59 @@ try:
     from langchain.chains.question_answering import load_qa_chain
     from pydantic import BaseModel, Field
     LANGCHAIN_AVAILABLE = True
+    
+    class ScientificPaper(BaseModel):
+        """Structured data model for scientific papers"""
+        title: str = Field(description="Title of the paper")
+        authors: List[str] = Field(description="List of authors")
+        abstract: str = Field(description="Abstract or summary")
+        doi: Optional[str] = Field(description="DOI if available")
+        publication_date: Optional[str] = Field(description="Publication date")
+        keywords: List[str] = Field(description="Keywords or tags")
+        institution: Optional[str] = Field(description="Institution or organization")
+        funding: Optional[str] = Field(description="Funding information")
+        methodology: Optional[str] = Field(description="Research methodology")
+        results: Optional[str] = Field(description="Key results")
+        conclusions: Optional[str] = Field(description="Conclusions")
+        relevance_score: int = Field(description="Relevance score 1-5")
+        research_areas: List[str] = Field(description="Research areas")
+        potential_collaborations: List[str] = Field(description="Potential collaboration opportunities")
+
+    class ResearchProfile(BaseModel):
+        """Structured data model for research profiles"""
+        name: str = Field(description="Researcher name")
+        title: str = Field(description="Professional title")
+        institution: str = Field(description="Institution or organization")
+        department: Optional[str] = Field(description="Department or division")
+        research_interests: List[str] = Field(description="Research interests")
+        expertise: List[str] = Field(description="Areas of expertise")
+        publications: List[str] = Field(description="Key publications")
+        contact_info: Optional[str] = Field(description="Contact information")
+        collaboration_potential: str = Field(description="Collaboration potential assessment")
+        relevance_score: int = Field(description="Relevance score 1-5")
+
+    class Institution(BaseModel):
+        """Structured data model for institutions"""
+        name: str = Field(description="Institution name")
+        type: str = Field(description="Type of institution (university, research institute, etc.)")
+        location: Optional[str] = Field(description="Location")
+        research_areas: List[str] = Field(description="Research areas")
+        departments: List[str] = Field(description="Departments or divisions")
+        key_researchers: List[str] = Field(description="Key researchers")
+        facilities: List[str] = Field(description="Research facilities")
+        collaboration_opportunities: List[str] = Field(description="Collaboration opportunities")
+        relevance_score: int = Field(description="Relevance score 1-5")
+
 except ImportError as e:
     print(f"LangChain import error: {e}")
     LANGCHAIN_AVAILABLE = False
+    # Fallback classes when pydantic is not available
+    class ScientificPaper:
+        pass
+    class ResearchProfile:
+        pass
+    class Institution:
+        pass
 
 try:
     from services.ollama_service import ollama_service
@@ -45,48 +95,6 @@ try:
     from config import config
 except ImportError:
     config = None
-
-class ScientificPaper(BaseModel):
-    """Structured data model for scientific papers"""
-    title: str = Field(description="Title of the paper")
-    authors: List[str] = Field(description="List of authors")
-    abstract: str = Field(description="Abstract or summary")
-    doi: Optional[str] = Field(description="DOI if available")
-    publication_date: Optional[str] = Field(description="Publication date")
-    keywords: List[str] = Field(description="Keywords or tags")
-    institution: Optional[str] = Field(description="Institution or organization")
-    funding: Optional[str] = Field(description="Funding information")
-    methodology: Optional[str] = Field(description="Research methodology")
-    results: Optional[str] = Field(description="Key results")
-    conclusions: Optional[str] = Field(description="Conclusions")
-    relevance_score: int = Field(description="Relevance score 1-5")
-    research_areas: List[str] = Field(description="Research areas")
-    potential_collaborations: List[str] = Field(description="Potential collaboration opportunities")
-
-class ResearchProfile(BaseModel):
-    """Structured data model for research profiles"""
-    name: str = Field(description="Researcher name")
-    title: str = Field(description="Professional title")
-    institution: str = Field(description="Institution or organization")
-    department: Optional[str] = Field(description="Department or division")
-    research_interests: List[str] = Field(description="Research interests")
-    expertise: List[str] = Field(description="Areas of expertise")
-    publications: List[str] = Field(description="Key publications")
-    contact_info: Optional[str] = Field(description="Contact information")
-    collaboration_potential: str = Field(description="Collaboration potential assessment")
-    relevance_score: int = Field(description="Relevance score 1-5")
-
-class Institution(BaseModel):
-    """Structured data model for institutions"""
-    name: str = Field(description="Institution name")
-    type: str = Field(description="Type of institution (university, research institute, etc.)")
-    location: Optional[str] = Field(description="Location")
-    research_areas: List[str] = Field(description="Research areas")
-    departments: List[str] = Field(description="Departments or divisions")
-    key_researchers: List[str] = Field(description="Key researchers")
-    facilities: List[str] = Field(description="Research facilities")
-    collaboration_opportunities: List[str] = Field(description="Collaboration opportunities")
-    relevance_score: int = Field(description="Relevance score 1-5")
 
 @dataclass
 class AnalysisResult:
@@ -390,7 +398,7 @@ class LangChainAnalyzer:
                 error=error_msg
             )
     
-    def _create_scientific_paper_prompt(self, research_context: str) -> PromptTemplate:
+    def _create_scientific_paper_prompt(self, research_context: str):
         """Create prompt for scientific paper analysis"""
         template = """
         Analyze the following scientific paper content and extract structured information.
@@ -426,7 +434,7 @@ class LangChainAnalyzer:
             template=template
         )
     
-    def _create_research_profile_prompt(self, research_context: str) -> PromptTemplate:
+    def _create_research_profile_prompt(self, research_context: str):
         """Create prompt for research profile analysis"""
         template = """
         Analyze the following research profile content and extract structured information.
@@ -458,7 +466,7 @@ class LangChainAnalyzer:
             template=template
         )
     
-    def _create_institution_prompt(self, research_context: str) -> PromptTemplate:
+    def _create_institution_prompt(self, research_context: str):
         """Create prompt for institution analysis"""
         template = """
         Analyze the following institution content and extract structured information.

@@ -221,9 +221,9 @@ def create_app():
     
     if dashboard_bp:
         app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
-    app.register_blueprint(reports_bp, url_prefix='/reports')
         if logger:
             logger.info("Dashboard blueprint registered")
+    app.register_blueprint(reports_bp, url_prefix='/reports')
     
     # Register comprehensive error handlers
     if register_flask_error_handlers:
