@@ -20,6 +20,11 @@ except ImportError:
     ollama_service = None
 
 try:
+    from services.company_mining_service import CompanyMiningService
+except ImportError:
+    CompanyMiningService = None
+
+try:
     from utils.logger import get_logger
     logger = get_logger('strategic_planning_routes')
 except ImportError:
@@ -119,6 +124,50 @@ def view_company_profile(company_id):
             logger.error(f"View company profile error: {e}")
         flash(f'Error loading company profile: {str(e)}', 'error')
         return redirect(url_for('strategic.strategic_dashboard'))
+
+@strategic_bp.route('/strategic/company/<int:company_id>/mine-data', methods=['POST'])
+def mine_company_data(company_id):
+    """Mine comprehensive company data using the company mining service"""
+    if not get_strategic_db or not CompanyMiningService:
+        return jsonify({'success': False, 'error': 'Strategic planning or mining service not available'}), 500
+    
+    try:
+        db = get_strategic_db()
+        company = db.get_company_profile(company_id)
+        
+        if not company:
+            return jsonify({'success': False, 'error': 'Company profile not found'}), 404
+        
+        # Initialize mining service
+        mining_service = CompanyMiningService()
+        
+        # Mine comprehensive company data
+        mined_data = mining_service.mine_company_data(company['company_name'])
+        
+        if 'error' in mined_data:
+            return jsonify({'success': False, 'error': mined_data['error']}), 500
+        
+        # Update company profile with mined data
+        enhanced_profile = _enhance_company_profile(company, mined_data)
+        db.update_company_profile(company_id, enhanced_profile)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Comprehensive data mining completed for {company["company_name"]}',
+            'data_summary': {
+                'basic_info': bool(mined_data.get('basic_info')),
+                'news_analysis': bool(mined_data.get('news_analysis')),
+                'financial_intelligence': bool(mined_data.get('financial_intelligence')),
+                'ip_landscape': bool(mined_data.get('ip_landscape')),
+                'industry_research': bool(mined_data.get('industry_research')),
+                'talent_mapping': bool(mined_data.get('talent_mapping'))
+            }
+        })
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"Company data mining error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @strategic_bp.route('/strategic/company/<int:company_id>/market-research', methods=['POST'])
 def conduct_market_research(company_id):
@@ -223,9 +272,83 @@ def generate_strategic_plan(company_id, plan_type):
             logger.error(f"Generate plan error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@strategic_bp.route('/strategic/company/<int:company_id>/comprehensive-analysis', methods=['POST'])
+def conduct_comprehensive_analysis(company_id):
+    """Conduct comprehensive analysis including data mining, market research, and SWOT analysis"""
+    if not get_strategic_db:
+        return jsonify({'success': False, 'error': 'Strategic planning system not available'}), 500
+    
+    try:
+        db = get_strategic_db()
+        company = db.get_company_profile(company_id)
+        
+        if not company:
+            return jsonify({'success': False, 'error': 'Company profile not found'}), 404
+        
+        # Step 1: Mine comprehensive data
+        if CompanyMiningService:
+            mining_service = CompanyMiningService()
+            mined_data = mining_service.mine_company_data(company['company_name'])
+            
+            if 'error' not in mined_data:
+                enhanced_profile = _enhance_company_profile(company, mined_data)
+                db.update_company_profile(company_id, enhanced_profile)
+        
+        # Step 2: Generate market research
+        if ollama_service:
+            research_data = _generate_market_research(company)
+            db.save_market_research(company_id, research_data)
+        
+        # Step 3: Generate SWOT analysis
+        if ollama_service:
+            swot_data = _generate_swot_analysis(company)
+            db.save_swot_analysis(company_id, swot_data)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Comprehensive analysis completed for {company["company_name"]}',
+            'analysis_components': {
+                'data_mining': CompanyMiningService is not None,
+                'market_research': ollama_service is not None,
+                'swot_analysis': ollama_service is not None
+            }
+        })
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"Comprehensive analysis error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+def _enhance_company_profile(company: Dict[str, Any], mined_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Enhance company profile with mined data"""
+    enhanced_profile = company.copy()
+    
+    # Enhance with basic info
+    if mined_data.get('basic_info') and not mined_data['basic_info'].get('error'):
+        basic_info = mined_data['basic_info']
+        enhanced_profile.update({
+            'website': basic_info.get('website', company.get('website')),
+            'description': basic_info.get('description', company.get('description')),
+            'industry': basic_info.get('industry', company.get('industry')),
+            'location': basic_info.get('location', company.get('location'))
+        })
+    
+    # Add mined data as JSON fields
+    enhanced_profile.update({
+        'mined_data': mined_data,
+        'last_mined': mined_data.get('mining_timestamp')
+    })
+    
+    return enhanced_profile
+
 def _generate_market_research(company: Dict[str, Any]) -> Dict[str, Any]:
     """Generate market research using AI"""
     try:
+        # Use mined data if available
+        mined_data = company.get('mined_data', {})
+        industry_research = mined_data.get('industry_research', {})
+        financial_intelligence = mined_data.get('financial_intelligence', {})
+        
         prompt = f"""
         Conduct comprehensive market research for {company['company_name']}:
         
@@ -234,6 +357,11 @@ def _generate_market_research(company: Dict[str, Any]) -> Dict[str, Any]:
         - Target Market: {company.get('target_market', 'N/A')}
         - Industry: {company.get('industry', 'N/A')}
         - USPs: {company.get('usps', 'N/A')}
+        
+        Available Research Data:
+        - Industry Research: {industry_research.get('industry_trends', [])}
+        - Market Analysis: {industry_research.get('market_size_data', {})}
+        - Financial Intelligence: {financial_intelligence.get('funding_history', {})}
         
         Please provide:
         1. Market Size Analysis (TAM, SAM, SOM)
@@ -249,14 +377,14 @@ def _generate_market_research(company: Dict[str, Any]) -> Dict[str, Any]:
         response = ollama_service.generate_text(prompt)
         
         # Parse the response into structured data
-        # This is a simplified version - in production, you'd want more sophisticated parsing
         research_data = {
             'market_size_data': {'analysis': response},
             'competitive_analysis': {'analysis': response},
             'industry_trends': {'analysis': response},
             'customer_insights': {'analysis': response},
             'market_segments': {'analysis': response},
-            'growth_projections': {'analysis': response}
+            'growth_projections': {'analysis': response},
+            'mined_data_integration': bool(mined_data)
         }
         
         return research_data
@@ -269,6 +397,12 @@ def _generate_market_research(company: Dict[str, Any]) -> Dict[str, Any]:
 def _generate_swot_analysis(company: Dict[str, Any]) -> Dict[str, Any]:
     """Generate SWOT analysis using AI"""
     try:
+        # Use mined data if available
+        mined_data = company.get('mined_data', {})
+        news_analysis = mined_data.get('news_analysis', {})
+        financial_intelligence = mined_data.get('financial_intelligence', {})
+        ip_landscape = mined_data.get('ip_landscape', {})
+        
         prompt = f"""
         Conduct a comprehensive SWOT analysis for {company['company_name']}:
         
@@ -278,6 +412,12 @@ def _generate_swot_analysis(company: Dict[str, Any]) -> Dict[str, Any]:
         - Industry: {company.get('industry', 'N/A')}
         - USPs: {company.get('usps', 'N/A')}
         - Business Model: {company.get('business_model', 'N/A')}
+        
+        Available Intelligence:
+        - News Sentiment: {news_analysis.get('sentiment_analysis', 'N/A')}
+        - Financial Health: {financial_intelligence.get('financial_metrics', {})}
+        - IP Strength: {ip_landscape.get('ip_strength', 'N/A')}
+        - Innovation Indicators: {ip_landscape.get('innovation_indicators', {})}
         
         Please provide:
         1. Strengths (internal positive factors)
@@ -295,7 +435,8 @@ def _generate_swot_analysis(company: Dict[str, Any]) -> Dict[str, Any]:
             'strengths': [response],  # Simplified - would parse into list
             'weaknesses': [response],
             'opportunities': [response],
-            'threats': [response]
+            'threats': [response],
+            'mined_data_integration': bool(mined_data)
         }
         
         return swot_data

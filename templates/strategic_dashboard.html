@@ -27,12 +27,20 @@
                                         <h5 class="card-title mb-0">
                                             <i class="fas fa-building"></i> {{ company.company_name }}
                                         </h5>
+                                        {% if company.get('last_mined') %}
+                                        <small class="text-success">
+                                            <i class="fas fa-check-circle"></i> Data Enhanced
+                                        </small>
+                                        {% endif %}
                                     </div>
                                     <div class="card-body">
                                         <div class="company-info">
                                             <p><strong>Industry:</strong> {{ company.industry or 'Not specified' }}</p>
                                             <p><strong>Product:</strong> {{ company.product_description[:100] }}{% if company.product_description|length > 100 %}...{% endif %}</p>
                                             <p><strong>Target Market:</strong> {{ company.target_market[:100] }}{% if company.target_market|length > 100 %}...{% endif %}</p>
+                                            {% if company.get('website') %}
+                                            <p><strong>Website:</strong> <a href="{{ company.website }}" target="_blank">{{ company.website }}</a></p>
+                                            {% endif %}
                                         </div>
                                         
                                         <div class="strategic-actions mt-3">
@@ -42,26 +50,67 @@
                                                    class="btn btn-outline-primary btn-sm mb-2">
                                                     <i class="fas fa-eye"></i> View Profile
                                                 </a>
-                                                <button class="btn btn-outline-info btn-sm mb-2 market-research-btn"
+                                                <button class="btn btn-outline-success btn-sm mb-2 comprehensive-analysis-btn"
                                                         data-company-id="{{ company.id }}">
-                                                    <i class="fas fa-search"></i> Market Research
+                                                    <i class="fas fa-rocket"></i> Comprehensive Analysis
                                                 </button>
-                                                <button class="btn btn-outline-warning btn-sm mb-2 swot-analysis-btn"
+                                                <button class="btn btn-outline-info btn-sm mb-2 mine-data-btn"
+                                                        data-company-id="{{ company.id }}">
+                                                    <i class="fas fa-search"></i> Mine Data
+                                                </button>
+                                                <button class="btn btn-outline-warning btn-sm mb-2 market-research-btn"
+                                                        data-company-id="{{ company.id }}">
+                                                    <i class="fas fa-chart-bar"></i> Market Research
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm mb-2 swot-analysis-btn"
                                                         data-company-id="{{ company.id }}">
                                                     <i class="fas fa-chart-pie"></i> SWOT Analysis
                                                 </button>
-                                                <button class="btn btn-outline-success btn-sm mb-2 generate-plan-btn"
+                                                <button class="btn btn-outline-dark btn-sm mb-2 generate-plan-btn"
                                                         data-company-id="{{ company.id }}">
                                                     <i class="fas fa-file-alt"></i> Generate Plans
                                                 </button>
                                             </div>
                                         </div>
                                         
+                                        {% if company.get('mined_data') %}
+                                        <div class="data-indicators mt-3">
+                                            <h6>Data Intelligence:</h6>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-newspaper"></i> News: {{ company.mined_data.news_analysis.news_count|default(0) }}
+                                                    </small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-dollar-sign"></i> Funding: ${{ "{:,.0f}".format(company.mined_data.financial_intelligence.funding_history.total_funding|default(0)) }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-lightbulb"></i> Innovation: {{ company.mined_data.ip_landscape.innovation_indicators.innovation_score|default(0)|round(1) }}
+                                                    </small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-users"></i> Talent: {{ company.mined_data.talent_mapping.talent_indicators.expertise_diversity|default(0) }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
                                         <div class="company-meta mt-3">
                                             <small class="text-muted">
                                                 Created: {{ company.created_at[:10] }}
                                                 {% if company.updated_at != company.created_at %}
                                                 | Updated: {{ company.updated_at[:10] }}
+                                                {% endif %}
+                                                {% if company.get('last_mined') %}
+                                                | Mined: {{ company.last_mined[:10] }}
                                                 {% endif %}
                                             </small>
                                         </div>
@@ -74,7 +123,7 @@
                         <div class="text-center py-5">
                             <i class="fas fa-building fa-3x text-muted mb-3"></i>
                             <h4 class="text-muted">No Company Profiles Yet</h4>
-                            <p class="text-muted">Create your first company profile to start strategic planning.</p>
+                            <p class="text-muted">Create your first company profile to start strategic planning with comprehensive data mining.</p>
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createCompanyModal">
                                 <i class="fas fa-plus"></i> Create Company Profile
                             </button>
@@ -245,11 +294,71 @@ $(document).ready(function() {
         });
     });
     
+    // Comprehensive Analysis
+    $('.comprehensive-analysis-btn').click(function() {
+        const companyId = $(this).data('company-id');
+        
+        if (confirm('Conduct comprehensive analysis including data mining, market research, and SWOT analysis? This may take several minutes.')) {
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Analyzing...');
+            
+            $.ajax({
+                url: '/strategic/company/' + companyId + '/comprehensive-analysis',
+                method: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        alert('Comprehensive analysis completed successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    alert('Error: ' + (response ? response.error : 'Unknown error'));
+                },
+                complete: function() {
+                    $('.comprehensive-analysis-btn').prop('disabled', false).html('<i class="fas fa-rocket"></i> Comprehensive Analysis');
+                }
+            });
+        }
+    });
+    
+    // Mine Data
+    $('.mine-data-btn').click(function() {
+        const companyId = $(this).data('company-id');
+        
+        if (confirm('Mine comprehensive company data from multiple sources? This may take a few minutes.')) {
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Mining...');
+            
+            $.ajax({
+                url: '/strategic/company/' + companyId + '/mine-data',
+                method: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        alert('Data mining completed successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    alert('Error: ' + (response ? response.error : 'Unknown error'));
+                },
+                complete: function() {
+                    $('.mine-data-btn').prop('disabled', false).html('<i class="fas fa-search"></i> Mine Data');
+                }
+            });
+        }
+    });
+    
     // Market Research
     $('.market-research-btn').click(function() {
         const companyId = $(this).data('company-id');
         
         if (confirm('Conduct market research for this company? This may take a few minutes.')) {
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Researching...');
+            
             $.ajax({
                 url: '/strategic/company/' + companyId + '/market-research',
                 method: 'POST',
@@ -264,6 +373,9 @@ $(document).ready(function() {
                 error: function(xhr) {
                     const response = xhr.responseJSON;
                     alert('Error: ' + (response ? response.error : 'Unknown error'));
+                },
+                complete: function() {
+                    $('.market-research-btn').prop('disabled', false).html('<i class="fas fa-chart-bar"></i> Market Research');
                 }
             });
         }
@@ -274,6 +386,8 @@ $(document).ready(function() {
         const companyId = $(this).data('company-id');
         
         if (confirm('Conduct SWOT analysis for this company? This may take a few minutes.')) {
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Analyzing...');
+            
             $.ajax({
                 url: '/strategic/company/' + companyId + '/swot-analysis',
                 method: 'POST',
@@ -288,6 +402,9 @@ $(document).ready(function() {
                 error: function(xhr) {
                     const response = xhr.responseJSON;
                     alert('Error: ' + (response ? response.error : 'Unknown error'));
+                },
+                complete: function() {
+                    $('.swot-analysis-btn').prop('disabled', false).html('<i class="fas fa-chart-pie"></i> SWOT Analysis');
                 }
             });
         }
@@ -310,6 +427,7 @@ $(document).ready(function() {
             }
             
             $('#generatePlansModal').modal('hide');
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Generating...');
             
             // Generate each selected plan
             let completed = 0;
