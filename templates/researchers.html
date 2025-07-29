@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Researcher Database - 4Front2Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-form {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+    .stats-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .researcher-card {
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: transform 0.2s;
+    }
+    .researcher-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .orcid-badge {
+        background-color: #a6ce39;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">
+                    <i class="fas fa-user-graduate"></i> 
+                    Researcher Database
+                </h1>
+                
+                <!-- Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <h5><i class="fas fa-database"></i> Database</h5>
+                            <h3>{{ total_researchers }}</h3>
+                            <p>Researchers in database</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <h5><i class="fas fa-search"></i> ORCID</h5>
+                            <h3>{{ "Available" if orcid_available else "Unavailable" }}</h3>
+                            <p>ORCID integration status</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <h5><i class="fas fa-book"></i> PubMed</h5>
+                            <h3>{{ "Available" if pubmed_available else "Unavailable" }}</h3>
+                            <p>PubMed integration status</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search Form -->
+                <div class="search-form">
+                    <form method="POST" action="{{ url_for('researchers.search_researchers_route') }}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="query" class="form-label">
+                                        <i class="fas fa-search"></i> Search Researchers
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg" 
+                                           id="query" name="query" 
+                                           placeholder="e.g., John Smith, cancer research, Harvard University..."
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="max_results" class="form-label">
+                                        <i class="fas fa-list"></i> Max results
+                                    </label>
+                                    <select class="form-select" id="max_results" name="max_results">
+                                        <option value="10">10</option>
+                                        <option value="20" selected>20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-light btn-lg">
+                            <i class="fas fa-search"></i> Search Researchers
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Recent Researchers -->
+                {% if recent_researchers %}
+                <div class="row">
+                    <div class="col-12">
+                        <h4><i class="fas fa-clock"></i> Recent Researchers</h4>
+                        <div class="row">
+                            {% for researcher in recent_researchers %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="researcher-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-0">{{ researcher.name }}</h6>
+                                        <span class="orcid-badge">ORCID</span>
+                                    </div>
+                                    {% if researcher.institution %}
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-university"></i> {{ researcher.institution }}
+                                    </p>
+                                    {% endif %}
+                                    {% if researcher.bio %}
+                                    <p class="small mb-2">{{ researcher.bio[:100] }}{% if researcher.bio|length > 100 %}...{% endif %}</p>
+                                    {% endif %}
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i> 
+                                            {{ researcher.last_updated.split(' ')[0] if researcher.last_updated else 'Unknown' }}
+                                        </small>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('researchers.researcher_profile', orcid_id=researcher.orcid_id) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="removeResearcher('{{ researcher.orcid_id }}', '{{ researcher.name }}')"
+                                                    title="Remove from database">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Quick Actions -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h4><i class="fas fa-tools"></i> Quick Actions</h4>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-database fa-3x text-primary mb-3"></i>
+                                        <h5>View Database</h5>
+                                        <p>Browse all researchers in the database</p>
+                                        <a href="{{ url_for('researchers.researcher_database') }}" 
+                                           class="btn btn-primary">
+                                            <i class="fas fa-list"></i> Browse Database
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-search fa-3x text-success mb-3"></i>
+                                        <h5>Search ORCID</h5>
+                                        <p>Find researchers using ORCID</p>
+                                        <button class="btn btn-success" onclick="document.getElementById('query').focus()">
+                                            <i class="fas fa-search"></i> Start Search
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-cog fa-3x text-info mb-3"></i>
+                                        <h5>Settings</h5>
+                                        <p>Configure ORCID and PubMed settings</p>
+                                        <a href="{{ url_for('config.config_home') }}" 
+                                           class="btn btn-info">
+                                            <i class="fas fa-cog"></i> Configure
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Remove researcher from database
+function removeResearcher(orcidId, researcherName) {
+    if (confirm(`Are you sure you want to remove "${researcherName}" from the database? This action cannot be undone.`)) {
+        // Create a form to submit the removal request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/researchers/${orcidId}/remove`;
+        
+        // Submit the form
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Enhance researcher data
+function enhanceResearcherData(orcidId) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    // Show loading state
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    button.disabled = true;
+    
+    // Send enhance request
+    fetch(`/researchers/${orcidId}/enhance`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Reload the page to show updated data
+            window.location.reload();
+        } else {
+            throw new Error('Failed to enhance researcher data');
+        }
+    })
+    .catch(error => {
+        alert('Error enhancing researcher data: ' + error.message);
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+</script>
+{% endblock %} 

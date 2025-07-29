@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+
+{% block title %}API Key Management - LeadFinder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .api-service-card {
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: transform 0.2s;
+    }
+    .api-service-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .key-status {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    .key-status.active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .key-status.inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .usage-chart {
+        height: 200px;
+        margin: 1rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-key"></i> API Key Management</h2>
+                    <p class="text-muted">Manage API keys for various services used by LeadFinder</p>
+                </div>
+                <div class="card-body">
+                    <!-- Add New API Key -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-plus"></i> Add New API Key</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST" action="{{ url_for('api_keys.add_api_key') }}">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label for="service_name" class="form-label">Service</label>
+                                                    <select class="form-select" id="service_name" name="service_name" required>
+                                                        <option value="">Select Service</option>
+                                                        <option value="serpapi">SerpAPI (Search)</option>
+                                                        <option value="openai">OpenAI (AI)</option>
+                                                        <option value="semantic_scholar">Semantic Scholar (Research)</option>
+                                                        <option value="pubmed">PubMed (Medical Research)</option>
+                                                        <option value="nih">NIH (Research Funding)</option>
+                                                        <option value="nsf">NSF (Research Funding)</option>
+                                                        <option value="cordis">CORDIS (EU Research)</option>
+                                                        <option value="swecris">Swedish Research</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label for="key_name" class="form-label">Key Name</label>
+                                                    <input type="text" class="form-control" id="key_name" name="key_name" 
+                                                           placeholder="e.g., Production Key" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="key_value" class="form-label">API Key</label>
+                                                    <input type="password" class="form-control" id="key_value" name="key_value" 
+                                                           placeholder="Enter API key" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="mb-3">
+                                                    <label class="form-label">&nbsp;</label>
+                                                    <button type="submit" class="btn btn-primary w-100">
+                                                        <i class="fas fa-plus"></i> Add Key
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="mb-3">
+                                                    <label for="description" class="form-label">Description (Optional)</label>
+                                                    <textarea class="form-control" id="description" name="description" 
+                                                              rows="2" placeholder="Describe the purpose of this API key"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API Services -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h4><i class="fas fa-cogs"></i> API Services</h4>
+                            <div id="apiServices">
+                                <!-- Services will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Usage Statistics -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h4><i class="fas fa-chart-bar"></i> Usage Statistics</h4>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <h5>Total API Calls</h5>
+                                                <h3 id="totalCalls">-</h3>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <h5>Success Rate</h5>
+                                                <h3 id="successRate">-</h3>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <h5>Active Keys</h5>
+                                                <h3 id="activeKeys">-</h3>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <h5>Last 30 Days</h5>
+                                                <h3 id="lastMonth">-</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit API Key Modal -->
+<div class="modal fade" id="editKeyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit API Key</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editKeyForm" method="POST">
+                    <div class="mb-3">
+                        <label for="edit_key_value" class="form-label">API Key</label>
+                        <input type="password" class="form-control" id="edit_key_value" name="key_value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_is_active" name="is_active">
+                            <label class="form-check-label" for="edit_is_active">
+                                Active
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="editKeyForm" class="btn btn-primary">Update Key</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test API Key Modal -->
+<div class="modal fade" id="testKeyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Test API Key</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="testKeyForm" method="POST">
+                    <div class="mb-3">
+                        <label for="test_key_name" class="form-label">Key Name</label>
+                        <select class="form-select" id="test_key_name" name="key_name" required>
+                            <!-- Options will be populated -->
+                        </select>
+                    </div>
+                </form>
+                <div id="testResult" class="mt-3" style="display: none;">
+                    <!-- Test result will be shown here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="testKeyForm" class="btn btn-primary">Test Key</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentService = null;
+
+// Load API services
+function loadAPIServices() {
+    fetch('/api_keys/services')
+        .then(response => response.json())
+        .then(data => {
+            if (data.services) {
+                displayAPIServices(data.services);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading API services:', error);
+        });
+}
+
+// Display API services
+function displayAPIServices(services) {
+    const container = document.getElementById('apiServices');
+    container.innerHTML = '';
+    
+    services.forEach(service => {
+        const serviceCard = createServiceCard(service);
+        container.appendChild(serviceCard);
+    });
+}
+
+// Create service card
+function createServiceCard(service) {
+    const card = document.createElement('div');
+    card.className = 'api-service-card';
+    card.innerHTML = `
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h5>${service.display_name}</h5>
+                <p class="text-muted mb-2">${service.description || 'No description available'}</p>
+                <small class="text-muted">Base URL: ${service.base_url || 'N/A'}</small>
+            </div>
+            <div class="btn-group" role="group">
+                <button class="btn btn-sm btn-outline-primary" onclick="viewServiceKeys('${service.service_name}')">
+                    <i class="fas fa-key"></i> View Keys
+                </button>
+                <button class="btn btn-sm btn-outline-info" onclick="testServiceKeys('${service.service_name}')">
+                    <i class="fas fa-vial"></i> Test
+                </button>
+            </div>
+        </div>
+        <div id="keys_${service.service_name}" class="mt-3" style="display: none;">
+            <!-- Keys will be loaded here -->
+        </div>
+    `;
+    return card;
+}
+
+// View service keys
+function viewServiceKeys(serviceName) {
+    const keysContainer = document.getElementById(`keys_${serviceName}`);
+    
+    if (keysContainer.style.display === 'none') {
+        // Load keys
+        fetch(`/api_keys/services/${serviceName}/keys`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.keys) {
+                    displayServiceKeys(serviceName, data.keys);
+                    keysContainer.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading keys:', error);
+            });
+    } else {
+        keysContainer.style.display = 'none';
+    }
+}
+
+// Display service keys
+function displayServiceKeys(serviceName, keys) {
+    const container = document.getElementById(`keys_${serviceName}`);
+    
+    if (keys.length === 0) {
+        container.innerHTML = '<p class="text-muted">No API keys found for this service.</p>';
+        return;
+    }
+    
+    let html = '<div class="row">';
+    keys.forEach(key => {
+        const statusClass = key.is_active ? 'active' : 'inactive';
+        const statusText = key.is_active ? 'Active' : 'Inactive';
+        
+        html += `
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6>${key.key_name}</h6>
+                                <p class="small text-muted">${key.description || 'No description'}</p>
+                                <small class="text-muted">
+                                    Created: ${key.created_at ? new Date(key.created_at).toLocaleDateString() : 'Unknown'}<br>
+                                    Last used: ${key.last_used ? new Date(key.last_used).toLocaleDateString() : 'Never'}<br>
+                                    Usage count: ${key.usage_count}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="key-status ${statusClass}">${statusText}</span>
+                                <div class="btn-group-vertical mt-2">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editKey('${key.key_id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteKey('${key.key_id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+// Edit API key
+function editKey(keyId) {
+    // Populate modal with key data
+    document.getElementById('editKeyForm').action = `/api_keys/${keyId}/update`;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('editKeyModal'));
+    modal.show();
+}
+
+// Delete API key
+function deleteKey(keyId) {
+    if (confirm('Are you sure you want to delete this API key? This action cannot be undone.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/api_keys/${keyId}/delete`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Test service keys
+function testServiceKeys(serviceName) {
+    currentService = serviceName;
+    
+    // Load keys for testing
+    fetch(`/api_keys/services/${serviceName}/keys`)
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('test_key_name');
+            select.innerHTML = '<option value="">Select a key to test</option>';
+            
+            if (data.keys) {
+                data.keys.forEach(key => {
+                    if (key.is_active) {
+                        const option = document.createElement('option');
+                        option.value = key.key_name;
+                        option.textContent = key.key_name;
+                        select.appendChild(option);
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error loading keys for testing:', error);
+        });
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('testKeyModal'));
+    modal.show();
+}
+
+// Handle test form submission
+document.getElementById('testKeyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const keyName = document.getElementById('test_key_name').value;
+    if (!keyName || !currentService) return;
+    
+    const formData = new FormData();
+    formData.append('key_name', keyName);
+    
+    fetch(`/api_keys/test/${currentService}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultDiv = document.getElementById('testResult');
+        resultDiv.style.display = 'block';
+        
+        if (data.success) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> ${data.message}
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> ${data.error}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        const resultDiv = document.getElementById('testResult');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> Error testing API key: ${error.message}
+            </div>
+        `;
+    });
+});
+
+// Load usage statistics
+function loadUsageStats() {
+    fetch('/api_keys/usage-stats')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('totalCalls').textContent = data.total_calls || 0;
+            document.getElementById('successRate').textContent = data.success_rate ? `${data.success_rate}%` : 'N/A';
+            document.getElementById('activeKeys').textContent = data.active_keys || 0;
+            document.getElementById('lastMonth').textContent = data.last_month_calls || 0;
+        })
+        .catch(error => {
+            console.error('Error loading usage statistics:', error);
+        });
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadAPIServices();
+    loadUsageStats();
+});
+</script>
+{% endblock %}

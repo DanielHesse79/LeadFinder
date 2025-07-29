@@ -1,8 +1,31 @@
-# RunPod.ai Integration for Lead Workshop
+# RunPod.ai Smart Integration for Lead Workshop
 
 ## Overview
 
-LeadFinder now includes integration with RunPod.ai to provide enhanced AI analysis capabilities in the Lead Workshop. This integration allows users to leverage more powerful cloud-based AI models for comprehensive lead analysis, offering better data extraction and insights compared to local Ollama models.
+LeadFinder now includes **smart RunPod.ai integration** that automatically chooses between RunPod and Ollama based on your workload and configuration. This intelligent system saves RunPod power for batch processing and complex analysis while providing seamless fallback to local Ollama.
+
+## 🧠 Smart Decision Making
+
+### Automatic Service Selection
+
+The system intelligently chooses the best AI service based on:
+
+| Scenario | Service Used | Reason |
+|----------|-------------|---------|
+| **1-4 leads** | Ollama | Fast, free, sufficient for small batches |
+| **5+ leads** | RunPod | Enhanced analysis for batch processing |
+| **Complex analysis** | RunPod | Detailed insights and comprehensive data extraction |
+| **Service failure** | Ollama fallback | Ensures analysis always completes |
+
+### Configuration-Driven Behavior
+
+The system respects your configuration preferences:
+
+- **`RUNPOD_ENABLED`**: Master switch for RunPod integration
+- **`RUNPOD_AUTO_ENABLE`**: Auto-enable for batch processing
+- **`RUNPOD_BATCH_THRESHOLD`**: Number of leads that triggers RunPod (default: 5)
+- **`RUNPOD_COMPLEX_ANALYSIS`**: Use RunPod for detailed analysis
+- **`RUNPOD_FALLBACK_TO_OLLAMA`**: Fallback to Ollama if RunPod fails
 
 ## Features
 
@@ -12,6 +35,12 @@ LeadFinder now includes integration with RunPod.ai to provide enhanced AI analys
 - **Comprehensive Analysis**: Detailed analysis with opportunities, concerns, and actionable insights
 - **Faster Processing**: Cloud-based processing with dedicated GPU resources
 - **Scalable**: Handle larger datasets and more complex analysis tasks
+
+### Smart Usage Patterns
+- **Cost Optimization**: Only use RunPod when needed
+- **Performance Benefits**: Ollama for quick results, RunPod for comprehensive analysis
+- **Reliable Fallback**: Never lose analysis capability
+- **Transparent Selection**: Users see which service will be used
 
 ### Analysis Output
 RunPod.ai analysis provides structured data including:
@@ -39,13 +68,26 @@ RunPod.ai analysis provides structured data including:
 
 ### 3. Configure LeadFinder
 1. Open LeadFinder configuration page (`/config`)
-2. Add the following configuration values:
-   - **RUNPOD_API_KEY**: Your RunPod API key
-   - **RUNPOD_ENDPOINT_ID**: Your deployed endpoint ID (e.g., n5ljtp41xfy3oy)
-   - **RUNPOD_BASE_URL**: `https://api.runpod.ai/v2` (default)
-   - **RUNPOD_TIMEOUT**: `300` (5 minutes, default)
-   - **RUNPOD_MAX_RETRIES**: `3` (default)
-   - **RUNPOD_RETRY_DELAY**: `2` (seconds, default)
+2. Navigate to the **RunPod.ai Smart Configuration** section
+3. Configure the following settings:
+
+#### Basic Configuration
+- **Enable RunPod.ai Integration**: Master switch to enable/disable RunPod
+- **Auto-Enable for Batch Processing**: Automatically use RunPod when analyzing 5+ leads
+- **Use for Complex Analysis**: Use RunPod for detailed insights and comprehensive analysis
+- **Fallback to Ollama**: Use Ollama if RunPod fails or is unavailable
+
+#### Advanced Settings
+- **Batch Processing Threshold**: Number of leads that triggers automatic RunPod usage (default: 5)
+- **RunPod Timeout**: Maximum time to wait for RunPod analysis (default: 300 seconds)
+
+#### API Configuration
+- **RUNPOD_API_KEY**: Your RunPod API key
+- **RUNPOD_ENDPOINT_ID**: Your deployed endpoint ID (e.g., n5ljtp41xfy3oy)
+- **RUNPOD_BASE_URL**: `https://api.runpod.ai/v2` (default)
+- **RUNPOD_TIMEOUT**: `300` (5 minutes, default)
+- **RUNPOD_MAX_RETRIES**: `3` (default)
+- **RUNPOD_RETRY_DELAY**: `2` (seconds, default)
 
 ### 4. Environment Variables (Alternative)
 You can also set these as environment variables:
@@ -56,6 +98,11 @@ export RUNPOD_BASE_URL="https://api.runpod.ai/v2"
 export RUNPOD_TIMEOUT="300"
 export RUNPOD_MAX_RETRIES="3"
 export RUNPOD_RETRY_DELAY="2"
+export RUNPOD_ENABLED="True"
+export RUNPOD_AUTO_ENABLE="True"
+export RUNPOD_BATCH_THRESHOLD="5"
+export RUNPOD_COMPLEX_ANALYSIS="True"
+export RUNPOD_FALLBACK_TO_OLLAMA="True"
 ```
 
 ## Usage
@@ -65,13 +112,47 @@ export RUNPOD_RETRY_DELAY="2"
 2. Select leads for analysis
 3. Choose a project and add context
 4. **Select AI Service**: Choose between:
-   - **Ollama (Local)**: Fast analysis using local models
-   - **RunPod.ai (Cloud)**: Enhanced analysis using cloud models
+   - **🔄 Auto-Select (Recommended)**: Smart service selection based on workload
+   - **🚀 RunPod.ai (Enhanced)**: Force RunPod usage for all analysis
 5. Click "Analyze with AI"
 
-### Service Selection
+### Smart Service Selection
+- **Auto-Select**: The system automatically chooses the best service based on:
+  - Number of leads selected
+  - Analysis complexity (project context)
+  - Your configuration settings
+- **RunPod.ai**: Force enhanced analysis using cloud models
+
+### Service Recommendations
 - **Ollama**: Best for quick analysis and when internet connectivity is limited
 - **RunPod.ai**: Best for comprehensive analysis requiring detailed insights
+- **Auto-Select**: Best for optimal performance and cost efficiency
+
+## Configuration Examples
+
+### Conservative (Cost-Focused)
+```bash
+RUNPOD_ENABLED=True
+RUNPOD_AUTO_ENABLE=True
+RUNPOD_BATCH_THRESHOLD=10  # Only for large batches
+RUNPOD_COMPLEX_ANALYSIS=False  # Use Ollama for most analysis
+```
+
+### Performance-Focused
+```bash
+RUNPOD_ENABLED=True
+RUNPOD_AUTO_ENABLE=True
+RUNPOD_BATCH_THRESHOLD=3  # Use RunPod for smaller batches
+RUNPOD_COMPLEX_ANALYSIS=True  # Always use RunPod for detailed analysis
+```
+
+### Balanced (Default)
+```bash
+RUNPOD_ENABLED=True
+RUNPOD_AUTO_ENABLE=True
+RUNPOD_BATCH_THRESHOLD=5  # Standard batch threshold
+RUNPOD_COMPLEX_ANALYSIS=True  # Enhanced analysis when needed
+```
 
 ## Technical Details
 
@@ -94,22 +175,6 @@ The integration is designed to work with various text generation models:
 - **Concurrent Requests**: Limited by RunPod endpoint capacity
 - **Cost**: Pay-per-use based on RunPod pricing
 - **Reliability**: High availability with automatic failover to Ollama
-
-## Configuration Options
-
-### Timeout Settings
-```python
-RUNPOD_TIMEOUT = 300  # 5 minutes per request
-RUNPOD_MAX_RETRIES = 3  # Retry failed requests
-RUNPOD_RETRY_DELAY = 2  # Seconds between retries
-```
-
-### Model Parameters
-```python
-max_tokens = 2000  # Maximum response length
-temperature = 0.3  # Creativity level (lower = more focused)
-top_p = 0.9  # Nucleus sampling parameter
-```
 
 ## Troubleshooting
 
@@ -159,6 +224,7 @@ Enable debug logging by setting `LOG_LEVEL=DEBUG` in configuration to see detail
 2. **Batch processing**: Analyze multiple leads together when possible
 3. **Endpoint management**: Stop unused endpoints to save costs
 4. **Monitor usage**: Check RunPod dashboard for usage patterns
+5. **Smart configuration**: Use conservative settings to minimize costs
 
 ## Security
 
@@ -198,30 +264,40 @@ Enable debug logging by setting `LOG_LEVEL=DEBUG` in configuration to see detail
 - **Cost sensitivity**: When avoiding cloud costs
 - **Simple analysis**: When basic insights are sufficient
 
+### Smart Configuration Tips
+- **Start conservative**: Use higher batch thresholds initially
+- **Monitor costs**: Check RunPod dashboard regularly
+- **Test thoroughly**: Verify both services work before production
+- **Adjust based on usage**: Fine-tune settings based on your patterns
+
 ## Future Enhancements
 
 ### Planned Features
 - **Batch processing**: Analyze multiple leads simultaneously
 - **Model selection**: Choose specific models for different analysis types
-- **Custom prompts**: User-defined analysis prompts
-- **Result caching**: Cache analysis results to reduce costs
-- **Advanced filtering**: Filter leads based on analysis results
+- **Cost monitoring**: Real-time cost tracking and alerts
+- **Performance analytics**: Detailed performance metrics and optimization suggestions
+- **Advanced fallback**: Multiple fallback strategies and service combinations
 
-### Integration Improvements
-- **Real-time status**: Live updates on analysis progress
-- **Result comparison**: Compare Ollama vs RunPod results
-- **Export options**: Export analysis results in various formats
-- **API endpoints**: REST API for external integrations
+### Integration Opportunities
+- **Custom models**: Support for custom-trained models
+- **Multi-region**: Support for different RunPod regions
+- **Enterprise features**: Advanced security and compliance features
+- **API extensions**: Additional RunPod API features and capabilities
 
-## Support
+## Support and Resources
 
-For issues with RunPod.ai integration:
-1. Check the troubleshooting section above
-2. Review RunPod.ai documentation
-3. Check LeadFinder logs for detailed error messages
-4. Contact support with specific error details
+### Documentation
+- [RunPod.ai Documentation](https://docs.runpod.io/)
+- [RunPod API Reference](https://docs.runpod.io/reference)
+- [LeadFinder Documentation](https://github.com/your-repo/leadfinder)
 
-For RunPod.ai service issues:
-- Visit [RunPod.ai Support](https://runpod.io/support)
-- Check RunPod.ai status page
-- Contact RunPod.ai support directly 
+### Community
+- [RunPod Discord](https://discord.gg/runpod)
+- [LeadFinder Issues](https://github.com/your-repo/leadfinder/issues)
+
+### Getting Help
+- Check the troubleshooting section above
+- Review RunPod dashboard for endpoint status
+- Enable debug logging for detailed error information
+- Contact support with specific error messages and logs 

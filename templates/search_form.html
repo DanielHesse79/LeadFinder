@@ -1,10 +1,6 @@
-{% extends "leads.html" %}
+{% extends "base.html" %}
 
-{% block head %}
-{{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/progress-tracker.css') }}">
-<script src="{{ url_for('static', filename='js/progress-tracker.js') }}"></script>
-{% endblock %}
+{% block title %}Search - LeadFinder{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -98,32 +94,60 @@
                                             <input class="form-check-input" type="checkbox" id="use_ai_analysis" name="use_ai_analysis">
                                             <label class="form-check-label" for="use_ai_analysis">
                                                 <strong>Enable AI Analysis</strong>
-                                                <small class="text-muted d-block">
-                                                    Use local AutoGPT (Mistral) to analyze search results and provide insights
-                                                </small>
                                             </label>
-                                        </div>
-                                        <div class="mt-2">
-                                            <small class="text-muted">
-                                                <i class="fas fa-info-circle"></i> 
-                                                AI analysis will provide relevance scoring, insights, and recommended next steps for each result.
-                                            </small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        {% else %}
+                        {% endif %}
+                        
+                        <!-- RAG Search Integration Section -->
                         <div class="row">
                             <div class="col-12">
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <strong>AutoGPT not available:</strong> 
-                                    Make sure Ollama is running and Mistral model is installed for AI-powered analysis.
+                                <div class="card bg-info bg-opacity-10">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-brain text-info"></i> RAG-Powered Search
+                                            <span class="badge bg-info ms-2">New</span>
+                                        </h6>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="use_rag_search" name="use_rag_search">
+                                            <label class="form-check-label" for="use_rag_search">
+                                                <strong>Enable RAG Search</strong> - Use AI-powered retrieval and generation
+                                            </label>
+                                        </div>
+                                        <div id="ragOptions" class="mt-3" style="display: none;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label for="rag_top_k" class="form-label">RAG Results Count</label>
+                                                    <select class="form-select" id="rag_top_k" name="rag_top_k">
+                                                        <option value="3">3 results</option>
+                                                        <option value="5" selected>5 results</option>
+                                                        <option value="10">10 results</option>
+                                                        <option value="15">15 results</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="rag_method" class="form-label">RAG Method</label>
+                                                    <select class="form-select" id="rag_method" name="rag_method">
+                                                        <option value="vector">Vector Search</option>
+                                                        <option value="hybrid">Hybrid Search</option>
+                                                        <option value="conversational">Conversational</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle"></i> 
+                                                    RAG search uses your knowledge base to provide more contextual and intelligent responses.
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        {% endif %}
                         
                         <div class="row">
                             <div class="col-12">
@@ -241,6 +265,34 @@ document.getElementById('leadResearchForm').addEventListener('submit', function(
         contentDiv.innerHTML = `<div class="alert alert-danger">Research failed: ${error}</div>`;
     });
 });
+
+// RAG Options Toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const ragCheckbox = document.getElementById('use_rag_search');
+    const ragOptions = document.getElementById('ragOptions');
+    
+    if (ragCheckbox && ragOptions) {
+        ragCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                ragOptions.style.display = 'block';
+                // Add visual feedback
+                ragOptions.style.animation = 'fadeIn 0.3s ease-in';
+            } else {
+                ragOptions.style.display = 'none';
+            }
+        });
+    }
+});
+
+// Add fade-in animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+`;
+document.head.appendChild(style);
 </script>
 {% endif %}
 {% endblock %} 

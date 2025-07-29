@@ -1,0 +1,51 @@
+🚀 Starting LeadFinder app in development environment...
+🛑 Stopping any existing app instances...
+📁 Loading configuration from env.development
+🐍 Activating virtual environment...
+📦 Checking dependencies...
+✅ Dependencies already installed
+📦 Checking fundNSF installation...
+✅ fundNSF already installed
+🔍 Checking for syntax errors in critical files...
+✅ All required configurations are present
+🤖 AutoGPT validation skipped (SKIP_AUTOGPT_VALIDATION=true)
+✅ models/database.py syntax OK
+✅ All required configurations are present
+🤖 AutoGPT validation skipped (SKIP_AUTOGPT_VALIDATION=true)
+ChromaDB not available. Install with: pip install chromadb
+ChromaDB not available. Install with: pip install chromadb
+✅ All required configurations are present
+🤖 AutoGPT validation skipped (SKIP_AUTOGPT_VALIDATION=true)
+⚠️  Redis cache not available
+✅ Database indexes ready (6 indexes)
+⚠️  Async service manager not available
+⚠️  Rate limiter not available
+⚠️  Analytics manager not available
+✅ AutoGPT integration ready (validation skipped)
+✅ app.py syntax OK
+❌ Syntax error found in routes/autogpt_control.py
+✅ All required configurations are present
+🤖 AutoGPT validation skipped (SKIP_AUTOGPT_VALIDATION=true)
+✅ routes/config.py syntax OK
+❌ Syntax error found in routes/dashboard.py
+❌ Syntax error found in routes/__init__.py
+❌ Syntax error found in routes/leads.py
+❌ Syntax error found in routes/lead_workshop.py
+✅ routes/ollama.py syntax OK
+❌ Syntax error found in routes/progress.py
+❌ Syntax error found in routes/rag_routes.py
+❌ Syntax error found in routes/reports.py
+❌ Syntax error found in routes/researchers.py
+❌ Syntax error found in routes/research.py
+❌ Syntax error found in routes/search.py
+❌ Syntax error found in routes/unified_search.py
+❌ Syntax error found in routes/webscraper.py
+
+❌ Found 13 syntax error(s). Please fix them before starting the app.
+
+Common fixes:
+1. Check for missing 'try:' or 'except:' blocks
+2. Verify indentation is consistent (4 spaces)
+3. Ensure all parentheses and brackets are properly closed
+4. Check for missing colons after function definitions
+

@@ -57,64 +57,43 @@ def ollama_home():
     return render_template('ollama.html', 
                          ollama_status=ollama_service.check_status() if ollama_service else {"ok": False, "msg": "Service not available"})
 
-@ollama_bp.route('/search', methods=['POST'])
-def search_publications():
-    """Search publications and researchers"""
-    query = request.form.get('query', '').strip()
-    if not query:
-        flash('Search term is required', 'error')
-        return redirect(url_for('ollama.ollama_home'))
+@ollama_bp.route('/ollama_search', methods=['POST'])
+def ollama_search():
+    """Search using Ollama AI"""
+    if not ollama_service:
+        return jsonify({'error': 'Ollama service not available'}), 503
     
-    search_type = request.form.get('search_type', 'both')
-    sources = request.form.getlist('sources')
-    
-    if logger:
-        logger.info(f"Publication search: {query}, type: {search_type}, sources: {sources}")
-    
-    publications = []
-    researchers = []
-    
-    # Search PubMed
-    if 'pubmed' in sources and pubmed_service:
-        try:
-            pubmed_results = pubmed_service.search_articles(query, max_results=20)
-            publications.extend(pubmed_results)
-            if logger:
-                logger.info(f"Found {len(pubmed_results)} PubMed articles")
-        except Exception as e:
-            if logger:
-                logger.error(f"PubMed search failed: {e}")
-    
-    # Search ORCID
-    if 'orcid' in sources and orcid_service:
-        try:
-            orcid_results = orcid_service.search_researchers(query, max_results=20)
-            researchers.extend(orcid_results)
-            if logger:
-                logger.info(f"Found {len(orcid_results)} ORCID researchers")
-        except Exception as e:
-            if logger:
-                logger.error(f"ORCID search failed: {e}")
-    
-    # Search Semantic Scholar
-    if 'scholar' in sources and semantic_scholar_service:
-        try:
-            semantic_results = semantic_scholar_service.search_articles(query, max_results=20)
-            publications.extend(semantic_results)
-            if logger:
-                logger.info(f"Found {len(semantic_results)} Semantic Scholar articles")
-        except Exception as e:
-            if logger:
-                logger.error(f"Semantic Scholar search failed: {e}")
-    
-
-    
-    return render_template('ollama.html',
-                         query=query,
-                         publications=publications,
-                         researchers=researchers,
-                         search_type=search_type,
-                         ollama_status=ollama_service.check_status() if ollama_service else {"ok": False, "msg": "Service not available"})
+    try:
+        query = request.form.get('query', '').strip()
+        if not query:
+            return jsonify({'error': 'Query is required'}), 400
+        
+        # Get search parameters
+        max_results = int(request.form.get('max_results', 10))
+        research_question = request.form.get('research_question', 'general relevance')
+        
+        if logger:
+            logger.info(f"Ollama search: '{query}' with {max_results} results")
+        
+        # Perform search using Ollama
+        search_results = ollama_service.search_with_ai(
+            query, 
+            max_results=max_results,
+            research_question=research_question
+        )
+        
+        return jsonify({
+            'success': True,
+            'query': query,
+            'results': search_results,
+            'total_results': len(search_results),
+            'source': 'ollama'
+        })
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"Ollama search failed: {e}")
+        return jsonify({'error': f'Search failed: {str(e)}'}), 500
 
 @ollama_bp.route('/advanced', methods=['POST'])
 def advanced_search():

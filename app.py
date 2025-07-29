@@ -6,6 +6,7 @@ It provides a web interface for lead discovery and management.
 """
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask_wtf.csrf import CSRFProtect
 import os
 import sys
 from pathlib import Path
@@ -19,6 +20,11 @@ except ImportError as e:
 
 # Import routes with error handling
 try:
+    from routes.dashboard import dashboard_bp
+except ImportError:
+    dashboard_bp = None
+
+try:
     from routes.leads import leads_bp
 except ImportError:
     leads_bp = None
@@ -29,24 +35,19 @@ except ImportError:
     search_bp = None
 
 try:
-    from routes.ollama import ollama_bp
-except ImportError:
-    ollama_bp = None
-
-try:
-    from routes.research import research_bp
-except ImportError:
-    research_bp = None
-
-try:
     from routes.config import config_bp
 except ImportError:
     config_bp = None
 
 try:
-    from routes.lead_workshop import lead_workshop_bp
+    from routes.ollama import ollama_bp
 except ImportError:
-    lead_workshop_bp = None
+    ollama_bp = None
+
+try:
+    from routes.workflow import workflow_bp
+except ImportError:
+    workflow_bp = None
 
 try:
     from routes.unified_search import unified_search_bp
@@ -54,19 +55,24 @@ except ImportError:
     unified_search_bp = None
 
 try:
+    from routes.api_keys import api_keys_bp
+except ImportError:
+    api_keys_bp = None
+
+try:
+    from routes.research import research_bp
+except ImportError:
+    research_bp = None
+
+try:
+    from routes.lead_workshop import lead_workshop_bp
+except ImportError:
+    lead_workshop_bp = None
+
+try:
     from routes.autogpt_control import autogpt_control_bp
 except ImportError:
     autogpt_control_bp = None
-
-try:
-    from routes.progress import progress_bp
-except ImportError:
-    progress_bp = None
-
-try:
-    from routes.webscraper import webscraper_bp
-except ImportError:
-    webscraper_bp = None
 
 try:
     from routes.rag_routes import rag_bp
@@ -74,14 +80,19 @@ except ImportError:
     rag_bp = None
 
 try:
-    from routes.dashboard import dashboard_bp
-except ImportError:
-    dashboard_bp = None
-
-try:
     from routes.reports import reports_bp
 except ImportError:
     reports_bp = None
+
+try:
+    from routes.researchers import researchers_bp
+except ImportError:
+    researchers_bp = None
+
+try:
+    from routes.strategic_planning import strategic_bp
+except ImportError:
+    strategic_bp = None
 
 try:
     from utils.logger import get_logger
@@ -114,6 +125,42 @@ try:
 except ImportError:
     get_comprehensive_health_status = None
 
+# Import improvement systems
+try:
+    from utils.redis_cache import get_redis_cache_manager, get_redis_cache_health
+except ImportError:
+    get_redis_cache_manager = None
+    get_redis_cache_health = None
+
+try:
+    from models.database_indexes import create_standard_indexes, get_database_performance_report
+except ImportError:
+    create_standard_indexes = None
+    get_database_performance_report = None
+
+try:
+    from utils.async_service import get_async_manager, get_async_health_status
+except ImportError:
+    get_async_manager = None
+    get_async_health_status = None
+
+try:
+    from utils.rate_limiter import get_rate_limiter, get_rate_limit_health
+except ImportError:
+    get_rate_limiter = None
+    get_rate_limit_health = None
+
+try:
+    from utils.analytics import get_analytics_manager, get_analytics_health
+except ImportError:
+    get_analytics_manager = None
+    get_analytics_health = None
+
+try:
+    from utils.api_docs import generate_api_documentation
+except ImportError:
+    generate_api_documentation = None
+
 def create_app():
     """Create and configure the Flask application"""
     
@@ -132,6 +179,13 @@ def create_app():
     app.config['SECRET_KEY'] = config.get('FLASK_SECRET_KEY', required=True)
     app.config['DEBUG'] = config.get('FLASK_DEBUG', 'False').lower() == 'true'
     
+    # Initialize CSRF protection
+    csrf = CSRFProtect(app)
+
+    # Configure CSRF settings
+    app.config['WTF_CSRF_TIME_LIMIT'] = 24 * 3600  # 24 hours instead of 1 hour
+    app.config['WTF_CSRF_SSL_STRICT'] = False  # Allow HTTP in development
+    
     # Initialize database
     try:
         from models.database import db
@@ -144,20 +198,85 @@ def create_app():
             logger.error(f"Database initialization failed: {e}")
         print(f"⚠️  Database initialization failed: {e}")
     
-    # Initialize AutoGPT integration
+    # Initialize improvement systems
+    try:
+        # Initialize Redis cache
+        if get_redis_cache_manager:
+            redis_cache = get_redis_cache_manager()
+            if logger:
+                logger.info("Redis cache initialized successfully")
+            print("✅ Redis cache ready")
+        else:
+            print("⚠️  Redis cache not available")
+    except Exception as e:
+        if logger:
+            logger.warning(f"Redis cache initialization failed: {e}")
+        print(f"⚠️  Redis cache initialization failed: {e}")
+    
+    try:
+        # Initialize database indexes
+        if create_standard_indexes:
+            indexes_created = create_standard_indexes()
+            if logger:
+                logger.info(f"Database indexes initialized: {indexes_created} indexes created")
+            print(f"✅ Database indexes ready ({indexes_created} indexes)")
+        else:
+            print("⚠️  Database indexing not available")
+    except Exception as e:
+        if logger:
+            logger.warning(f"Database indexing initialization failed: {e}")
+        print(f"⚠️  Database indexing initialization failed: {e}")
+    
+    try:
+        # Initialize async service manager
+        if get_async_manager:
+            async_manager = get_async_manager()
+            if logger:
+                logger.info("Async service manager initialized successfully")
+            print("✅ Async service manager ready")
+        else:
+            print("⚠️  Async service manager not available")
+    except Exception as e:
+        if logger:
+            logger.warning(f"Async service manager initialization failed: {e}")
+        print(f"⚠️  Async service manager initialization failed: {e}")
+    
+    try:
+        # Initialize rate limiter
+        if get_rate_limiter:
+            rate_limiter = get_rate_limiter()
+            if logger:
+                logger.info("Rate limiter initialized successfully")
+            print("✅ Rate limiter ready")
+        else:
+            print("⚠️  Rate limiter not available")
+    except Exception as e:
+        if logger:
+            logger.warning(f"Rate limiter initialization failed: {e}")
+        print(f"⚠️  Rate limiter initialization failed: {e}")
+    
+    try:
+        # Initialize analytics manager
+        if get_analytics_manager:
+            analytics_manager = get_analytics_manager()
+            if logger:
+                logger.info("Analytics manager initialized successfully")
+            print("✅ Analytics manager ready")
+        else:
+            print("⚠️  Analytics manager not available")
+    except Exception as e:
+        if logger:
+            logger.warning(f"Analytics manager initialization failed: {e}")
+        print(f"⚠️  Analytics manager initialization failed: {e}")
+    
+    # Initialize AutoGPT integration (skip validation to avoid hanging)
     try:
         from leadfinder_autogpt_integration import LeadfinderAutoGPTIntegration
         autogpt_integration = LeadfinderAutoGPTIntegration("mistral:latest")
-        # Test AutoGPT connection
-        test_result = autogpt_integration.client.execute_text_generation("Test connection")
-        if test_result.get('status') == 'COMPLETED':
-            if logger:
-                logger.info("AutoGPT integration initialized successfully")
-            print("✅ AutoGPT integration ready")
-        else:
-            if logger:
-                logger.warning("AutoGPT integration test failed")
-            print("⚠️  AutoGPT integration test failed")
+        # Skip connection test to avoid hanging
+        if logger:
+            logger.info("AutoGPT integration initialized (validation skipped)")
+        print("✅ AutoGPT integration ready (validation skipped)")
     except Exception as e:
         if logger:
             logger.warning(f"AutoGPT integration not available: {e}")
@@ -204,16 +323,6 @@ def create_app():
         if logger:
             logger.info("AutoGPT Control blueprint registered")
     
-    if progress_bp:
-        app.register_blueprint(progress_bp)
-        if logger:
-            logger.info("Progress tracking blueprint registered")
-    
-    if webscraper_bp:
-        app.register_blueprint(webscraper_bp)
-        if logger:
-            logger.info("WebScraper blueprint registered")
-    
     if rag_bp:
         app.register_blueprint(rag_bp)
         if logger:
@@ -221,9 +330,86 @@ def create_app():
     
     if dashboard_bp:
         app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
-    app.register_blueprint(reports_bp, url_prefix='/reports')
         if logger:
             logger.info("Dashboard blueprint registered")
+    
+    if reports_bp:
+        app.register_blueprint(reports_bp, url_prefix='/reports')
+        if logger:
+            logger.info("Reports blueprint registered")
+    
+    if researchers_bp:
+        app.register_blueprint(researchers_bp, url_prefix='/researchers')
+        if logger:
+            logger.info("Researchers blueprint registered")
+    
+    if strategic_bp:
+        app.register_blueprint(strategic_bp)
+        if logger:
+            logger.info("Strategic Planning blueprint registered")
+    
+    if workflow_bp:
+        app.register_blueprint(workflow_bp)
+        if logger:
+            logger.info("Workflow blueprint registered")
+    
+    if api_keys_bp:
+        app.register_blueprint(api_keys_bp, url_prefix='/api_keys')
+        if logger:
+            logger.info("API Keys blueprint registered")
+    
+    # Add CSRF exemptions for API endpoints
+    csrf.exempt(app.view_functions['rag.rag_search'])
+    csrf.exempt(app.view_functions['rag.retrieve_context'])
+    csrf.exempt(app.view_functions['rag.generate_with_context'])
+    csrf.exempt(app.view_functions['rag.ingest_document'])
+    
+    # Add CSRF exemptions for workflow API endpoints
+    try:
+        csrf.exempt(app.view_functions['workflow.quick_search'])
+        csrf.exempt(app.view_functions['workflow.research_search'])
+        csrf.exempt(app.view_functions['workflow.upload_documents'])
+        csrf.exempt(app.view_functions['workflow.ai_research'])
+        csrf.exempt(app.view_functions['workflow.web_scraping'])
+        csrf.exempt(app.view_functions['workflow.analyze_data'])
+        csrf.exempt(app.view_functions['workflow.generate_report'])
+        csrf.exempt(app.view_functions['workflow.reset_workflow'])
+        csrf.exempt(app.view_functions['workflow.get_available_data'])
+        csrf.exempt(app.view_functions['workflow.get_workflow_statistics'])
+    except KeyError:
+        # Some routes might not be registered yet, ignore errors
+        pass
+    
+    # Add CSRF exemptions for strategic planning API endpoints
+    try:
+        csrf.exempt(app.view_functions['strategic.create_company_profile'])
+        csrf.exempt(app.view_functions['strategic.conduct_market_research'])
+        csrf.exempt(app.view_functions['strategic.conduct_swot_analysis'])
+        csrf.exempt(app.view_functions['strategic.generate_strategic_plan'])
+    except KeyError:
+        pass  # Some routes might not exist yet
+    
+    # Add CSRF exemptions for search and researchers API endpoints
+    try:
+        csrf.exempt(app.view_functions['search.perform_search'])
+        csrf.exempt(app.view_functions['search.perform_search_ajax'])
+        csrf.exempt(app.view_functions['search.perform_search_api'])
+        csrf.exempt(app.view_functions['search.analyze_lead'])
+        csrf.exempt(app.view_functions['search.research_leads'])
+        csrf.exempt(app.view_functions['researchers.search_researchers'])
+        csrf.exempt(app.view_functions['researchers.researcher_profile'])
+    except KeyError:
+        pass  # Some routes might not exist yet
+    
+    # Add CSRF exemptions for lead workshop and other API endpoints
+    try:
+        csrf.exempt(app.view_functions['lead_workshop.analyze_leads'])
+        csrf.exempt(app.view_functions['lead_workshop.get_analysis_status'])
+        csrf.exempt(app.view_functions['ollama.ollama_models'])
+        csrf.exempt(app.view_functions['ollama.download_model'])
+        csrf.exempt(app.view_functions['ollama.delete_model'])
+    except KeyError:
+        pass  # Some routes might not exist yet
     
     # Register comprehensive error handlers
     if register_flask_error_handlers:
@@ -266,19 +452,29 @@ def create_app():
             # Check configuration
             missing_configs = config.validate_required_configs()
             
-            # Check AutoGPT integration
-            autogpt_status = 'unavailable'
-            try:
-                from leadfinder_autogpt_integration import LeadfinderAutoGPTIntegration
-                autogpt_integration = LeadfinderAutoGPTIntegration("mistral:latest")
-                test_result = autogpt_integration.client.execute_text_generation("Health check")
-                autogpt_status = 'ready' if test_result.get('status') == 'COMPLETED' else 'failed'
-            except Exception as e:
-                autogpt_status = f'unavailable: {str(e)}'
+            # Check AutoGPT integration (skip test to avoid hanging)
+            autogpt_status = 'available (validation skipped)'
+            
+            # Check improvement systems
+            redis_health = get_redis_cache_health() if get_redis_cache_health else {'status': 'unavailable'}
+            db_performance = get_database_performance_report() if get_database_performance_report else {'status': 'unavailable'}
+            async_health = get_async_health_status() if get_async_health_status else {'status': 'unavailable'}
+            rate_limit_health = get_rate_limit_health() if get_rate_limit_health else {'status': 'unavailable'}
+            analytics_health = get_analytics_health() if get_analytics_health else {'status': 'unavailable'}
             
             # Use comprehensive health monitoring if available
             if get_comprehensive_health_status:
                 health_status = get_comprehensive_health_status()
+                # Add improvement systems to comprehensive health
+                health_status.update({
+                    'improvements': {
+                        'redis_cache': redis_health,
+                        'database_performance': db_performance,
+                        'async_services': async_health,
+                        'rate_limiting': rate_limit_health,
+                        'analytics': analytics_health
+                    }
+                })
                 return jsonify(health_status)
             else:
                 # Fallback to basic health checks
@@ -296,12 +492,38 @@ def create_app():
                     'error_handling': error_health,
                     'cache': cache_health,
                     'search_services': search_health,
+                    'improvements': {
+                        'redis_cache': redis_health,
+                        'database_performance': db_performance,
+                        'async_services': async_health,
+                        'rate_limiting': rate_limit_health,
+                        'analytics': analytics_health
+                    },
                     'missing_configs': missing_configs
                 })
         except Exception as e:
             return jsonify({
                 'status': 'unhealthy',
                 'error': str(e)
+            }), 500
+    
+    # API documentation endpoint
+    @app.route('/api/docs')
+    def api_documentation():
+        """Generate and return API documentation"""
+        try:
+            if generate_api_documentation:
+                docs = generate_api_documentation(app)
+                return jsonify(docs)
+            else:
+                return jsonify({
+                    'error': 'API documentation generator not available',
+                    'status': 'unavailable'
+                }), 503
+        except Exception as e:
+            return jsonify({
+                'error': f'Failed to generate API documentation: {str(e)}',
+                'status': 'error'
             }), 500
     
     if logger:
@@ -321,16 +543,7 @@ if __name__ == '__main__':
     print(f"🔧 Debug mode: {debug}")
     print(f"🌍 Environment: {os.getenv('FLASK_ENV', 'development')}")
     
-    # Check AutoGPT status at startup
-    try:
-        from leadfinder_autogpt_integration import LeadfinderAutoGPTIntegration
-        autogpt_integration = LeadfinderAutoGPTIntegration("mistral:latest")
-        test_result = autogpt_integration.client.execute_text_generation("Startup test")
-        if test_result.get('status') == 'COMPLETED':
-            print("🤖 AutoGPT: Ready (Mistral + Ollama)")
-        else:
-            print("⚠️  AutoGPT: Test failed")
-    except Exception as e:
-        print(f"⚠️  AutoGPT: Not available ({str(e)[:50]}...)")
+    # Check AutoGPT status at startup (skip validation to avoid hanging)
+    print("🤖 AutoGPT: Available (validation skipped)")
     
     app.run(host=host, port=port, debug=debug) 

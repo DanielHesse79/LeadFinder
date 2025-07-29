@@ -24,7 +24,7 @@ except ImportError as e:
     sys.exit(1)
 
 try:
-    from services.vector_store import get_vector_store
+    from services.vector_store_service import get_vector_store_service
     from services.embedding_service import get_embedding_service
     from services.rag_search_service import get_rag_search_service
 except ImportError as e:
@@ -44,7 +44,7 @@ class RAGMigration:
     
     def __init__(self):
         self.db = DatabaseConnection()
-        self.vector_store = get_vector_store()
+        self.vector_store = get_vector_store_service()
         self.embedding_service = get_embedding_service()
         self.rag_service = get_rag_search_service()
         
@@ -94,94 +94,86 @@ class RAGMigration:
             return self.migration_stats
             
         except Exception as e:
-            error_msg = f"Migration failed: {str(e)}"
-            print(f"\n❌ {error_msg}")
             if logger:
-                logger.error(error_msg)
-            
-            self.migration_stats['errors'].append(error_msg)
+                logger.error(f"Migration failed: {e}")
+            print(f"❌ Migration failed: {e}")
             return self.migration_stats
     
     def _migrate_leads(self):
-        """Migrate existing leads to vector database"""
+        """Migrate existing leads to RAG system"""
         try:
             # Get all leads from database
             leads = self.db.get_all_leads()
             
             if not leads:
-                print("   ℹ️  No leads found to migrate")
+                print("   No leads found to migrate")
                 return
             
-            print(f"   📝 Found {len(leads)} leads to migrate")
+            print(f"   Found {len(leads)} leads to migrate")
             
             # Process leads in batches
-            batch_size = 50
+            batch_size = 10
             for i in range(0, len(leads), batch_size):
                 batch = leads[i:i + batch_size]
                 self._process_lead_batch(batch)
                 
                 # Progress update
                 processed = min(i + batch_size, len(leads))
-                print(f"   📈 Processed {processed}/{len(leads)} leads")
+                print(f"   Progress: {processed}/{len(leads)} leads processed")
             
         except Exception as e:
-            error_msg = f"Failed to migrate leads: {str(e)}"
-            print(f"   ❌ {error_msg}")
+            error_msg = f"Failed to migrate leads: {e}"
             if logger:
                 logger.error(error_msg)
             self.migration_stats['errors'].append(error_msg)
     
     def _process_lead_batch(self, leads: List[Dict[str, Any]]):
         """Process a batch of leads"""
-        try:
-            documents = []
-            
-            for lead in leads:
-                try:
-                    # Create document for vector storage
-                    doc = self._create_lead_document(lead)
-                    if doc:
-                        documents.append(doc)
-                        self.migration_stats['leads_successful'] += 1
-                    else:
-                        self.migration_stats['leads_failed'] += 1
-                        
-                except Exception as e:
+        documents = []
+        
+        for lead in leads:
+            try:
+                # Create document from lead
+                doc = self._create_lead_document(lead)
+                if doc:
+                    documents.append(doc)
+                    self.migration_stats['leads_successful'] += 1
+                else:
                     self.migration_stats['leads_failed'] += 1
-                    error_msg = f"Failed to process lead {lead.get('id', 'unknown')}: {str(e)}"
-                    self.migration_stats['errors'].append(error_msg)
-                    if logger:
-                        logger.error(error_msg)
-                
-                self.migration_stats['leads_processed'] += 1
-            
-            # Add documents to vector store
-            if documents:
-                success = self.vector_store.add_documents(documents)
-                if not success:
-                    print("   ⚠️  Failed to add some documents to vector store")
-            
-        except Exception as e:
-            error_msg = f"Failed to process lead batch: {str(e)}"
-            print(f"   ❌ {error_msg}")
-            if logger:
-                logger.error(error_msg)
-            self.migration_stats['errors'].append(error_msg)
+                    
+            except Exception as e:
+                self.migration_stats['leads_failed'] += 1
+                error_msg = f"Failed to process lead {lead.get('id', 'unknown')}: {e}"
+                if logger:
+                    logger.error(error_msg)
+                self.migration_stats['errors'].append(error_msg)
+        
+        # Add documents to vector store
+        if documents:
+            try:
+                success = self.vector_store.upsert_documents(documents)
+                if success:
+                    self.migration_stats['leads_processed'] += len(documents)
+                else:
+                    self.migration_stats['leads_failed'] += len(documents)
+                    
+            except Exception as e:
+                error_msg = f"Failed to add documents to vector store: {e}"
+                if logger:
+                    logger.error(error_msg)
+                self.migration_stats['errors'].append(error_msg)
     
     def _create_lead_document(self, lead: Dict[str, Any]) -> Dict[str, Any]:
         """Create a document from lead data"""
         try:
             # Extract lead information
-            lead_id = lead.get('id')
             title = lead.get('title', '')
             description = lead.get('description', '')
-            ai_summary = lead.get('ai_summary', '')
-            source = lead.get('source', 'unknown')
-            link = lead.get('link', '')
-            created_at = lead.get('created_at', datetime.now().isoformat())
+            url = lead.get('url', '')
+            source = lead.get('source', '')
             
-            # Combine content for embedding
-            content = f"{title} {description} {ai_summary}".strip()
+            # Combine content
+            content = f"{title}\n\n{description}".strip()
             
             if not content:
                 return None
@@ -191,22 +183,19 @@ class RAGMigration:
             if not embedding:
                 return None
             
-            # Create document
-            document = {
-                'id': f"lead_{lead_id}",
+            return {
+                'id': f"lead_{lead.get('id')}",
                 'content': content,
                 'embedding': embedding,
                 'metadata': {
                     'title': title,
+                    'url': url,
                     'source': source,
-                    'url': link,
-                    'created_at': created_at,
                     'type': 'lead',
-                    'original_id': lead_id
+                    'original_id': lead.get('id'),
+                    'created_at': lead.get('created_at', datetime.now().isoformat())
                 }
             }
-            
-            return document
             
         except Exception as e:
             if logger:
@@ -214,34 +203,36 @@ class RAGMigration:
             return None
     
     def _migrate_search_history(self):
-        """Migrate search history (optional)"""
+        """Migrate search history to RAG system"""
         try:
-            # Get recent search history
-            search_history = self.db.get_search_history(limit=100)
+            # Get search history from database
+            searches = self.db.get_search_history()
             
-            if not search_history:
-                print("   ℹ️  No search history to migrate")
+            if not searches:
+                print("   No search history found to migrate")
                 return
             
-            print(f"   📝 Found {len(search_history)} search queries to migrate")
+            print(f"   Found {len(searches)} search queries to migrate")
             
-            # Process search queries
-            for search in search_history:
-                try:
-                    query = search.get('query', '')
-                    if query:
-                        # Create document from search query
-                        doc = self._create_search_document(search)
-                        if doc:
-                            self.vector_store.add_documents([doc])
-                            
-                except Exception as e:
-                    if logger:
-                        logger.error(f"Failed to migrate search query: {e}")
+            documents = []
+            for search in searches:
+                doc = self._create_search_document(search)
+                if doc:
+                    documents.append(doc)
             
+            # Add to vector store
+            if documents:
+                success = self.vector_store.upsert_documents(documents)
+                if success:
+                    print(f"   Successfully migrated {len(documents)} search queries")
+                else:
+                    print("   Failed to migrate search queries")
+                    
         except Exception as e:
+            error_msg = f"Failed to migrate search history: {e}"
             if logger:
-                logger.error(f"Failed to migrate search history: {e}")
+                logger.error(error_msg)
+            self.migration_stats['errors'].append(error_msg)
     
     def _create_search_document(self, search: Dict[str, Any]) -> Dict[str, Any]:
         """Create a document from search data"""
@@ -277,46 +268,45 @@ class RAGMigration:
             return None
     
     def _migrate_workshop_projects(self):
-        """Migrate workshop project data"""
+        """Migrate workshop project data to RAG system"""
         try:
-            # Get all projects
-            projects = self.db.get_projects()
+            # Get workshop projects from database
+            projects = self.db.get_workshop_projects()
             
             if not projects:
-                print("   ℹ️  No workshop projects to migrate")
+                print("   No workshop projects found to migrate")
                 return
             
-            print(f"   📝 Found {len(projects)} workshop projects to migrate")
+            print(f"   Found {len(projects)} workshop projects to migrate")
             
+            documents = []
             for project in projects:
-                try:
-                    # Get project analyses
-                    analyses = self.db.get_project_analyses(project['id'])
+                doc = self._create_project_document(project)
+                if doc:
+                    documents.append(doc)
+            
+            # Add to vector store
+            if documents:
+                success = self.vector_store.upsert_documents(documents)
+                if success:
+                    print(f"   Successfully migrated {len(documents)} workshop projects")
+                else:
+                    print("   Failed to migrate workshop projects")
                     
-                    if analyses:
-                        # Create documents from analyses
-                        for analysis in analyses:
-                            doc = self._create_analysis_document(analysis, project)
-                            if doc:
-                                self.vector_store.add_documents([doc])
-                
-                except Exception as e:
-                    if logger:
-                        logger.error(f"Failed to migrate project {project.get('id')}: {e}")
-            
         except Exception as e:
+            error_msg = f"Failed to migrate workshop projects: {e}"
             if logger:
-                logger.error(f"Failed to migrate workshop projects: {e}")
+                logger.error(error_msg)
+            self.migration_stats['errors'].append(error_msg)
     
-    def _create_analysis_document(self, analysis: Dict[str, Any], 
-                                 project: Dict[str, Any]) -> Dict[str, Any]:
-        """Create a document from analysis data"""
+    def _create_project_document(self, project: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a document from workshop project data"""
         try:
-            ai_analysis = analysis.get('ai_analysis', '')
-            notes = analysis.get('notes', '')
-            key_opinion_leaders = analysis.get('key_opinion_leaders', '')
+            name = project.get('name', '')
+            description = project.get('description', '')
+            analysis = project.get('analysis', '')
             
-            content = f"{ai_analysis} {notes} {key_opinion_leaders}".strip()
+            content = f"{name}\n\n{description}\n\n{analysis}".strip()
             
             if not content:
                 return None
@@ -326,46 +316,45 @@ class RAGMigration:
                 return None
             
             return {
-                'id': f"analysis_{analysis.get('id')}",
+                'id': f"project_{project.get('id')}",
                 'content': content,
                 'embedding': embedding,
                 'metadata': {
-                    'title': f"Analysis for {project.get('name', 'Unknown Project')}",
-                    'source': 'workshop_analysis',
-                    'type': 'analysis',
-                    'project_id': project.get('id'),
-                    'lead_id': analysis.get('lead_id'),
-                    'relevancy_score': analysis.get('relevancy_score'),
-                    'created_at': analysis.get('created_at', datetime.now().isoformat())
+                    'title': name,
+                    'source': 'workshop_project',
+                    'type': 'project',
+                    'original_id': project.get('id'),
+                    'created_at': project.get('created_at', datetime.now().isoformat())
                 }
             }
             
         except Exception as e:
             if logger:
-                logger.error(f"Failed to create analysis document: {e}")
+                logger.error(f"Failed to create project document: {e}")
             return None
     
     def _verify_migration(self):
         """Verify that migration was successful"""
         try:
             # Get vector store statistics
-            stats = self.vector_store.get_collection_stats()
+            stats = self.vector_store.get_stats()
             
-            print(f"   📊 Vector store contains {stats.get('total_documents', 0)} documents")
-            print(f"   📊 Document types: {stats.get('document_types', {})}")
+            print(f"   Vector store statistics:")
+            print(f"     - Total documents: {stats.total_documents}")
+            print(f"     - Total chunks: {stats.total_chunks}")
+            print(f"     - Collection size: {stats.collection_size_mb:.2f} MB")
             
             # Test RAG search
-            print("   🔍 Testing RAG search...")
-            test_result = self.rag_service.search("test query", top_k=5)
+            test_query = "test migration"
+            result = self.rag_service.search(test_query, top_k=1)
             
-            if test_result.retrieved_documents:
-                print(f"   ✅ RAG search working - found {len(test_result.retrieved_documents)} documents")
+            if result and result.retrieved_documents:
+                print("   ✅ RAG search test successful")
             else:
-                print("   ⚠️  RAG search returned no results (may be normal if no relevant data)")
-            
+                print("   ⚠️  RAG search test failed")
+                
         except Exception as e:
-            error_msg = f"Verification failed: {str(e)}"
-            print(f"   ❌ {error_msg}")
+            error_msg = f"Failed to verify migration: {e}"
             if logger:
                 logger.error(error_msg)
             self.migration_stats['errors'].append(error_msg)
@@ -374,51 +363,42 @@ class RAGMigration:
         """Print migration summary"""
         stats = self.migration_stats
         
-        print("\n" + "="*50)
-        print("📊 MIGRATION SUMMARY")
-        print("="*50)
-        print(f"⏱️  Total time: {stats['total_time']:.2f} seconds")
-        print(f"📝 Leads processed: {stats['leads_processed']}")
-        print(f"✅ Leads successful: {stats['leads_successful']}")
-        print(f"❌ Leads failed: {stats['leads_failed']}")
+        print(f"\n📊 Migration Summary:")
+        print(f"   Total leads processed: {stats['leads_processed']}")
+        print(f"   Successful migrations: {stats['leads_successful']}")
+        print(f"   Failed migrations: {stats['leads_failed']}")
+        print(f"   Total time: {stats['total_time']:.2f} seconds")
         
         if stats['errors']:
-            print(f"\n⚠️  Errors encountered: {len(stats['errors'])}")
+            print(f"   Errors encountered: {len(stats['errors'])}")
             for error in stats['errors'][:5]:  # Show first 5 errors
-                print(f"   - {error}")
-            if len(stats['errors']) > 5:
-                print(f"   ... and {len(stats['errors']) - 5} more errors")
-        
-        # Get final vector store stats
-        try:
-            final_stats = self.vector_store.get_collection_stats()
-            print(f"\n🗄️  Vector store status:")
-            print(f"   Total documents: {final_stats.get('total_documents', 0)}")
-            print(f"   Document types: {final_stats.get('document_types', {})}")
-        except Exception as e:
-            print(f"   ❌ Failed to get final stats: {e}")
-        
-        print("="*50)
+                print(f"     - {error}")
     
-    def create_backup(self, backup_path: str = None) -> bool:
-        """Create a backup of the vector database"""
+    def create_backup(self) -> str:
+        """Create backup of existing data"""
         try:
-            if not backup_path:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                backup_path = f"./data/vector_db_backup_{timestamp}.json"
+            backup_dir = f"backup_{int(time.time())}"
+            os.makedirs(backup_dir, exist_ok=True)
             
-            success = self.vector_store.backup_collection(backup_path)
+            # Backup database
+            if hasattr(self.db, 'backup'):
+                backup_path = self.db.backup(backup_dir)
+                print(f"   Database backup created: {backup_path}")
             
-            if success:
-                print(f"✅ Backup created at: {backup_path}")
-            else:
-                print(f"❌ Failed to create backup")
+            # Backup vector store
+            if hasattr(self.vector_store, 'backup_collection'):
+                backup_path = f"{backup_dir}/vector_store_backup"
+                success = self.vector_store.backup_collection(backup_path)
+                if success:
+                    print(f"   Vector store backup created: {backup_path}")
             
-            return success
+            return backup_dir
             
         except Exception as e:
-            print(f"❌ Backup failed: {e}")
-            return False
+            if logger:
+                logger.error(f"Failed to create backup: {e}")
+            return None
+
 
 def main():
     """Main migration function"""
@@ -457,6 +437,7 @@ def main():
     else:
         print(f"\n✅ Migration completed successfully!")
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main() 

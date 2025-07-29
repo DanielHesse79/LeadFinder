@@ -1,0 +1,751 @@
+{% extends "base.html" %}
+
+{% block title %}Data Out - Workflow{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('workflow.workflow_dashboard') }}">Workflow</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Data Out</li>
+            </ol>
+        </nav>
+        
+        <h1 class="page-title">
+            <i class="fas fa-chart-bar me-2"></i>Data Out
+        </h1>
+        <p class="page-subtitle">
+            Generate reports and insights from processed data
+        </p>
+    </div>
+
+    <!-- Report Generation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>Report Generation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Lead Report -->
+                        <div class="col-md-6 mb-4">
+                            <div class="report-method">
+                                <div class="method-header">
+                                    <h6 class="method-title">
+                                        <i class="fas fa-users me-2"></i>Lead Report
+                                    </h6>
+                                    <span class="method-status available">Available</span>
+                                </div>
+                                <p class="method-description">
+                                    Generate comprehensive lead analysis reports with scoring and recommendations
+                                </p>
+                                <div class="method-form">
+                                    <div class="mb-3">
+                                        <label for="leadReportType" class="form-label">Report Type</label>
+                                        <select class="form-select" id="leadReportType">
+                                            <option value="comprehensive">Comprehensive Analysis</option>
+                                            <option value="opportunity">Opportunity Focused</option>
+                                            <option value="contact">Contact Strategy</option>
+                                            <option value="scoring">Lead Scoring Report</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="generateLeadReport()">
+                                        <i class="fas fa-file-alt me-1"></i>Generate Lead Report
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Market Report -->
+                        <div class="col-md-6 mb-4">
+                            <div class="report-method">
+                                <div class="method-header">
+                                    <h6 class="method-title">
+                                        <i class="fas fa-chart-bar me-2"></i>Market Report
+                                    </h6>
+                                    <span class="method-status available">Available</span>
+                                </div>
+                                <p class="method-description">
+                                    Create market analysis reports with trends and competitive insights
+                                </p>
+                                <div class="method-form">
+                                    <div class="mb-3">
+                                        <label for="marketReportFocus" class="form-label">Focus Area</label>
+                                        <select class="form-select" id="marketReportFocus">
+                                            <option value="overview">Market Overview</option>
+                                            <option value="trends">Market Trends</option>
+                                            <option value="competitive">Competitive Analysis</option>
+                                            <option value="opportunities">Market Opportunities</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="generateMarketReport()">
+                                        <i class="fas fa-chart-line me-1"></i>Generate Market Report
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Strategic Report -->
+                        <div class="col-md-6 mb-4">
+                            <div class="report-method">
+                                <div class="method-header">
+                                    <h6 class="method-title">
+                                        <i class="fas fa-chess me-2"></i>Strategic Report
+                                    </h6>
+                                    <span class="method-status available">Available</span>
+                                </div>
+                                <p class="method-description">
+                                    Generate strategic planning documents with actionable recommendations
+                                </p>
+                                <div class="method-form">
+                                    <div class="mb-3">
+                                        <label for="strategicReportType" class="form-label">Strategic Focus</label>
+                                        <select class="form-select" id="strategicReportType">
+                                            <option value="business_plan">Business Plan</option>
+                                            <option value="go_to_market">Go-to-Market Strategy</option>
+                                            <option value="competitive_strategy">Competitive Strategy</option>
+                                            <option value="growth_plan">Growth Plan</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="generateStrategicReport()">
+                                        <i class="fas fa-chess-king me-1"></i>Generate Strategic Report
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Items -->
+                        <div class="col-md-6 mb-4">
+                            <div class="report-method">
+                                <div class="method-header">
+                                    <h6 class="method-title">
+                                        <i class="fas fa-tasks me-2"></i>Action Items
+                                    </h6>
+                                    <span class="method-status available">Available</span>
+                                </div>
+                                <p class="method-description">
+                                    Generate prioritized action items and next steps from analysis
+                                </p>
+                                <div class="method-form">
+                                    <div class="mb-3">
+                                        <label for="actionItemsPriority" class="form-label">Priority Level</label>
+                                        <select class="form-select" id="actionItemsPriority">
+                                            <option value="high">High Priority</option>
+                                            <option value="medium">Medium Priority</option>
+                                            <option value="low">Low Priority</option>
+                                            <option value="all">All Priorities</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="generateActionItems()">
+                                        <i class="fas fa-list-check me-1"></i>Generate Action Items
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Analytics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Dashboard Analytics
+                    </h5>
+                    <div class="card-tools">
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshAnalytics()">
+                            <i class="fas fa-sync me-1"></i>Refresh
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="exportAnalytics()">
+                            <i class="fas fa-download me-1"></i>Export
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Key Metrics -->
+                        <div class="col-md-6 mb-4">
+                            <div class="analytics-section">
+                                <h6 class="section-title">Key Metrics</h6>
+                                <div id="keyMetricsContainer">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                                        <p>Loading metrics...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Trends -->
+                        <div class="col-md-6 mb-4">
+                            <div class="analytics-section">
+                                <h6 class="section-title">Performance Trends</h6>
+                                <div id="trendsContainer">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                                        <p>Loading trends...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generated Reports -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>Generated Reports
+                    </h5>
+                    <div class="card-tools">
+                        <button class="btn btn-sm btn-outline-primary" onclick="exportAllReports()">
+                            <i class="fas fa-download me-1"></i>Export All
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="clearReports()">
+                            <i class="fas fa-trash me-1"></i>Clear All
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="generatedReportsContainer">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-file-alt fa-3x mb-3"></i>
+                            <p>No reports generated yet. Use the report generation tools above to create reports.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.report-method {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.report-method:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.method-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.method-title {
+    margin: 0;
+    font-weight: 600;
+}
+
+.method-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.method-status.available {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.method-status.unavailable {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.method-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.method-form {
+    margin-top: 1rem;
+}
+
+.card-tools {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.analytics-section {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    height: 100%;
+}
+
+.section-title {
+    color: #007bff;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.report-item {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.report-item:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.report-title {
+    font-weight: 600;
+    color: #007bff;
+    margin: 0;
+}
+
+.report-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.report-meta {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.report-summary {
+    font-size: 0.9rem;
+    color: #495057;
+}
+</style>
+
+<script>
+let generatedReports = [];
+
+// Load analytics on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadAnalytics();
+});
+
+function loadAnalytics() {
+    loadKeyMetrics();
+    loadTrends();
+}
+
+function loadKeyMetrics() {
+    fetch('/workflow/api/statistics')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayKeyMetrics(data.statistics);
+            } else {
+                console.error('Error loading metrics:', data.error);
+                document.getElementById('keyMetricsContainer').innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                        <p>Error loading metrics</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('keyMetricsContainer').innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <p>Error loading metrics</p>
+                </div>
+            `;
+        });
+}
+
+function displayKeyMetrics(statistics) {
+    const container = document.getElementById('keyMetricsContainer');
+    
+    let html = '';
+    
+    // Total Leads
+    html += `
+        <div class="metric-card">
+            <div class="metric-value">${statistics.total_leads || 0}</div>
+            <div class="metric-label">Total Leads</div>
+        </div>
+    `;
+    
+    // Recent Leads
+    html += `
+        <div class="metric-card">
+            <div class="metric-value">${statistics.recent_leads || 0}</div>
+            <div class="metric-label">Recent Leads (24h)</div>
+        </div>
+    `;
+    
+    // Source Distribution
+    if (statistics.sources) {
+        const topSource = Object.entries(statistics.sources)
+            .sort(([,a], [,b]) => b - a)[0];
+        
+        if (topSource) {
+            html += `
+                <div class="metric-card">
+                    <div class="metric-value">${topSource[1]}</div>
+                    <div class="metric-label">Top Source: ${topSource[0]}</div>
+                </div>
+            `;
+        }
+    }
+    
+    container.innerHTML = html;
+}
+
+function loadTrends() {
+    // Simulate trends data
+    const trendsData = {
+        leads_growth: '+15%',
+        conversion_rate: '8.5%',
+        avg_response_time: '2.3h',
+        success_rate: '92%'
+    };
+    
+    displayTrends(trendsData);
+}
+
+function displayTrends(trends) {
+    const container = document.getElementById('trendsContainer');
+    
+    let html = `
+        <div class="row">
+            <div class="col-6 mb-2">
+                <div class="metric-card">
+                    <div class="metric-value">${trends.leads_growth}</div>
+                    <div class="metric-label">Leads Growth</div>
+                </div>
+            </div>
+            <div class="col-6 mb-2">
+                <div class="metric-card">
+                    <div class="metric-value">${trends.conversion_rate}</div>
+                    <div class="metric-label">Conversion Rate</div>
+                </div>
+            </div>
+            <div class="col-6 mb-2">
+                <div class="metric-card">
+                    <div class="metric-value">${trends.avg_response_time}</div>
+                    <div class="metric-label">Avg Response Time</div>
+                </div>
+            </div>
+            <div class="col-6 mb-2">
+                <div class="metric-card">
+                    <div class="metric-value">${trends.success_rate}</div>
+                    <div class="metric-label">Success Rate</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function generateLeadReport() {
+    const reportType = document.getElementById('leadReportType').value;
+    
+    showReportLoading('Generating lead report...');
+    
+    fetch('/workflow/data-out/generate-report', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            processed_data: { type: 'leads' },
+            report_type: 'lead_report',
+            report_subtype: reportType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideReportLoading();
+        if (data.success) {
+            addGeneratedReport('Lead Report', data.report, reportType);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideReportLoading();
+        console.error('Error:', error);
+        alert('Error generating lead report');
+    });
+}
+
+function generateMarketReport() {
+    const focus = document.getElementById('marketReportFocus').value;
+    
+    showReportLoading('Generating market report...');
+    
+    fetch('/workflow/data-out/generate-report', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            processed_data: { type: 'market' },
+            report_type: 'market_report',
+            report_subtype: focus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideReportLoading();
+        if (data.success) {
+            addGeneratedReport('Market Report', data.report, focus);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideReportLoading();
+        console.error('Error:', error);
+        alert('Error generating market report');
+    });
+}
+
+function generateStrategicReport() {
+    const reportType = document.getElementById('strategicReportType').value;
+    
+    showReportLoading('Generating strategic report...');
+    
+    fetch('/workflow/data-out/generate-report', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            processed_data: { type: 'strategic' },
+            report_type: 'strategic_report',
+            report_subtype: reportType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideReportLoading();
+        if (data.success) {
+            addGeneratedReport('Strategic Report', data.report, reportType);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideReportLoading();
+        console.error('Error:', error);
+        alert('Error generating strategic report');
+    });
+}
+
+function generateActionItems() {
+    const priority = document.getElementById('actionItemsPriority').value;
+    
+    showReportLoading('Generating action items...');
+    
+    fetch('/workflow/data-out/generate-report', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            processed_data: { type: 'actions' },
+            report_type: 'action_items',
+            report_subtype: priority
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideReportLoading();
+        if (data.success) {
+            addGeneratedReport('Action Items', data.report, priority);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideReportLoading();
+        console.error('Error:', error);
+        alert('Error generating action items');
+    });
+}
+
+function addGeneratedReport(title, report, subtype) {
+    const reportItem = {
+        id: Date.now(),
+        title: title,
+        subtype: subtype,
+        content: report,
+        timestamp: new Date().toLocaleString()
+    };
+    
+    generatedReports.push(reportItem);
+    displayGeneratedReports();
+}
+
+function displayGeneratedReports() {
+    const container = document.getElementById('generatedReportsContainer');
+    
+    if (generatedReports.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted">
+                <i class="fas fa-file-alt fa-3x mb-3"></i>
+                <p>No reports generated yet. Use the report generation tools above to create reports.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    
+    generatedReports.forEach((report, index) => {
+        html += `
+            <div class="report-item">
+                <div class="report-header">
+                    <h6 class="report-title">${report.title} - ${report.subtype}</h6>
+                    <div class="report-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewReport(${index})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="downloadReport(${index})">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteReport(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="report-meta">
+                    Generated: ${report.timestamp}
+                </div>
+                <div class="report-summary">
+                    ${typeof report.content === 'string' ? report.content.substring(0, 200) + '...' : 'Report content available'}
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function showReportLoading(message) {
+    const container = document.getElementById('generatedReportsContainer');
+    container.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">${message}</p>
+        </div>
+    `;
+}
+
+function hideReportLoading() {
+    displayGeneratedReports();
+}
+
+function viewReport(index) {
+    const report = generatedReports[index];
+    alert(`Viewing: ${report.title}\n\n${typeof report.content === 'string' ? report.content : JSON.stringify(report.content, null, 2)}`);
+}
+
+function downloadReport(index) {
+    const report = generatedReports[index];
+    const dataStr = JSON.stringify(report, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${report.title.toLowerCase().replace(' ', '_')}_${report.subtype}.json`;
+    link.click();
+}
+
+function deleteReport(index) {
+    if (confirm('Are you sure you want to delete this report?')) {
+        generatedReports.splice(index, 1);
+        displayGeneratedReports();
+    }
+}
+
+function refreshAnalytics() {
+    loadAnalytics();
+}
+
+function exportAnalytics() {
+    // Implement analytics export
+    alert('Analytics export functionality to be implemented');
+}
+
+function exportAllReports() {
+    if (generatedReports.length === 0) {
+        alert('No reports to export');
+        return;
+    }
+
+    const dataStr = JSON.stringify(generatedReports, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'all_reports.json';
+    link.click();
+}
+
+function clearReports() {
+    if (confirm('Are you sure you want to clear all generated reports?')) {
+        generatedReports = [];
+        displayGeneratedReports();
+    }
+}
+</script>
+{% endblock %}

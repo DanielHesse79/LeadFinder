@@ -1,316 +1,468 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUPP.AI Agent Details - LeadFinder</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+{% extends "base.html" %}
+
+{% block title %}SUPP.AI Agent Details - 4Front2Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    .main-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+        max-width: 1200px;
+        padding: 30px;
+    }
+    .agent-header {
+        background: linear-gradient(135deg, var(--4front-dark-blue) 0%, var(--4front-mid-blue) 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+    }
+    .agent-name {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .agent-cui {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 15px;
+    }
+    .agent-type {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        border-left: 5px solid var(--4front-dark-blue);
+    }
+    .info-title {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+    .info-title i {
+        margin-right: 10px;
+        color: var(--4front-dark-blue);
+    }
+    .synonym-tag {
+        display: inline-block;
+        background: var(--4front-light-yellow);
+        color: var(--4front-dark-blue);
+        padding: 5px 12px;
+        border-radius: 15px;
+        margin: 3px;
+        font-size: 0.9rem;
+        border: 1px solid var(--4front-yellow);
+    }
+    .tradename-tag {
+        display: inline-block;
+        background: var(--4front-light-teal);
+        color: var(--4front-dark-blue);
+        padding: 5px 12px;
+        border-radius: 15px;
+        margin: 3px;
+        font-size: 0.9rem;
+        border: 1px solid var(--4front-teal);
+    }
+    .interaction-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid var(--4front-teal);
+        transition: transform 0.2s;
+    }
+    .interaction-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    }
+    .interaction-agent {
+        font-weight: bold;
+        color: var(--4front-dark-blue);
+        margin-bottom: 8px;
+    }
+    .interaction-evidence {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+    .interaction-confidence {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    .confidence-high {
+        background-color: var(--4front-yellow);
+        color: var(--4front-dark-blue);
+    }
+    .confidence-medium {
+        background-color: var(--4front-light-teal);
+        color: var(--4front-dark-blue);
+    }
+    .confidence-low {
+        background-color: var(--4front-light-gray);
+        color: #666;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        border-top: 4px solid var(--4front-yellow);
+        transition: transform 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--4front-dark-blue);
+        margin-bottom: 5px;
+    }
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    .btn-action {
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn-primary-action {
+        background: linear-gradient(135deg, var(--4front-dark-blue) 0%, var(--4front-mid-blue) 100%);
+        color: white;
+    }
+    .btn-primary-action:hover {
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+    .btn-secondary-action {
+        background: var(--4front-light-yellow);
+        color: var(--4front-dark-blue);
+        border: 1px solid var(--4front-yellow);
+    }
+    .btn-secondary-action:hover {
+        background: var(--4front-yellow);
+        color: var(--4front-dark-blue);
+        text-decoration: none;
+    }
+    .btn-success-action {
+        background: var(--4front-teal);
+        color: white;
+    }
+    .btn-success-action:hover {
+        background: var(--4front-light-teal);
+        color: white;
+        text-decoration: none;
+    }
+    .search-section {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+    .search-form {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .search-input {
+        flex: 1;
+        min-width: 300px;
+        padding: 12px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+    .search-input:focus {
+        border-color: var(--4front-teal);
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(0, 138, 143, 0.25);
+    }
+    .search-btn {
+        padding: 12px 24px;
+        background: var(--4front-teal);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .search-btn:hover {
+        background: var(--4front-light-teal);
+        transform: translateY(-2px);
+    }
+    @media (max-width: 768px) {
         .main-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            margin: 20px auto;
-            max-width: 1200px;
-            padding: 30px;
+            margin: 10px;
+            padding: 20px;
         }
         .agent-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
+            padding: 20px;
         }
         .agent-name {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 2rem;
         }
-        .agent-cui {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-bottom: 15px;
+        .stats-grid {
+            grid-template-columns: 1fr;
         }
-        .agent-type {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .action-buttons {
+            flex-direction: column;
         }
-        .info-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            border-left: 5px solid #667eea;
+        .btn-action {
+            justify-content: center;
         }
-        .info-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
+        .search-form {
+            flex-direction: column;
+            align-items: stretch;
         }
-        .info-title i {
-            margin-right: 10px;
-            color: #667eea;
+        .search-input {
+            min-width: auto;
         }
-        .synonym-tag {
-            display: inline-block;
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 5px 12px;
-            border-radius: 15px;
-            margin: 3px;
-            font-size: 0.9rem;
-        }
-        .tradename-tag {
-            display: inline-block;
-            background: #f3e5f5;
-            color: #7b1fa2;
-            padding: 5px 12px;
-            border-radius: 15px;
-            margin: 3px;
-            font-size: 0.9rem;
-        }
-        .interaction-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #4caf50;
-            transition: transform 0.2s;
-        }
-        .interaction-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-        }
-        .interaction-agent {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .interaction-type {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-        .evidence-count {
-            background: #e8f5e8;
-            color: #2e7d32;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-        .btn-custom {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s;
-        }
-        .btn-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-            color: white;
-            text-decoration: none;
-        }
-        .back-btn {
-            background: #6c757d;
-            margin-bottom: 20px;
-        }
-        .back-btn:hover {
-            background: #5a6268;
-        }
-        .stats-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="main-container">
-            <!-- Back Button -->
-            <a href="{{ url_for('ollama.ollama_home') }}" class="btn btn-custom back-btn">
-                <i class="fas fa-arrow-left"></i> Back to Search
-            </a>
+    }
+</style>
+{% endblock %}
 
-            <!-- Agent Header -->
-            <div class="agent-header">
-                <div class="agent-name">{{ agent.name }}</div>
-                <div class="agent-cui">CUI: {{ agent.cui }}</div>
-                <div class="agent-type">{{ agent.type|title }}</div>
-                <div class="mt-3">
-                    <span class="stats-badge">
-                        <i class="fas fa-link"></i> {{ agent.interactions_count }} Interactions
-                    </span>
-                    {% if agent.url %}
-                    <a href="{{ agent.url }}" target="_blank" class="btn btn-custom">
-                        <i class="fas fa-external-link-alt"></i> View on SUPP.AI
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Agent Information -->
-            <div class="row">
-                <div class="col-md-6">
-                    <!-- Definition -->
-                    {% if agent.definition %}
-                    <div class="info-card">
-                        <div class="info-title">
-                            <i class="fas fa-info-circle"></i> Definition
-                        </div>
-                        <p>{{ agent.definition }}</p>
-                    </div>
-                    {% endif %}
-
-                    <!-- Synonyms -->
-                    {% if agent.synonyms %}
-                    <div class="info-card">
-                        <div class="info-title">
-                            <i class="fas fa-tags"></i> Synonyms
-                        </div>
-                        {% for synonym in agent.synonyms %}
-                        <span class="synonym-tag">{{ synonym }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="col-md-6">
-                    <!-- Trade Names -->
-                    {% if agent.tradenames %}
-                    <div class="info-card">
-                        <div class="info-title">
-                            <i class="fas fa-pills"></i> Trade Names
-                        </div>
-                        {% for tradename in agent.tradenames %}
-                        <span class="tradename-tag">{{ tradename }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    <!-- Agent Type -->
-                    <div class="info-card">
-                        <div class="info-title">
-                            <i class="fas fa-flask"></i> Agent Type
-                        </div>
-                        <p><strong>{{ agent.type|title }}</strong></p>
-                        <p class="text-muted">
-                            {% if agent.type == 'drug' %}
-                            Pharmaceutical drug with known interactions
-                            {% elif agent.type == 'supplement' %}
-                            Dietary supplement or natural product
-                            {% else %}
-                            Other type of agent
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Interactions -->
-            {% if interactions and interactions.interactions %}
-            <div class="info-card">
-                <div class="info-title">
-                    <i class="fas fa-link"></i> Interactions ({{ interactions.total }} total)
-                </div>
-                <p class="text-muted mb-3">Showing page {{ interactions.page }} of interactions</p>
-                
-                {% for interaction in interactions.interactions %}
-                <div class="interaction-card">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <div class="interaction-agent">
-                                {% if interaction.agent %}
-                                {{ interaction.agent.name }}
-                                {% else %}
-                                Unknown Agent
-                                {% endif %}
-                            </div>
-                            <div class="interaction-type">
-                                {% if interaction.agent %}
-                                Type: {{ interaction.agent.type|title }}
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <span class="evidence-count">
-                                {{ interaction.evidence_count }} evidence items
-                            </span>
-                            {% if interaction.url %}
-                            <a href="{{ interaction.url }}" target="_blank" class="btn btn-custom btn-sm ms-2">
-                                <i class="fas fa-external-link-alt"></i> Details
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-
-                <!-- Pagination -->
-                {% if interactions.total > interactions.interactions_per_page %}
-                <div class="text-center mt-4">
-                    <nav>
-                        <ul class="pagination justify-content-center">
-                            {% if interactions.page > 1 %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('ollama.agent_details', cui=agent.cui) }}?page={{ interactions.page - 1 }}">
-                                    <i class="fas fa-chevron-left"></i> Previous
-                                </a>
-                            </li>
-                            {% endif %}
-                            
-                            <li class="page-item active">
-                                <span class="page-link">Page {{ interactions.page }}</span>
-                            </li>
-                            
-                            {% if interactions.page * interactions.interactions_per_page < interactions.total %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('ollama.agent_details', cui=agent.cui) }}?page={{ interactions.page + 1 }}">
-                                    Next <i class="fas fa-chevron-right"></i>
-                                </a>
-                            </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                </div>
-                {% endif %}
-            </div>
-            {% else %}
-            <div class="info-card">
-                <div class="info-title">
-                    <i class="fas fa-exclamation-triangle"></i> No Interactions Found
-                </div>
-                <p>No interactions were found for this agent in the SUPP.AI database.</p>
-            </div>
-            {% endif %}
+{% block content %}
+<div class="main-container">
+    <!-- Agent Header -->
+    <div class="agent-header">
+        <h1 class="agent-name">
+            <i class="fas fa-pills"></i> {{ agent.preferred_name }}
+        </h1>
+        <div class="agent-cui">
+            <strong>CUI:</strong> {{ agent.cui }}
+        </div>
+        <div class="agent-type">
+            <i class="fas fa-tag"></i> {{ agent.type|title }}
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html> 
+    <!-- Agent Statistics -->
+    <div class="info-card">
+        <h2 class="info-title">
+            <i class="fas fa-chart-bar"></i> Agent Statistics
+        </h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ agent.interaction_count }}</div>
+                <div class="stat-label">Total Interactions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ agent.evidence_count }}</div>
+                <div class="stat-label">Evidence Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ "%.1f"|format(agent.avg_confidence * 100) }}%</div>
+                <div class="stat-label">Avg. Confidence</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ agent.paper_count }}</div>
+                <div class="stat-label">Research Papers</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Information -->
+    <div class="info-card">
+        <h2 class="info-title">
+            <i class="fas fa-info-circle"></i> Agent Information
+        </h2>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Type:</strong> {{ agent.type|title }}</p>
+                <p><strong>Category:</strong> {{ agent.category or 'Not specified' }}</p>
+                <p><strong>Source:</strong> {{ agent.source or 'SUPP.AI Database' }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Last Updated:</strong> {{ agent.last_updated.strftime('%Y-%m-%d') if agent.last_updated else 'Unknown' }}</p>
+                <p><strong>Status:</strong> 
+                    <span class="badge bg-{{ 'success' if agent.status == 'active' else 'warning' if agent.status == 'pending' else 'secondary' }}">
+                        {{ agent.status|title }}
+                    </span>
+                </p>
+                <p><strong>Confidence Score:</strong> {{ "%.2f"|format(agent.confidence_score) }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Synonyms and Trade Names -->
+    <div class="info-card">
+        <h2 class="info-title">
+            <i class="fas fa-tags"></i> Synonyms & Trade Names
+        </h2>
+        {% if agent.synonyms %}
+        <div class="mb-3">
+            <h6><i class="fas fa-synonyms"></i> Synonyms:</h6>
+            {% for synonym in agent.synonyms %}
+            <span class="synonym-tag">{{ synonym }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if agent.trade_names %}
+        <div class="mb-3">
+            <h6><i class="fas fa-trademark"></i> Trade Names:</h6>
+            {% for trade_name in agent.trade_names %}
+            <span class="tradename-tag">{{ trade_name }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if not agent.synonyms and not agent.trade_names %}
+        <p class="text-muted">No synonyms or trade names available for this agent.</p>
+        {% endif %}
+    </div>
+
+    <!-- Search for Interactions -->
+    <div class="search-section">
+        <h2 class="info-title">
+            <i class="fas fa-search"></i> Search for Interactions
+        </h2>
+        <!-- <form method="GET" action="{{ url_for('agents.search_interactions') }}" class="search-form">
+            <input type="hidden" name="agent_cui" value="{{ agent.cui }}">
+            <input type="text" name="query" class="search-input" 
+                   placeholder="Enter another agent name or CUI..." 
+                   value="{{ request.args.get('query', '') }}">
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Search Interactions
+            </button>
+        </form> -->
+        <p class="text-muted">Agent interactions feature not yet implemented.</p>
+    </div>
+
+    <!-- Recent Interactions -->
+    <div class="info-card">
+        <h2 class="info-title">
+            <i class="fas fa-history"></i> Recent Interactions
+        </h2>
+        <p class="text-muted">No recent interactions found for this agent.</p>
+        <!-- {% if agent.recent_interactions %}
+            {% for interaction in agent.recent_interactions %}
+            <div class="interaction-card">
+                <div class="interaction-agent">
+                    <i class="fas fa-arrow-right"></i> {{ interaction.other_agent_name }}
+                </div>
+                <div class="interaction-evidence">
+                    <i class="fas fa-file-alt"></i> {{ interaction.evidence_count }} evidence items
+                </div>
+                <div class="interaction-confidence">
+                    <span class="confidence-{{ 'high' if interaction.confidence_score >= 0.8 else 'medium' if interaction.confidence_score >= 0.5 else 'low' }}">
+                        Confidence: {{ "%.1f"|format(interaction.confidence_score * 100) }}%
+                    </span>
+                </div>
+                <div class="mt-2">
+                    <a href="{{ url_for('interactions.view_interaction', interaction_id=interaction.id) }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No recent interactions found for this agent.</p>
+        {% endif %} -->
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <!-- <a href="{{ url_for('agents.export_agent_data', agent_cui=agent.cui) }}" class="btn-action btn-primary-action">
+            <i class="fas fa-download"></i> Export Agent Data
+        </a>
+        <a href="{{ url_for('agents.compare_agents') }}" class="btn-action btn-secondary-action">
+            <i class="fas fa-balance-scale"></i> Compare Agents
+        </a>
+        <a href="{{ url_for('agents.agent_interactions', agent_cui=agent.cui) }}" class="btn-action btn-success-action">
+            <i class="fas fa-chart-line"></i> View All Interactions
+        </a> -->
+        <a href="{{ url_for('dashboard.index') }}" class="btn-action btn-secondary-action">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add any page-specific JavaScript here
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Agent details page loaded');
+        
+        // Add export functionality
+        function exportAgentData() {
+            console.log('Exporting agent data');
+            // Implementation would depend on backend API
+        }
+        
+        // Add search functionality
+        function searchInteractions() {
+            const query = document.querySelector('.search-input').value;
+            if (query.trim()) {
+                console.log('Searching for interactions with:', query);
+                // Form submission will handle the search
+            }
+        }
+        
+        // Add comparison functionality
+        function compareAgents() {
+            console.log('Opening agent comparison');
+            // Implementation would depend on backend API
+        }
+        
+        // Add hover effects for interaction cards
+        const interactionCards = document.querySelectorAll('.interaction-card');
+        interactionCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block title %}Strategic Planning Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i> Strategic Planning Dashboard
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createCompanyModal">
+                            <i class="fas fa-plus"></i> New Company Profile
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if companies %}
+                        <div class="row">
+                            {% for company in companies %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <i class="fas fa-building"></i> {{ company.company_name }}
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="company-info">
+                                            <p><strong>Industry:</strong> {{ company.industry or 'Not specified' }}</p>
+                                            <p><strong>Product:</strong> {{ company.product_description[:100] }}{% if company.product_description|length > 100 %}...{% endif %}</p>
+                                            <p><strong>Target Market:</strong> {{ company.target_market[:100] }}{% if company.target_market|length > 100 %}...{% endif %}</p>
+                                        </div>
+                                        
+                                        <div class="strategic-actions mt-3">
+                                            <h6>Strategic Planning:</h6>
+                                            <div class="btn-group-vertical w-100">
+                                                <a href="{{ url_for('strategic.view_company_profile', company_id=company.id) }}" 
+                                                   class="btn btn-outline-primary btn-sm mb-2">
+                                                    <i class="fas fa-eye"></i> View Profile
+                                                </a>
+                                                <button class="btn btn-outline-info btn-sm mb-2 market-research-btn"
+                                                        data-company-id="{{ company.id }}">
+                                                    <i class="fas fa-search"></i> Market Research
+                                                </button>
+                                                <button class="btn btn-outline-warning btn-sm mb-2 swot-analysis-btn"
+                                                        data-company-id="{{ company.id }}">
+                                                    <i class="fas fa-chart-pie"></i> SWOT Analysis
+                                                </button>
+                                                <button class="btn btn-outline-success btn-sm mb-2 generate-plan-btn"
+                                                        data-company-id="{{ company.id }}">
+                                                    <i class="fas fa-file-alt"></i> Generate Plans
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="company-meta mt-3">
+                                            <small class="text-muted">
+                                                Created: {{ company.created_at[:10] }}
+                                                {% if company.updated_at != company.created_at %}
+                                                | Updated: {{ company.updated_at[:10] }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No Company Profiles Yet</h4>
+                            <p class="text-muted">Create your first company profile to start strategic planning.</p>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createCompanyModal">
+                                <i class="fas fa-plus"></i> Create Company Profile
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Company Modal -->
+<div class="modal fade" id="createCompanyModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Company Profile</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="createCompanyForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="companyName">Company Name *</label>
+                                <input type="text" class="form-control" id="companyName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="industry">Industry</label>
+                                <input type="text" class="form-control" id="industry" 
+                                       placeholder="e.g., Technology, Healthcare, Finance">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productDescription">Product/Service Description *</label>
+                        <textarea class="form-control" id="productDescription" rows="3" required
+                                  placeholder="Describe your main product or service"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="targetMarket">Target Market</label>
+                        <textarea class="form-control" id="targetMarket" rows="2"
+                                  placeholder="Describe your target customers"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="usps">Unique Selling Propositions (USPs)</label>
+                        <textarea class="form-control" id="usps" rows="2"
+                                  placeholder="What makes your product/service unique?"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="servicePortfolio">Service Portfolio</label>
+                        <textarea class="form-control" id="servicePortfolio" rows="2"
+                                  placeholder="List your main services or products"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="businessModel">Business Model</label>
+                                <input type="text" class="form-control" id="businessModel"
+                                       placeholder="e.g., SaaS, Marketplace, Consulting">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="revenueModel">Revenue Model</label>
+                                <input type="text" class="form-control" id="revenueModel"
+                                       placeholder="e.g., Subscription, Commission, Fixed Fee">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveCompanyBtn">Create Company Profile</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Plans Modal -->
+<div class="modal fade" id="generatePlansModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate Strategic Plans</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Select which strategic plans to generate:</p>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="marketPlanCheck" checked>
+                    <label class="form-check-label" for="marketPlanCheck">
+                        <strong>Market Plan</strong> - Comprehensive market analysis and strategy
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="businessPlanCheck" checked>
+                    <label class="form-check-label" for="businessPlanCheck">
+                        <strong>Business Plan</strong> - Complete business model and financial planning
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="gtmStrategyCheck" checked>
+                    <label class="form-check-label" for="gtmStrategyCheck">
+                        <strong>Go-to-Market Strategy</strong> - Launch strategy and market entry plan
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="generatePlansBtn">Generate Plans</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Create Company Profile
+    $('#saveCompanyBtn').click(function() {
+        const companyData = {
+            company_name: $('#companyName').val(),
+            product_description: $('#productDescription').val(),
+            target_market: $('#targetMarket').val(),
+            usps: $('#usps').val(),
+            service_portfolio: $('#servicePortfolio').val(),
+            industry: $('#industry').val(),
+            business_model: $('#businessModel').val(),
+            revenue_model: $('#revenueModel').val()
+        };
+        
+        if (!companyData.company_name || !companyData.product_description) {
+            alert('Company name and product description are required');
+            return;
+        }
+        
+        $.ajax({
+            url: '/strategic/company/new',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(companyData),
+            success: function(response) {
+                if (response.success) {
+                    $('#createCompanyModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                alert('Error: ' + (response ? response.error : 'Unknown error'));
+            }
+        });
+    });
+    
+    // Market Research
+    $('.market-research-btn').click(function() {
+        const companyId = $(this).data('company-id');
+        
+        if (confirm('Conduct market research for this company? This may take a few minutes.')) {
+            $.ajax({
+                url: '/strategic/company/' + companyId + '/market-research',
+                method: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        alert('Market research completed successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    alert('Error: ' + (response ? response.error : 'Unknown error'));
+                }
+            });
+        }
+    });
+    
+    // SWOT Analysis
+    $('.swot-analysis-btn').click(function() {
+        const companyId = $(this).data('company-id');
+        
+        if (confirm('Conduct SWOT analysis for this company? This may take a few minutes.')) {
+            $.ajax({
+                url: '/strategic/company/' + companyId + '/swot-analysis',
+                method: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        alert('SWOT analysis completed successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    alert('Error: ' + (response ? response.error : 'Unknown error'));
+                }
+            });
+        }
+    });
+    
+    // Generate Plans
+    $('.generate-plan-btn').click(function() {
+        const companyId = $(this).data('company-id');
+        $('#generatePlansModal').modal('show');
+        
+        $('#generatePlansBtn').off('click').on('click', function() {
+            const plans = [];
+            if ($('#marketPlanCheck').is(':checked')) plans.push('market_plan');
+            if ($('#businessPlanCheck').is(':checked')) plans.push('business_plan');
+            if ($('#gtmStrategyCheck').is(':checked')) plans.push('gtm_strategy');
+            
+            if (plans.length === 0) {
+                alert('Please select at least one plan to generate');
+                return;
+            }
+            
+            $('#generatePlansModal').modal('hide');
+            
+            // Generate each selected plan
+            let completed = 0;
+            plans.forEach(function(planType) {
+                $.ajax({
+                    url: '/strategic/company/' + companyId + '/generate-plan/' + planType,
+                    method: 'POST',
+                    success: function(response) {
+                        completed++;
+                        if (response.success) {
+                            console.log(planType + ' generated successfully');
+                        } else {
+                            console.error('Error generating ' + planType + ': ' + response.error);
+                        }
+                        
+                        if (completed === plans.length) {
+                            alert('Plan generation completed!');
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr) {
+                        completed++;
+                        const response = xhr.responseJSON;
+                        console.error('Error generating ' + planType + ': ' + (response ? response.error : 'Unknown error'));
+                        
+                        if (completed === plans.length) {
+                            alert('Plan generation completed with some errors. Check console for details.');
+                            location.reload();
+                        }
+                    }
+                });
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

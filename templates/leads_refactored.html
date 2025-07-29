@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Lead Management - LeadFinder{% endblock %}
+
+{% block meta_description %}Manage and analyze leads with AI-powered insights and research capabilities{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-header">
+                <div class="container">
+                    <h1 class="display-4 mb-3">
+                        <i class="fas fa-users me-3"></i>Lead Management
+                    </h1>
+                    <p class="lead mb-0">Discover, analyze, and manage leads with AI-powered insights</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-leads">{{ lead_stats.total_leads|default(0) }}</div>
+                    <div class="stat-label">Total Leads</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-searches">{{ lead_stats.total_searches|default(0) }}</div>
+                    <div class="stat-label">Total Searches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="ai-analyses">{{ lead_stats.ai_analyses|default(0) }}</div>
+                    <div class="stat-label">AI Analyses</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="rag-queries">{{ rag_stats.total_sessions|default(0) }}</div>
+                    <div class="stat-label">RAG Queries</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="search-form">
+                <h3 class="mb-4">
+                    <i class="fas fa-search me-2"></i>Search for Leads
+                </h3>
+                <form id="search-form" method="POST" action="{{ url_for('search.search_ajax') }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="query" class="form-label">Search Query</label>
+                                <input type="text" class="form-control" id="query" name="query" 
+                                       placeholder="Enter your search query..." required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="research_question" class="form-label">Research Question</label>
+                                <input type="text" class="form-control" id="research_question" name="research_question" 
+                                       placeholder="What specific information are you looking for?">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="form-label">Search Engines</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="engines" value="serp" id="serp" checked>
+                                    <label class="form-check-label" for="serp">Web Search</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="engines" value="pubmed" id="pubmed">
+                                    <label class="form-check-label" for="pubmed">PubMed</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="engines" value="semantic" id="semantic">
+                                    <label class="form-check-label" for="semantic">Semantic Scholar</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-light btn-lg w-100" id="search-btn">
+                                    <i class="fas fa-search me-2"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="action-buttons">
+                <h4 class="mb-3">
+                    <i class="fas fa-cogs me-2"></i>Quick Actions
+                </h4>
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary w-100">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('reports.reports_home') }}" class="btn btn-success w-100">
+                            <i class="fas fa-chart-bar me-2"></i>Reports
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('rag.rag_search') }}" class="btn btn-info w-100">
+                            <i class="fas fa-brain me-2"></i>RAG Search
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('lead_workshop.lead_workshop_home') }}" class="btn btn-warning w-100">
+                            <i class="fas fa-project-diagram me-2"></i>Workshop
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ollama Status -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="ollama-status">
+                <h5 class="mb-2">
+                    <i class="fas fa-robot me-2"></i>AI Status
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <span class="status-dot status-green"></span>
+                            <span>Ollama: <strong id="ollama-status">Ready</strong></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <span class="status-dot status-blue"></span>
+                            <span>RAG System: <strong id="rag-status">Active</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leads Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="leads-table">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="leads-table">
+                        <thead>
+                            <tr>
+                                <th data-sortable>Title</th>
+                                <th data-sortable>Source</th>
+                                <th data-sortable>Created</th>
+                                <th>AI Summary</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leads-tbody">
+                            {% for lead in leads %}
+                            <tr data-lead-id="{{ lead.id }}">
+                                <td>
+                                    <div class="lead-title">{{ lead.title|safe }}</div>
+                                    {% if lead.link %}
+                                    <small><a href="{{ lead.link }}" target="_blank" class="text-muted">View Source</a></small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="lead-source">{{ lead.source|upper }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ lead.created_at|format_date }}</small>
+                                </td>
+                                <td>
+                                    <div class="lead-summary">
+                                        {% if lead.ai_summary %}
+                                            {{ lead.ai_summary|truncate(100) }}
+                                            <span class="ai-status-badge badge bg-success">AI</span>
+                                        {% else %}
+                                            <span class="text-muted">No AI analysis</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary btn-action" 
+                                                onclick="viewLead({{ lead.id }})" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-success btn-action" 
+                                                onclick="analyzeLead({{ lead.id }})" title="AI Analysis">
+                                            <i class="fas fa-brain"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger btn-action delete-btn" 
+                                                onclick="deleteLead({{ lead.id }})" title="Delete Lead">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Lead management functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize data table
+    initDataTable('#leads-table', {
+        sortable: true,
+        searchable: true,
+        pagination: true,
+        pageSize: 10
+    });
+    
+    // Handle search form submission
+    const searchForm = document.getElementById('search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('search-btn');
+            showLoading(submitBtn);
+            
+            try {
+                const formData = serializeForm(this);
+                const response = await postJSON(this.action, formData);
+                
+                if (response.success) {
+                    showNotification('Search completed successfully!', 'success');
+                    // Update leads table with new results
+                    updateLeadsTable(response.leads || []);
+                } else {
+                    showNotification(response.error || 'Search failed', 'danger');
+                }
+            } catch (error) {
+                showNotification('Error performing search: ' + error.message, 'danger');
+            } finally {
+                hideLoading(submitBtn);
+            }
+        });
+    }
+    
+    // Load initial statistics
+    loadStatistics();
+});
+
+// Load and update statistics
+async function loadStatistics() {
+    try {
+        const [leadStats, ragStats] = await Promise.all([
+            getJSON('/api/lead-stats'),
+            getJSON('/api/rag-stats')
+        ]);
+        
+        // Update statistics display
+        document.getElementById('total-leads').textContent = leadStats.total_leads || 0;
+        document.getElementById('total-searches').textContent = leadStats.total_searches || 0;
+        document.getElementById('ai-analyses').textContent = leadStats.ai_analyses || 0;
+        document.getElementById('rag-queries').textContent = ragStats.total_sessions || 0;
+        
+    } catch (error) {
+        console.error('Failed to load statistics:', error);
+    }
+}
+
+// View lead details
+function viewLead(leadId) {
+    // Safe navigation to lead details
+    const url = `/leads/${leadId}`;
+    window.location.href = url;
+}
+
+// Analyze lead with AI
+async function analyzeLead(leadId) {
+    try {
+        const response = await postJSON('/api/analyze-lead', { lead_id: leadId });
+        
+        if (response.success) {
+            showNotification('AI analysis completed!', 'success');
+            // Refresh the page to show updated analysis
+            location.reload();
+        } else {
+            showNotification(response.error || 'Analysis failed', 'danger');
+        }
+    } catch (error) {
+        showNotification('Error analyzing lead: ' + error.message, 'danger');
+    }
+}
+
+// Delete lead
+async function deleteLead(leadId) {
+    if (!confirm('Are you sure you want to delete this lead?')) {
+        return;
+    }
+    
+    try {
+        const response = await postJSON('/api/delete-lead', { lead_id: leadId });
+        
+        if (response.success) {
+            showNotification('Lead deleted successfully!', 'success');
+            // Remove the row from the table
+            const row = document.querySelector(`tr[data-lead-id="${leadId}"]`);
+            if (row) {
+                row.remove();
+            }
+            // Update statistics
+            loadStatistics();
+        } else {
+            showNotification(response.error || 'Delete failed', 'danger');
+        }
+    } catch (error) {
+        showNotification('Error deleting lead: ' + error.message, 'danger');
+    }
+}
+
+// Update leads table with new data
+function updateLeadsTable(leads) {
+    const tbody = document.getElementById('leads-tbody');
+    if (!tbody) return;
+    
+    // Clear existing rows
+    tbody.innerHTML = '';
+    
+    // Add new rows
+    leads.forEach(lead => {
+        const row = document.createElement('tr');
+        row.setAttribute('data-lead-id', lead.id);
+        
+        row.innerHTML = `
+            <td>
+                <div class="lead-title">${sanitizeHTML(lead.title)}</div>
+                ${lead.link ? `<small><a href="${lead.link}" target="_blank" class="text-muted">View Source</a></small>` : ''}
+            </td>
+            <td>
+                <span class="lead-source">${lead.source?.toUpperCase() || 'UNKNOWN'}</span>
+            </td>
+            <td>
+                <small class="text-muted">${formatDate(lead.created_at)}</small>
+            </td>
+            <td>
+                <div class="lead-summary">
+                    ${lead.ai_summary ? 
+                        `${sanitizeHTML(lead.ai_summary.substring(0, 100))}... <span class="ai-status-badge badge bg-success">AI</span>` :
+                        '<span class="text-muted">No AI analysis</span>'
+                    }
+                </div>
+            </td>
+            <td>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-primary btn-action" 
+                            onclick="viewLead(${lead.id})" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success btn-action" 
+                            onclick="analyzeLead(${lead.id})" title="AI Analysis">
+                        <i class="fas fa-brain"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-action delete-btn" 
+                            onclick="deleteLead(${lead.id})" title="Delete Lead">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+</script>
+{% endblock %} 

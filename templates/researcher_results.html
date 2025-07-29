@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Researcher Search Results - LeadFinder{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-search"></i> Researcher Search Results</h2>
+                    <p class="text-muted">Query: "{{ query }}" | Found: {{ total_found }} researchers</p>
+                </div>
+                <div class="card-body">
+                    {% if researchers %}
+                        <form method="POST" action="{{ url_for('researchers.save_selected_researchers') }}">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn btn-primary" id="saveSelectedBtn" disabled>
+                                        <i class="fas fa-save"></i> Save Selected Researchers
+                                    </button>
+                                    <span id="selectedCount" class="badge bg-secondary ms-2">0 selected</span>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="selectAll()">
+                                        <i class="fas fa-check-square"></i> Select All
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="deselectAll()">
+                                        <i class="fas fa-square"></i> Deselect All
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                {% for researcher in researchers %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100 researcher-card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input researcher-checkbox" type="checkbox" 
+                                                       name="selected_researchers" value="{{ researcher.orcid }}" 
+                                                       id="researcher_{{ loop.index }}">
+                                                <label class="form-check-label" for="researcher_{{ loop.index }}">
+                                                    <strong>{{ researcher.name }}</strong>
+                                                </label>
+                                            </div>
+                                            <small class="text-muted">{{ researcher.orcid }}</small>
+                                        </div>
+                                        <div class="card-body">
+                                            {% if researcher.institution %}
+                                            <p class="card-text">
+                                                <i class="fas fa-university"></i> 
+                                                <strong>Institution:</strong> {{ researcher.institution }}
+                                            </p>
+                                            {% endif %}
+                                            
+                                            {% if researcher.department %}
+                                            <p class="card-text">
+                                                <i class="fas fa-building"></i> 
+                                                <strong>Department:</strong> {{ researcher.department }}
+                                            </p>
+                                            {% endif %}
+                                            
+                                            {% if researcher.bio %}
+                                            <p class="card-text">
+                                                <i class="fas fa-info-circle"></i> 
+                                                <strong>Bio:</strong> 
+                                                <span class="text-truncate d-inline-block" style="max-width: 200px;" 
+                                                      title="{{ researcher.bio }}">
+                                                    {{ researcher.bio[:100] }}{% if researcher.bio|length > 100 %}...{% endif %}
+                                                </span>
+                                            </p>
+                                            {% endif %}
+                                            
+                                            {% if researcher.research_interests %}
+                                            <p class="card-text">
+                                                <i class="fas fa-tags"></i> 
+                                                <strong>Research Interests:</strong> 
+                                                <span class="text-truncate d-inline-block" style="max-width: 200px;" 
+                                                      title="{{ researcher.research_interests }}">
+                                                    {{ researcher.research_interests[:100] }}{% if researcher.research_interests|length > 100 %}...{% endif %}
+                                                </span>
+                                            </p>
+                                            {% endif %}
+                                            
+                                            {% if researcher.email %}
+                                            <p class="card-text">
+                                                <i class="fas fa-envelope"></i> 
+                                                <strong>Email:</strong> {{ researcher.email }}
+                                            </p>
+                                            {% endif %}
+                                            
+                                            {% if researcher.website %}
+                                            <p class="card-text">
+                                                <i class="fas fa-globe"></i> 
+                                                <strong>Website:</strong> 
+                                                <a href="{{ researcher.website }}" target="_blank" class="text-decoration-none">
+                                                    {{ researcher.website }}
+                                                </a>
+                                            </p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="d-flex justify-content-between">
+                                                <a href="{{ researcher.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-external-link-alt"></i> ORCID Profile
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-info" 
+                                                        onclick="viewResearcherDetails('{{ researcher.orcid }}')">
+                                                    <i class="fas fa-eye"></i> View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No researchers found for the query "{{ query }}".
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Researcher Details Modal -->
+<div class="modal fade" id="researcherModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Researcher Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="researcherModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="enhanceResearcherBtn">
+                    <i class="fas fa-download"></i> Load Enhanced Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedResearcherOrcid = null;
+
+// Update selected count
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('.researcher-checkbox:checked');
+    const count = checkboxes.length;
+    document.getElementById('selectedCount').textContent = count + ' selected';
+    document.getElementById('saveSelectedBtn').disabled = count === 0;
+}
+
+// Select all researchers
+function selectAll() {
+    document.querySelectorAll('.researcher-checkbox').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updateSelectedCount();
+}
+
+// Deselect all researchers
+function deselectAll() {
+    document.querySelectorAll('.researcher-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateSelectedCount();
+}
+
+// View researcher details
+function viewResearcherDetails(orcidId) {
+    selectedResearcherOrcid = orcidId;
+    
+    // Show loading state
+    document.getElementById('researcherModalBody').innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading researcher details...</p>
+        </div>
+    `;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('researcherModal'));
+    modal.show();
+    
+    // Load researcher details
+    fetch(`/researchers/${orcidId}`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('researcherModalBody').innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('researcherModalBody').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Error loading researcher details: ${error.message}
+                </div>
+            `;
+        });
+}
+
+// Enhance researcher data
+document.getElementById('enhanceResearcherBtn').addEventListener('click', function() {
+    if (!selectedResearcherOrcid) return;
+    
+    const button = this;
+    const originalText = button.innerHTML;
+    
+    // Show loading state
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    button.disabled = true;
+    
+    // Send enhance request
+    fetch(`/researchers/${selectedResearcherOrcid}/enhance`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Reload the modal content
+            return viewResearcherDetails(selectedResearcherOrcid);
+        } else {
+            throw new Error('Failed to enhance researcher data');
+        }
+    })
+    .catch(error => {
+        alert('Error enhancing researcher data: ' + error.message);
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+});
+
+// Add event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Add change event listeners to checkboxes
+    document.querySelectorAll('.researcher-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Initialize count
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

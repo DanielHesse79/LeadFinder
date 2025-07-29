@@ -331,11 +331,102 @@ CONFIG_DEFINITIONS = {
         'required': False,
         'default': '2'
     },
+    'RUNPOD_ENABLED': {
+        'description': 'Enable RunPod.ai integration for enhanced AI analysis',
+        'is_secret': False,
+        'required': False,
+        'default': 'False'
+    },
+    'RUNPOD_AUTO_ENABLE': {
+        'description': 'Automatically enable RunPod for batch processing (>5 leads)',
+        'is_secret': False,
+        'required': False,
+        'default': 'True'
+    },
+    'RUNPOD_BATCH_THRESHOLD': {
+        'description': 'Number of leads that triggers automatic RunPod usage',
+        'is_secret': False,
+        'required': False,
+        'default': '5'
+    },
+    'RUNPOD_COMPLEX_ANALYSIS': {
+        'description': 'Use RunPod for complex analysis (detailed insights)',
+        'is_secret': False,
+        'required': False,
+        'default': 'True'
+    },
+    'RUNPOD_FALLBACK_TO_OLLAMA': {
+        'description': 'Fallback to Ollama if RunPod fails',
+        'is_secret': False,
+        'required': False,
+        'default': 'True'
+    },
     'AUTOGPT_TIMEOUT': {
         'description': 'AutoGPT request timeout in seconds',
         'is_secret': False,
         'required': False,
         'default': '30'
+    },
+    # RAG Configuration
+    'RAG_ENABLED': {
+        'description': 'Enable RAG (Retrieval-Augmented Generation) functionality',
+        'is_secret': False,
+        'required': False,
+        'default': 'True'
+    },
+    'RAG_MODEL': {
+        'description': 'RAG model for text generation',
+        'is_secret': False,
+        'required': False,
+        'default': 'mistral:latest'
+    },
+    'RAG_EMBEDDING_MODEL': {
+        'description': 'Embedding model for RAG vector search',
+        'is_secret': False,
+        'required': False,
+        'default': 'all-MiniLM-L6-v2'
+    },
+    'RAG_CHUNK_SIZE': {
+        'description': 'Size of document chunks in characters',
+        'is_secret': False,
+        'required': False,
+        'default': '1000'
+    },
+    'RAG_CHUNK_OVERLAP': {
+        'description': 'Overlap between chunks',
+        'is_secret': False,
+        'required': False,
+        'default': '200'
+    },
+    'RAG_SIMILARITY_THRESHOLD': {
+        'description': 'Minimum similarity score for retrieval',
+        'is_secret': False,
+        'required': False,
+        'default': '0.7'
+    },
+    'RAG_TOP_K': {
+        'description': 'Number of chunks to retrieve',
+        'is_secret': False,
+        'required': False,
+        'default': '5'
+    },
+    'RAG_MAX_CONTEXT_LENGTH': {
+        'description': 'Maximum context length for generation',
+        'is_secret': False,
+        'required': False,
+        'default': '4000'
+    },
+    'RAG_CACHE_TTL': {
+        'description': 'Cache TTL for RAG responses in seconds',
+        'is_secret': False,
+        'required': False,
+        'default': '3600'
+    },
+    'RAG_DEBUG': {
+        'description': 'Enable RAG debug mode',
+        'is_secret': False,
+        'required': False,
+        'default': 'False'
     }
 }
 
@@ -355,22 +446,29 @@ def validate_startup_config():
     
     print("✅ All required configurations are present")
     
-    # Validate AutoGPT integration if enabled
-    autogpt_enabled = config.get('AUTOGPT_ENABLED', 'True').lower() == 'true'
-    if autogpt_enabled:
-        try:
-            from leadfinder_autogpt_integration import LeadfinderAutoGPTIntegration
-            autogpt_model = config.get('AUTOGPT_MODEL', 'mistral:latest')
-            autogpt_integration = LeadfinderAutoGPTIntegration(autogpt_model)
-            
-            # Test AutoGPT connection
-            test_result = autogpt_integration.client.execute_text_generation("Startup validation")
-            if test_result.get('status') == 'COMPLETED':
-                print("🤖 AutoGPT integration validated successfully")
-            else:
-                print("⚠️  AutoGPT integration test failed")
-        except Exception as e:
-            print(f"⚠️  AutoGPT integration not available: {str(e)[:50]}...")
+    # Validate AutoGPT integration if enabled and not skipped
+    import os
+    skip_autogpt = os.getenv('SKIP_AUTOGPT_VALIDATION') == 'true'
+    
+    if skip_autogpt:
+        print("🤖 AutoGPT validation skipped (SKIP_AUTOGPT_VALIDATION=true)")
+    else:
+        autogpt_enabled = config.get('AUTOGPT_ENABLED', 'True').lower() == 'true'
+        if autogpt_enabled:
+            try:
+                from leadfinder_autogpt_integration import LeadfinderAutoGPTIntegration
+                autogpt_model = config.get('AUTOGPT_MODEL', 'mistral:latest')
+                autogpt_integration = LeadfinderAutoGPTIntegration(autogpt_model)
+                
+                # Test AutoGPT connection - DISABLED for startup stability
+                # test_result = autogpt_integration.client.execute_text_generation("Startup validation")
+                # if test_result.get('status') == 'COMPLETED':
+                #     print("🤖 AutoGPT integration validated successfully")
+                # else:
+                #     print("⚠️  AutoGPT integration test failed")
+                print("🤖 AutoGPT integration available (validation skipped for startup stability)")
+            except Exception as e:
+                print(f"⚠️  AutoGPT integration not available: {str(e)[:50]}...")
     
     return True
 
@@ -386,16 +484,40 @@ AUTOGPT_ENABLED = config.get('AUTOGPT_ENABLED', 'True').lower() == 'true'
 AUTOGPT_MODEL = config.get('AUTOGPT_MODEL', 'mistral:latest')
 AUTOGPT_TIMEOUT = int(config.get('AUTOGPT_TIMEOUT', '30'))
 
-# Research API Keys
-SWECRIS_API_KEY = config.get('SWECRIS_API_KEY', '')
-CORDIS_API_KEY = config.get('CORDIS_API_KEY', '')
-NIH_API_KEY = config.get('NIH_API_KEY', '')
-NSF_API_KEY = config.get('NSF_API_KEY', '')
+# RunPod Configuration
+RUNPOD_API_KEY = config.get('RUNPOD_API_KEY', '')
+RUNPOD_ENDPOINT_ID = config.get('RUNPOD_ENDPOINT_ID', '')
+RUNPOD_BASE_URL = config.get('RUNPOD_BASE_URL', 'https://api.runpod.ai/v2')
+RUNPOD_TIMEOUT = int(config.get('RUNPOD_TIMEOUT', '300'))
+RUNPOD_MAX_RETRIES = int(config.get('RUNPOD_MAX_RETRIES', '3'))
+RUNPOD_RETRY_DELAY = int(config.get('RUNPOD_RETRY_DELAY', '2'))
+RUNPOD_ENABLED = config.get('RUNPOD_ENABLED', 'False').lower() == 'true'
+RUNPOD_AUTO_ENABLE = config.get('RUNPOD_AUTO_ENABLE', 'True').lower() == 'true'
+RUNPOD_BATCH_THRESHOLD = int(config.get('RUNPOD_BATCH_THRESHOLD', '5'))
+RUNPOD_COMPLEX_ANALYSIS = config.get('RUNPOD_COMPLEX_ANALYSIS', 'True').lower() == 'true'
+RUNPOD_FALLBACK_TO_OLLAMA = config.get('RUNPOD_FALLBACK_TO_OLLAMA', 'True').lower() == 'true'
+
+# Research API Keys - Now using database-based management
+try:
+    from models.api_keys import get_api_key
+    SERPAPI_KEY = get_api_key('serpapi') or config.get('SERPAPI_KEY', '')
+    SWECRIS_API_KEY = get_api_key('swecris') or config.get('SWECRIS_API_KEY', '')
+    CORDIS_API_KEY = get_api_key('cordis') or config.get('CORDIS_API_KEY', '')
+    NIH_API_KEY = get_api_key('nih') or config.get('NIH_API_KEY', '')
+    NSF_API_KEY = get_api_key('nsf') or config.get('NSF_API_KEY', '')
+    SEMANTIC_SCHOLAR_API_KEY = get_api_key('semantic_scholar') or config.get('SEMANTIC_SCHOLAR_API_KEY', '')
+except ImportError:
+    # Fallback to environment variables if API key management is not available
+    SERPAPI_KEY = config.get('SERPAPI_KEY', '')
+    SWECRIS_API_KEY = config.get('SWECRIS_API_KEY', '')
+    CORDIS_API_KEY = config.get('CORDIS_API_KEY', '')
+    NIH_API_KEY = config.get('NIH_API_KEY', '')
+    NSF_API_KEY = config.get('NSF_API_KEY', '')
+    SEMANTIC_SCHOLAR_API_KEY = config.get('SEMANTIC_SCHOLAR_API_KEY', '')
 
 # External APIs
 ORCID_BASE_URL = config.get('ORCID_BASE_URL', 'https://pub.orcid.org/v3.0')
 PUBMED_BASE_URL = config.get('PUBMED_BASE_URL', 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils')
-SEMANTIC_SCHOLAR_API_KEY = config.get('SEMANTIC_SCHOLAR_API_KEY', '')
 
 # Flask Configuration
 FLASK_SECRET_KEY = config.get('FLASK_SECRET_KEY', required=True)
@@ -432,63 +554,30 @@ try:
 except (TypeError, ValueError):
     DB_POOL_HEALTH_CHECK_INTERVAL = 300
 
-# Cache Configuration
-try:
-    CACHE_MAX_SIZE = int(config.get('CACHE_MAX_SIZE', '1000'))
-except (TypeError, ValueError):
-    CACHE_MAX_SIZE = 1000
+# RAG Configuration
+RAG_ENABLED = config.get('RAG_ENABLED', 'True').lower() == 'true'
+RAG_PERSIST_DIRECTORY = config.get('RAG_PERSIST_DIRECTORY', 'data/chroma')
+RAG_COLLECTION_NAME = config.get('RAG_COLLECTION_NAME', 'leadfinder_docs')
+RAG_EMBEDDING_MODEL = config.get('RAG_EMBEDDING_MODEL', 'sentence-transformers/all-MiniLM-L6-v2')
+RAG_CHUNK_SIZE = int(config.get('RAG_CHUNK_SIZE', '1000'))
+RAG_CHUNK_OVERLAP = int(config.get('RAG_CHUNK_OVERLAP', '200'))
+RAG_TOP_K = int(config.get('RAG_TOP_K', '5'))
 
-try:
-    CACHE_DEFAULT_TTL = int(config.get('CACHE_DEFAULT_TTL', '300'))
-except (TypeError, ValueError):
-    CACHE_DEFAULT_TTL = 300
+# Redis Configuration
+REDIS_HOST = config.get('REDIS_HOST', 'localhost')
+REDIS_PORT = int(config.get('REDIS_PORT', '6379'))
+REDIS_DB = int(config.get('REDIS_DB', '0'))
+REDIS_PASSWORD = config.get('REDIS_PASSWORD', '')
+REDIS_MAX_CONNECTIONS = int(config.get('REDIS_MAX_CONNECTIONS', '10'))
 
-try:
-    CACHE_CLEANUP_INTERVAL = int(config.get('CACHE_CLEANUP_INTERVAL', '60'))
-except (TypeError, ValueError):
-    CACHE_CLEANUP_INTERVAL = 60
+# ChromaDB Configuration
+CHROMADB_HOST = config.get('CHROMADB_HOST', 'localhost')
+CHROMADB_PORT = int(config.get('CHROMADB_PORT', '8000'))
+CHROMADB_PERSIST_DIRECTORY = config.get('CHROMADB_PERSIST_DIRECTORY', 'data/chroma')
 
-# Export settings
-EXPORT_FOLDER = config.get('EXPORT_FOLDER', 'exports')
-SCIHUB_FOLDER = config.get('SCIHUB_FOLDER', 'scihub_pdfs')
-
-# SERP Configuration
-SERP_ENGINES = ["google", "bing", "duckduckgo"]
-
-# Research APIs Configuration
-RESEARCH_APIS = {
-    'swecris': {
-        'name': 'SweCRIS',
-        'description': 'Swedish Research Database - Swedish research projects and funding',
-        'enabled': True,  # Always enabled since we have a public API key
-        'api_key': 'VRSwecrisAPI2025-1',  # Public API key
-        'base_url': 'https://swecris-api.vr.se'
-    },
-    'cordis': {
-        'name': 'CORDIS',
-        'description': 'EU Research Database - European Union research projects',
-        'enabled': bool(CORDIS_API_KEY),
-        'api_key': CORDIS_API_KEY,
-        'base_url': 'https://cordis.europa.eu/api'
-    },
-    'nih': {
-        'name': 'NIH RePORTER',
-        'description': 'US Research Database - NIH funded research projects',
-        'enabled': bool(NIH_API_KEY),
-        'api_key': NIH_API_KEY,
-        'base_url': 'https://api.reporter.nih.gov/v2'
-    },
-    'nsf': {
-        'name': 'NSF',
-        'description': 'US National Science Foundation - NSF funded research projects',
-        'enabled': True,  # NSF API doesn't require API key for basic searches
-        'api_key': NSF_API_KEY,
-        'base_url': 'https://api.nsf.gov/v1'
-    }
-}
-
-# Database
-DATABASE_PATH = DATA_DIR / "leadfinder.db"
+# Database paths
+DATABASE_PATH = Path(__file__).parent / "data" / "leadfinder.db"
+DATABASE_PATH.parent.mkdir(exist_ok=True)
 
 # Environment detection
 ENVIRONMENT = os.getenv('FLASK_ENV', 'development').lower()

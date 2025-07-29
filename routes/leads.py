@@ -5,7 +5,10 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font
 from pathlib import Path
 import os
+import csv
+import io
 from typing import List, Tuple
+from datetime import datetime
 
 # Import services with error handling
 try:
@@ -107,7 +110,7 @@ def show_leads():
 
 @leads_bp.route('/export')
 def export_to_excel():
-    """Export leads to Excel file"""
+    """Export leads to Excel file with enhanced information"""
     if not db:
         return "Database not available", 500
     
@@ -116,24 +119,95 @@ def export_to_excel():
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Leads"
-    headers = ["ID", "Titel", "Beskrivning", "Länk", "AI-sammanfattning", "Källa", "Skapad"]
+    headers = ["ID", "Title", "Description", "Link", "AI Summary", "Source", "Tags", 
+              "Company", "Institution", "Contact Name", "Contact Email", "Contact Phone", 
+              "Contact LinkedIn", "Contact Status", "Notes", "Created", "Updated"]
     ws.append(headers)
     
     for lead in leads:
-        row = list(lead)
+        row = [
+            lead.get('id'),
+            lead.get('title'),
+            lead.get('description'),
+            lead.get('link'),
+            lead.get('ai_summary'),
+            lead.get('source'),
+            lead.get('tags'),
+            lead.get('company'),
+            lead.get('institution'),
+            lead.get('contact_name'),
+            lead.get('contact_email'),
+            lead.get('contact_phone'),
+            lead.get('contact_linkedin'),
+            lead.get('contact_status'),
+            lead.get('notes'),
+            lead.get('created_at'),
+            lead.get('updated_at')
+        ]
         ws.append(row)
         # Make link clickable
-        link_cell = ws.cell(row=ws.max_row, column=4)
-        link_cell.hyperlink = row[3]
-        link_cell.font = Font(color="0000FF", underline="single")
+        if lead.get('link'):
+            link_cell = ws.cell(row=ws.max_row, column=4)
+            link_cell.hyperlink = lead.get('link')
+            link_cell.font = Font(color="0000FF", underline="single")
     
     # Set column width
     for i, col in enumerate(headers, 1):
-        ws.column_dimensions[get_column_letter(i)].width = 30
+        ws.column_dimensions[get_column_letter(i)].width = 25
     
-    filename = "leads_export.xlsx"
+    filename = "leads_export_enhanced.xlsx"
     wb.save(filename)
     return send_file(filename, as_attachment=True)
+
+@leads_bp.route('/export/csv')
+def export_to_csv():
+    """Export leads to CSV file with enhanced information"""
+    if not db:
+        return "Database not available", 500
+    
+    leads = db.get_all_leads()
+    
+    # Create CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write headers
+    headers = ["ID", "Title", "Description", "Link", "AI Summary", "Source", "Tags", 
+              "Company", "Institution", "Contact Name", "Contact Email", "Contact Phone", 
+              "Contact LinkedIn", "Contact Status", "Notes", "Created", "Updated"]
+    writer.writerow(headers)
+    
+    # Write data
+    for lead in leads:
+        row = [
+            lead.get('id'),
+            lead.get('title'),
+            lead.get('description'),
+            lead.get('link'),
+            lead.get('ai_summary'),
+            lead.get('source'),
+            lead.get('tags'),
+            lead.get('company'),
+            lead.get('institution'),
+            lead.get('contact_name'),
+            lead.get('contact_email'),
+            lead.get('contact_phone'),
+            lead.get('contact_linkedin'),
+            lead.get('contact_status'),
+            lead.get('notes'),
+            lead.get('created_at'),
+            lead.get('updated_at')
+        ]
+        writer.writerow(row)
+    
+    # Prepare response
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='leads_export_enhanced.csv'
+    )
 
 @leads_bp.route('/download_links')
 def download_links():
@@ -323,36 +397,184 @@ def summarize_lead(lead_id: int):
 
 @leads_bp.route('/summarize_ajax/<int:lead_id>', methods=['POST'])
 def summarize_lead_ajax(lead_id: int):
-    """Return AI summary for a lead as JSON (AJAX)"""
-    if not db or not ollama_service:
-        return jsonify({"error": "Database or AI service not available"}), 500
-
-    # Fetch the lead
-    leads = db.get_all_leads()
-    lead = next((l for l in leads if l[0] == lead_id), None)
-    if not lead:
-        return jsonify({"error": "Lead not found"}), 404
-
-    title = lead[1]
-    snippet = lead[2]
-    link = lead[3]
-    research_question = lead[4] if lead[4] else DEFAULT_RESEARCH_QUESTION
-
-    # Generate summary with AI
+    """AJAX endpoint for lead summarization"""
+    if not db:
+        return jsonify({'error': 'Database not available'}), 500
+    
     try:
-        ai_summary = ollama_service.analyze_relevance(title, snippet, link, research_question)
-        if not ai_summary:
-            ai_summary = "AI kunde inte generera en sammanfattning."
+        lead = db.get_lead(lead_id)
+        if not lead:
+            return jsonify({'error': 'Lead not found'}), 404
+        
+        # Get AI summary
+        if ollama_service:
+            summary = ollama_service.analyze_relevance(
+                lead['title'], 
+                lead['snippet'], 
+                lead['link'], 
+                "general relevance"
+            )
+            
+            # Update lead with summary
+            db.update_lead(lead_id, {'ai_summary': summary})
+            
+            return jsonify({
+                'success': True,
+                'summary': summary,
+                'lead_id': lead_id
+            })
+        else:
+            return jsonify({'error': 'AI service not available'}), 503
+            
     except Exception as e:
-        ai_summary = f"AI-fel: {e}"
+        if logger:
+            logger.error(f"Lead summarization failed: {e}")
+        return jsonify({'error': f'Summarization failed: {str(e)}'}), 500
 
-    # Update the lead in the database
+
+# REST API Endpoints
+@leads_bp.route('/api/leads', methods=['GET'])
+def get_leads_api():
+    """REST API endpoint for getting all leads"""
+    if not db:
+        return jsonify({'error': 'Database not available'}), 500
+    
     try:
-        with db._get_connection() as conn:
-            c = conn.cursor()
-            c.execute('UPDATE leads SET ai_summary = ? WHERE id = ?', (ai_summary, lead_id))
-            conn.commit()
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        source = request.args.get('source')
+        
+        leads = db.get_all_leads()
+        
+        # Filter by source if specified
+        if source:
+            leads = [lead for lead in leads if lead.get('source') == source]
+        
+        # Pagination
+        total = len(leads)
+        start = (page - 1) * per_page
+        end = start + per_page
+        paginated_leads = leads[start:end]
+        
+        return jsonify({
+            'leads': paginated_leads,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': total,
+                'pages': (total + per_page - 1) // per_page
+            }
+        })
+        
     except Exception as e:
-        return jsonify({"error": f"Kunde inte uppdatera lead: {e}"}), 500
+        if logger:
+            logger.error(f"API leads fetch failed: {e}")
+        return jsonify({'error': f'Failed to fetch leads: {str(e)}'}), 500
 
-    return jsonify({"summary": ai_summary}) 
+
+@leads_bp.route('/api/leads/<int:lead_id>', methods=['GET'])
+def get_lead_api(lead_id: int):
+    """REST API endpoint for getting a specific lead"""
+    if not db:
+        return jsonify({'error': 'Database not available'}), 500
+    
+    try:
+        lead = db.get_lead(lead_id)
+        if not lead:
+            return jsonify({'error': 'Lead not found'}), 404
+        
+        return jsonify({'lead': lead})
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"API lead fetch failed: {e}")
+        return jsonify({'error': f'Failed to fetch lead: {str(e)}'}), 500
+
+
+@leads_bp.route('/api/leads/<int:lead_id>', methods=['PUT'])
+def update_lead_api(lead_id: int):
+    """REST API endpoint for updating a lead"""
+    if not db:
+        return jsonify({'error': 'Database not available'}), 500
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        success = db.update_lead(
+            lead_id=lead_id,
+            title=data.get('title'),
+            description=data.get('description'),
+            link=data.get('link'),
+            ai_summary=data.get('ai_summary'),
+            source=data.get('source'),
+            tags=data.get('tags'),
+            company=data.get('company'),
+            institution=data.get('institution'),
+            contact_name=data.get('contact_name'),
+            contact_email=data.get('contact_email'),
+            contact_phone=data.get('contact_phone'),
+            contact_linkedin=data.get('contact_linkedin'),
+            contact_status=data.get('contact_status'),
+            notes=data.get('notes')
+        )
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Lead updated successfully',
+                'lead_id': lead_id
+            }), 200
+        else:
+            return jsonify({'error': 'Lead not found'}), 404
+            
+    except Exception as e:
+        if logger:
+            logger.error(f"API lead update failed: {e}")
+        return jsonify({'error': f'Failed to update lead: {str(e)}'}), 500
+
+@leads_bp.route('/api/leads/<int:lead_id>', methods=['DELETE'])
+def delete_lead_api(lead_id: int):
+    """REST API endpoint for deleting a lead"""
+    if not db:
+        return jsonify({'error': 'Database not available'}), 500
+    
+    try:
+        lead = db.get_lead(lead_id)
+        if not lead:
+            return jsonify({'error': 'Lead not found'}), 404
+        
+        db.delete_lead(lead_id)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Lead deleted successfully',
+            'lead_id': lead_id
+        })
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"API lead deletion failed: {e}")
+        return jsonify({'error': f'Failed to delete lead: {str(e)}'}), 500
+
+
+@leads_bp.route('/api/leads/export', methods=['GET'])
+def export_leads_api():
+    """REST API endpoint for exporting leads as JSON"""
+    if not db:
+        return jsonify({'error': 'Database not available'}), 500
+    
+    try:
+        leads = db.get_all_leads()
+        
+        return jsonify({
+            'leads': leads,
+            'exported_at': datetime.now().isoformat(),
+            'total_leads': len(leads)
+        })
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"API leads export failed: {e}")
+        return jsonify({'error': f'Failed to export leads: {str(e)}'}), 500 

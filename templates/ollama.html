@@ -1,889 +1,313 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Publications & Researchers - LeadFinder</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .search-form {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            margin-bottom: 2rem;
-        }
-        .stats-card {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            margin-bottom: 2rem;
-        }
-        .filter-section {
-            background-color: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            margin-bottom: 2rem;
-        }
-        .result-card {
-            border: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 1rem;
-            transition: transform 0.2s;
-        }
-        .result-card:hover {
-            transform: translateY(-2px);
-        }
-        .source-badge {
-            font-size: 0.8rem;
-            padding: 0.25rem 0.5rem;
-        }
-        .ollama-status {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        .publication-title {
-            font-weight: 600;
-            color: #495057;
-        }
-        .author-info {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        .abstract-text {
-            font-size: 0.9rem;
-            color: #6c757d;
-            line-height: 1.5;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-            <div class="container">
-                <a class="navbar-brand" href="/">
-                    <i class="fas fa-search"></i> LeadFinder
-                </a>
-                <div class="navbar-nav">
-                    <a class="nav-link" href="/">General Search</a>
-                    <a class="nav-link" href="/research">Funding</a>
-                    <a class="nav-link active" href="/ollama">Publications & Researchers</a>
-                    <a class="nav-link" href="/lead-workshop">Lead Workshop</a>
-                    <a class="nav-link" href="/ollama/view_downloads">
-                        <i class="fas fa-download"></i> Downloads
-                    </a>
-                    <a class="nav-link" href="/config">
-                        <i class="fas fa-cog"></i> Settings
-                    </a>
-                </div>
-            </div>
-        </nav>
+{% extends "base.html" %}
 
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <h1 class="mb-4">
-                        <i class="fas fa-users"></i> 
-                        Publications & Researchers
-                    </h1>
-                    
-                    <!-- Ollama Status -->
-                    <div class="ollama-status">
-                        {% set ollama_status = ollama_status or {"ok": False, "msg": "Status unknown"} %}
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <strong>
-                                    <i class="fas fa-robot"></i> AI Analysis: 
-                                    {{ ollama_status.msg }}
-                                </strong>
-                            </div>
-                            {% if not ollama_status.ok %}
-                                <form method="post" action="{{ url_for('ollama.check_ollama') }}" style="display:inline;">
-                                    <button type="submit" class="btn btn-light btn-sm">
-                                        <i class="fas fa-sync-alt"></i> Try Again
-                                    </button>
-                                </form>
-                            {% endif %}
+{% block title %}Publications & Researchers - 4Front2Market{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-form {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+    .stats-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+    .filter-section {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+    .result-card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+        transition: transform 0.2s;
+    }
+    .result-card:hover {
+        transform: translateY(-2px);
+    }
+    .source-badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .ollama-status {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .publication-title {
+        font-weight: 600;
+        color: #495057;
+    }
+    .author-info {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    .abstract-text {
+        font-size: 0.9rem;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">
+                    <i class="fas fa-users"></i> 
+                    Publications & Researchers
+                </h1>
+                
+                <!-- Ollama Status -->
+                <div class="ollama-status">
+                    {% set ollama_status = ollama_status or {"ok": False, "msg": "Status unknown"} %}
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="mb-1">
+                                <i class="fas fa-server"></i> Ollama Status
+                            </h5>
+                            <p class="mb-0">
+                                {% if ollama_status.ok %}
+                                    <i class="fas fa-check-circle"></i> Connected and ready
+                                {% else %}
+                                    <i class="fas fa-exclamation-triangle"></i> {{ ollama_status.msg }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <button class="btn btn-light btn-sm" onclick="checkOllamaStatus()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
                         </div>
                     </div>
-                    
-                    <!-- Stats Card -->
-                    <div class="stats-card">
-                        <div class="row align-items-center">
+                </div>
+
+                <!-- Search Form -->
+                <div class="search-form">
+                    <form method="POST" action="{{ url_for('ollama.search_publications') }}">
+                        <div class="row">
                             <div class="col-md-6">
-                                <h3 class="mb-0">
-                                    <i class="fas fa-microscope"></i> 
-                                    Academic Search
-                                </h3>
-                                <p class="mb-0">Search PubMed, ORCID, Semantic Scholar and Sci-Hub</p>
+                                <div class="mb-3">
+                                    <label for="query" class="form-label">Search Query</label>
+                                    <input type="text" class="form-control" id="query" name="query" 
+                                           value="{{ request.form.get('query', '') }}" 
+                                           placeholder="Enter your search query..." required>
+                                </div>
                             </div>
-                            <div class="col-md-6 text-end">
-                                <i class="fas fa-graduation-cap fa-3x opacity-75"></i>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="source" class="form-label">Source</label>
+                                    <select class="form-select" id="source" name="source">
+                                        <option value="pubmed" {% if request.form.get('source') == 'pubmed' %}selected{% endif %}>PubMed</option>
+                                        <option value="semantic_scholar" {% if request.form.get('source') == 'semantic_scholar' %}selected{% endif %}>Semantic Scholar</option>
+                                        <option value="arxiv" {% if request.form.get('source') == 'arxiv' %}selected{% endif %}>arXiv</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label for="limit" class="form-label">Results Limit</label>
+                                    <select class="form-select" id="limit" name="limit">
+                                        <option value="10" {% if request.form.get('limit') == '10' %}selected{% endif %}>10</option>
+                                        <option value="25" {% if request.form.get('limit') == '25' %}selected{% endif %}>25</option>
+                                        <option value="50" {% if request.form.get('limit') == '50' %}selected{% endif %}>50</option>
+                                        <option value="100" {% if request.form.get('limit') == '100' %}selected{% endif %}>100</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Search Form -->
-                    <div class="search-form">
-                        <h3 class="mb-4">
-                            <i class="fas fa-search"></i> Search publications & researchers
-                        </h3>
-                        <form method="POST" action="{{ url_for('ollama.search_publications') }}">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <div class="mb-3">
-                                        <label for="query" class="form-label">
-                                            <i class="fas fa-search"></i> Search Term
-                                        </label>
-                                        <input type="text" class="form-control form-control-lg" 
-                                               id="query" name="query" 
-                                               placeholder="e.g., epigenetics, diabetes, AI, cancer, author name..."
-                                               required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="search_type" class="form-label">
-                                            <i class="fas fa-filter"></i> Search Type
-                                        </label>
-                                        <select class="form-select" id="search_type" name="search_type">
-                                            <option value="both">Publications & Researchers</option>
-                                            <option value="publications">Publications Only</option>
-                                            <option value="researchers">Researchers Only</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Data Sources -->
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-database"></i> Data Sources
-                                </label>
-                                <div class="row">
-                                    <div class="col-md-3 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   name="sources" value="pubmed" id="source_pubmed" checked>
-                                            <label class="form-check-label" for="source_pubmed">
-                                                <strong>PubMed</strong>
-                                                <br>
-                                                <small class="text-light">Scientific articles</small>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   name="sources" value="orcid" id="source_orcid" checked>
-                                            <label class="form-check-label" for="source_orcid">
-                                                <strong>ORCID</strong>
-                                                <br>
-                                                <small class="text-light">Researcher profiles</small>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   name="sources" value="scholar" id="source_scholar">
-                                            <label class="form-check-label" for="source_scholar">
-                                                <strong>Semantic Scholar</strong>
-                                                <br>
-                                                <small class="text-light">Academic search</small>
-                                            </label>
-                                        </div>
-                                    </div>
-
-
-                                </div>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-light btn-lg">
-                                <i class="fas fa-search"></i> Start academic search
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <!-- Advanced Filters -->
-                    <div class="filter-section">
-                        <h4 class="mb-3">
-                            <i class="fas fa-filter"></i> Advanced filters
-                        </h4>
-                        <form method="POST" action="{{ url_for('ollama.advanced_search') }}">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <label for="author" class="form-label">Author</label>
-                                        <input type="text" class="form-control" id="author" 
-                                               name="author" placeholder="Author's name">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <label for="journal" class="form-label">Journal</label>
-                                        <input type="text" class="form-control" id="journal" 
-                                               name="journal" placeholder="Journal name">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <label for="year_from" class="form-label">From Year</label>
-                                        <input type="number" class="form-control" id="year_from" 
-                                               name="year_from" placeholder="2020" min="1900" max="2025">
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <label for="year_to" class="form-label">To Year</label>
-                                        <input type="number" class="form-control" id="year_to" 
-                                               name="year_to" placeholder="2025" min="1900" max="2025">
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Advanced search
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <!-- Results Section -->
-                    {% if publications %}
-                    <div class="mt-4">
-                        <h3 class="mb-3">
-                            <i class="fas fa-list"></i> Search results
-                        </h3>
-                        
-                        <!-- Action Buttons Section -->
-                        <div class="alert alert-info mb-3">
-                            <h5><i class="fas fa-tools"></i> Publication Actions</h5>
-                            <p class="mb-2">Select publications to perform actions:</p>
-                            <div class="form-check d-inline-block me-3">
-                                <input class="form-check-input" type="checkbox" id="selectAllPublications" onchange="toggleAllPublications()">
-                                <label class="form-check-label" for="selectAllPublications">
-                                    <strong>Select All</strong>
-                                </label>
-                            </div>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="sendToWorkshop()">
-                                <i class="fas fa-share"></i> Send to Lead Workshop
-                            </button>
-                            <span id="selectedCount" class="ms-2 text-muted">(0 selected)</span>
-                            
-                            {% set has_dois = publications | selectattr('doi') | list | length > 0 %}
-                            {% if has_dois %}
-                            <div class="mt-2">
-                                <button type="button" class="btn btn-primary btn-sm" onclick="downloadSelectedPapersEnhanced()">
-                                    <i class="fas fa-download"></i> Download selected PDFs
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-light btn-lg">
+                                    <i class="fas fa-search"></i> Search Publications
                                 </button>
-                                <button type="button" class="btn btn-success btn-sm ms-2" onclick="downloadSelectedPapers()">
-                                    <i class="fas fa-external-link-alt"></i> Open selected in Sci-Hub
-                                </button>
-                                <button type="button" class="btn btn-outline-info btn-sm ms-2" onclick="showDownloadedFiles()">
-                                    <i class="fas fa-folder-open"></i> Show downloaded files
-                                </button>
-                                <a href="{{ url_for('ollama.view_downloads') }}" class="btn btn-outline-secondary btn-sm ms-2">
-                                    <i class="fas fa-download"></i> View Downloads Page
-                                </a>
-                            </div>
-                            
-                            <!-- Download Instructions -->
-                            <div class="mt-3 p-2 bg-light border rounded">
-                                <small class="text-muted">
-                                    <i class="fas fa-info-circle"></i> <strong>How to access publications via Sci-Hub:</strong><br>
-                                    • <strong>Enhanced Download:</strong> Direct PDF downloads (experimental)<br>
-                                    • <strong>Open in Browser:</strong> Opens Sci-Hub in new tab for manual download<br>
-                                    • Select articles with valid DOIs (starting with "10.") using the checkboxes<br>
-                                    • Try enhanced download first, fallback to browser opening if it fails<br>
-                                    • Note: Enhanced downloads may fail due to Sci-Hub's anti-bot measures
-                                </small>
-                            </div>
-                            {% else %}
-                            <div class="mt-2">
-                                <div class="alert alert-warning mb-0">
-                                    <i class="fas fa-exclamation-triangle"></i> 
-                                    <strong>No publications with DOIs found.</strong> 
-                                    Only publications with valid DOIs (starting with "10.") can be downloaded via Sci-Hub.
-                                </div>
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        {% for pub in publications %}
-                        <div class="card result-card">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-1">
-                                        <div class="form-check">
-                                            <input class="form-check-input publication-checkbox" type="checkbox" 
-                                                   value="{{ loop.index0 }}" id="pub_{{ loop.index }}"
-                                                   data-publication='{{ pub | tojson }}'
-                                                   onchange="updateSelectedCount()">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-7">
-                                        <h5 class="publication-title">{{ pub.title }}</h5>
-                                        <p class="author-info">
-                                            <strong>Authors:</strong> {{ pub.authors|join(', ') }}
-                                        </p>
-                                        <p class="abstract-text">{{ pub.abstract|truncate(200) }}</p>
-                                        <div class="mt-2">
-                                            <span class="badge bg-primary source-badge">{{ pub.source }}</span>
-                                            {% if pub.year %}
-                                            <span class="badge bg-secondary source-badge">{{ pub.year }}</span>
-                                            {% endif %}
-                                            {% if pub.journal %}
-                                            <span class="badge bg-info source-badge">{{ pub.journal }}</span>
-                                            {% endif %}
-                                            {% if pub.doi %}
-                                            <span class="badge bg-warning source-badge">DOI: {{ pub.doi }}</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 text-end">
-                                        {% if pub.url %}
-                                        <a href="{{ pub.url }}" target="_blank" class="btn btn-outline-primary btn-sm mb-2">
-                                            <i class="fas fa-external-link-alt"></i> View article
-                                        </a>
-                                        {% endif %}
-
-                                        {% if pub.doi and pub.doi.startswith('10.') %}
-                                        <div class="form-check d-inline-block me-2">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   value="{{ pub.doi }}" id="doi_{{ loop.index }}"
-                                                   onchange="updateDownloadButton()">
-                                            <label class="form-check-label" for="doi_{{ loop.index }}">
-                                                <small>Select for Sci-Hub</small>
-                                            </label>
-                                        </div>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <button type="button" class="btn btn-outline-primary btn-sm enhanced-download-btn" 
-                                                    data-doi="{{ pub.doi }}" data-title="{{ pub.title }}">
-                                                <i class="fas fa-download"></i> Download PDF
-                                            </button>
-                                            <button type="button" class="btn btn-outline-success btn-sm download-btn" 
-                                                    data-doi="{{ pub.doi }}" data-title="{{ pub.title }}">
-                                                <i class="fas fa-external-link-alt"></i> Open in Sci-Hub
-                                            </button>
-                                        </div>
-                                        {% elif pub.doi %}
-                                        <small class="text-muted">DOI: {{ pub.doi }} (not Sci-Hub compatible)</small>
-                                        {% endif %}
-                                    </div>
-                                </div>
                             </div>
                         </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Researchers Section -->
-                    {% if researchers %}
-                    <div class="mt-4">
-                        <h3 class="mb-3">
-                            <i class="fas fa-user-graduate"></i> Researchers
-                        </h3>
-                        {% for researcher in researchers %}
-                        <div class="card result-card">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <h5 class="publication-title">{{ researcher.name }}</h5>
-                                        <p class="author-info">
-                                            <strong>Institution:</strong> {{ researcher.institution }}
-                                        </p>
-                                        <p class="abstract-text">{{ researcher.bio|truncate(150) }}</p>
-                                        <div class="mt-2">
-                                            <span class="badge bg-success source-badge">{{ researcher.source }}</span>
-                                            {% if researcher.orcid %}
-                                            <span class="badge bg-info source-badge">ORCID: {{ researcher.orcid }}</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 text-end">
-                                        {% if researcher.profile_url %}
-                                        <a href="{{ researcher.profile_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                                            <i class="fas fa-user"></i> Profile
-                                        </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
+                    </form>
                 </div>
+
+                <!-- Results Section -->
+                {% if results %}
+                <div class="row">
+                    <div class="col-12">
+                        <div class="stats-card">
+                            <h5><i class="fas fa-chart-bar"></i> Search Results</h5>
+                            <p class="mb-0">Found {{ results|length }} publications for "{{ request.form.get('query', '') }}"</p>
+                        </div>
+                        
+                        <!-- Filter Section -->
+                        <div class="filter-section">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="filterSource" class="form-label">Filter by Source</label>
+                                    <select class="form-select" id="filterSource">
+                                        <option value="">All Sources</option>
+                                        <option value="pubmed">PubMed</option>
+                                        <option value="semantic_scholar">Semantic Scholar</option>
+                                        <option value="arxiv">arXiv</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="sortResults" class="form-label">Sort by</label>
+                                    <select class="form-select" id="sortResults">
+                                        <option value="relevance">Relevance</option>
+                                        <option value="date">Date</option>
+                                        <option value="title">Title</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results List -->
+                        <div id="resultsList">
+                            {% for result in results %}
+                            <div class="card result-card" data-source="{{ result.source }}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title publication-title">{{ result.title }}</h5>
+                                        <span class="badge bg-primary source-badge">{{ result.source }}</span>
+                                    </div>
+                                    
+                                    {% if result.authors %}
+                                    <p class="author-info mb-2">
+                                        <i class="fas fa-user"></i> 
+                                        {{ result.authors|join(', ') }}
+                                    </p>
+                                    {% endif %}
+                                    
+                                    {% if result.abstract %}
+                                    <p class="abstract-text mb-3">{{ result.abstract[:300] }}{% if result.abstract|length > 300 %}...{% endif %}</p>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            {% if result.doi %}
+                                            <a href="https://doi.org/{{ result.doi }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-external-link-alt"></i> DOI
+                                            </a>
+                                            {% endif %}
+                                            {% if result.url %}
+                                            <a href="{{ result.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-external-link-alt"></i> View
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                                                                         <button class="btn btn-sm btn-success add-to-workshop-btn" 
+                                                    data-id="{{ result.id }}" 
+                                                    data-title="{{ result.title }}">
+                                                <i class="fas fa-plus"></i> Add to Workshop
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        // Add event listeners for download buttons
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.download-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const doi = this.getAttribute('data-doi');
-                    const title = this.getAttribute('data-title');
-                    downloadSinglePaper(doi, title);
-                });
+{% block extra_js %}
+<script>
+    function checkOllamaStatus() {
+        fetch('/ollama/api/status')
+            .then(response => response.json())
+            .then(data => {
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error checking Ollama status:', error);
             });
-            
-            // Add event listeners for enhanced download buttons
-            document.querySelectorAll('.enhanced-download-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const doi = this.getAttribute('data-doi');
-                    const title = this.getAttribute('data-title');
-                    downloadSinglePaperEnhanced(doi, title);
-                });
-            });
+    }
+
+    function addToWorkshop(publicationId, title) {
+        fetch('/lead-workshop/add-publication', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                publication_id: publicationId,
+                title: title
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Publication added to workshop successfully!');
+            } else {
+                alert('Error adding publication: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error adding publication: ' + error);
         });
+    }
 
-        function downloadSinglePaperEnhanced(doi, title) {
-            if (!doi || !doi.trim() || !doi.startsWith('10.')) {
-                alert('No valid DOI available for this article. DOI must start with "10."\n\nValid DOIs look like: 10.1016/j.cmet.2019.03.009');
-                return;
-            }
-            
-            if (confirm(`Download "${title}" directly?\n\nDOI: ${doi}\n\nThis will attempt to download the PDF directly. If it fails, you can still open it in Sci-Hub.`)) {
-                // Show loading indicator
-                const button = event.target;
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
-                button.disabled = true;
-                
-                console.log(`Attempting to download PDF: ${doi} - "${title}"`);
-                
-                // Make AJAX request to enhanced download endpoint
-                fetch('{{ url_for("ollama.download_pdf_enhanced") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `identifier=${encodeURIComponent(doi)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.success && data.file_path) {
-                        // Success - PDF downloaded
-                        alert(`✅ PDF downloaded successfully!\n\nDOI: ${doi}\n\nFile saved: ${data.file_path}\n\nMirror used: ${data.mirror}\n\nThe PDF has been saved to your downloads folder.`);
-                        
-                        // Optionally refresh the downloads page
-                        setTimeout(() => {
-                            if (confirm('Would you like to view your downloads?')) {
-                                window.location.href = '{{ url_for("ollama.view_downloads") }}';
-                            }
-                        }, 1000);
-                        
-                    } else if (data && data.redirect && data.url) {
-                        // Fallback to opening in browser
-                        if (confirm(`Direct download failed. Open "${title}" in Sci-Hub instead?\n\nDOI: ${doi}`)) {
-                            window.open(data.url, '_blank');
-                            alert(`✅ Article opened in Sci-Hub!\n\nDOI: ${doi}\n\nSci-Hub URL: ${data.url}\n\nThe article should now be open in a new tab where you can view and download the PDF.`);
-                        }
-                    } else if (data && data.error) {
-                        // Handle error response
-                        if (data.invalid_identifier) {
-                            alert(`❌ Invalid DOI: ${data.error}\n\nPlease check that the DOI is correct and starts with "10."`);
-                        } else {
-                            alert(`❌ Download failed: ${data.error}\n\nDOI: ${doi}\n\nThis might be because:\n• The article is not available on Sci-Hub\n• The DOI is incorrect\n• Sci-Hub is temporarily unavailable\n• Anti-bot measures are blocking the download`);
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert(`❌ Network Error\n\nFailed to download PDF for DOI: ${doi}\n\nError: ${error.message}\n\nPlease check your internet connection and try again.`);
-                })
-                .finally(() => {
-                    // Restore button
-                    button.innerHTML = originalText;
-                    button.disabled = false;
-                });
-            }
-        }
+    // Filter functionality
+    document.getElementById('filterSource').addEventListener('change', function() {
+        const filterValue = this.value;
+        const results = document.querySelectorAll('.result-card');
         
-        function downloadSinglePaper(doi, title) {
-            if (!doi || !doi.trim() || !doi.startsWith('10.')) {
-                alert('No valid DOI available for this article. DOI must start with "10."\n\nValid DOIs look like: 10.1016/j.cmet.2019.03.009');
-                return;
+        results.forEach(result => {
+            if (!filterValue || result.dataset.source === filterValue) {
+                result.style.display = 'block';
+            } else {
+                result.style.display = 'none';
             }
-            
-            if (confirm(`Open "${title}" in Sci-Hub?\n\nDOI: ${doi}`)) {
-                // Show loading indicator
-                const button = event.target;
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening...';
-                button.disabled = true;
-                
-                console.log(`Attempting to open paper in Sci-Hub: ${doi} - "${title}"`);
-                
-                // Make AJAX request to get Sci-Hub URL
-                fetch('{{ url_for("ollama.download_pdf") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `doi=${encodeURIComponent(doi)}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.success && data.redirect && data.url) {
-                        // Open Sci-Hub URL in new tab
-                        window.open(data.url, '_blank');
-                        alert(`✅ Article opened in Sci-Hub!\n\nDOI: ${doi}\n\nSci-Hub URL: ${data.url}\n\nThe article should now be open in a new tab where you can view and download the PDF.`);
-                    } else if (data && data.error) {
-                        // Handle error response
-                        if (data.invalid_doi) {
-                            alert(`❌ Invalid DOI: ${data.error}\n\nPlease check that the DOI is correct and starts with "10."`);
-                        } else {
-                            alert(`❌ Error: ${data.error}\n\nDOI: ${doi}\n\nThis might be because:\n• The article is not available on Sci-Hub\n• The DOI is incorrect\n• Sci-Hub is temporarily unavailable`);
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert(`❌ Network Error\n\nFailed to open article for DOI: ${doi}\n\nError: ${error.message}\n\nPlease check your internet connection and try again.`);
-                })
-                .finally(() => {
-                    // Restore button
-                    button.innerHTML = originalText;
-                    button.disabled = false;
-                });
-            }
-        }
+        });
+    });
+
+    // Sort functionality
+    document.getElementById('sortResults').addEventListener('change', function() {
+        const sortBy = this.value;
+        const resultsList = document.getElementById('resultsList');
+        const results = Array.from(resultsList.children);
         
-        function downloadSelectedPapersEnhanced() {
-            const selectedDois = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                .map(checkbox => checkbox.value)
-                .filter(doi => doi && doi.trim() !== '' && doi.startsWith('10.'));
+        results.sort((a, b) => {
+            const titleA = a.querySelector('.publication-title').textContent.toLowerCase();
+            const titleB = b.querySelector('.publication-title').textContent.toLowerCase();
             
-            if (selectedDois.length === 0) {
-                alert('Please select at least one article with a valid DOI (starting with "10.") to download.\n\nValid DOIs look like: 10.1016/j.cmet.2019.03.009');
-                return;
+            if (sortBy === 'title') {
+                return titleA.localeCompare(titleB);
+            } else if (sortBy === 'date') {
+                // Add date sorting logic if dates are available
+                return 0;
+            } else {
+                return 0; // relevance - keep original order
             }
-            
-            // Show which DOIs will be downloaded
-            const doiList = selectedDois.map(doi => `• ${doi}`).join('\n');
-            if (confirm(`Download ${selectedDois.length} PDF(s)?\n\nSelected DOIs:\n${doiList}\n\nThis will attempt to download PDFs directly. If any fail, you can still open them in Sci-Hub.`)) {
-                // Show loading indicator
-                const button = event.target;
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
-                button.disabled = true;
-                
-                // Use batch download endpoint
-                fetch('{{ url_for("ollama.batch_download") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ identifiers: selectedDois })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.results) {
-                        const successful = data.successful || 0;
-                        const failed = data.failed || 0;
-                        const total = data.total || selectedDois.length;
-                        
-                        let message = `Download completed!\n\n`;
-                        message += `✅ Successfully downloaded: ${successful}\n`;
-                        message += `❌ Failed: ${failed}\n`;
-                        message += `📊 Total: ${total}\n\n`;
-                        
-                        if (successful > 0) {
-                            message += `The PDFs have been saved to your downloads folder.\n\n`;
-                        }
-                        
-                        if (failed > 0) {
-                            message += `Failed downloads can be opened in Sci-Hub using the "Open in Sci-Hub" button.\n\n`;
-                        }
-                        
-                        alert(message);
-                        
-                        // Optionally refresh the downloads page
-                        if (successful > 0) {
-                            setTimeout(() => {
-                                if (confirm('Would you like to view your downloads?')) {
-                                    window.location.href = '{{ url_for("ollama.view_downloads") }}';
-                                }
-                            }, 1000);
-                        }
-                    } else {
-                        alert(`❌ Batch download failed: ${data.error || 'Unknown error'}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert(`❌ Network Error\n\nFailed to download PDFs.\n\nError: ${error.message}\n\nPlease check your internet connection and try again.`);
-                })
-                .finally(() => {
-                    // Restore button
-                    button.innerHTML = originalText;
-                    button.disabled = false;
-                });
-            }
-        }
-        
-        function downloadSelectedPapers() {
-            const selectedDois = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                .map(checkbox => checkbox.value)
-                .filter(doi => doi && doi.trim() !== '' && doi.startsWith('10.'));
-            
-            if (selectedDois.length === 0) {
-                alert('Please select at least one article with a valid DOI (starting with "10.") to open in Sci-Hub.\n\nValid DOIs look like: 10.1016/j.cmet.2019.03.009');
-                return;
-            }
-            
-            // Show which DOIs will be opened
-            const doiList = selectedDois.map(doi => `• ${doi}`).join('\n');
-            if (confirm(`Open ${selectedDois.length} article(s) in Sci-Hub?\n\nSelected DOIs:\n${doiList}`)) {
-                // Show loading indicator
-                const button = event.target;
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening...';
-                button.disabled = true;
-                
-                // Open them one by one
-                let completed = 0;
-                const total = selectedDois.length;
-                let successCount = 0;
-                let errorCount = 0;
-                let results = [];
-                
-                selectedDois.forEach((doi, index) => {
-                    setTimeout(() => {
-                        console.log(`Attempting to open DOI in Sci-Hub: ${doi}`);
-                        
-                        fetch('{{ url_for("ollama.download_pdf") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `doi=${encodeURIComponent(doi)}`
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data && data.success && data.redirect && data.url) {
-                                // Open Sci-Hub URL in new tab
-                                window.open(data.url, '_blank');
-                                console.log(`Opened Sci-Hub URL for DOI: ${doi}`);
-                                successCount++;
-                                results.push({ doi, status: 'success', message: 'Opened in Sci-Hub' });
-                            } else if (data && data.error) {
-                                // Handle error response
-                                if (data.invalid_doi) {
-                                    console.warn(`Invalid DOI: ${doi} - ${data.error}`);
-                                    results.push({ doi, status: 'error', message: `Invalid DOI: ${data.error}` });
-                                } else {
-                                    console.error(`Error opening DOI ${doi}: ${data.error}`);
-                                    results.push({ doi, status: 'error', message: data.error });
-                                }
-                                errorCount++;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error opening DOI:', doi, error);
-                            errorCount++;
-                            results.push({ doi, status: 'error', message: 'Network error' });
-                        })
-                        .finally(() => {
-                            completed++;
-                            if (completed === total) {
-                                // All operations completed
-                                button.innerHTML = originalText;
-                                button.disabled = false;
-                                
-                                // Show detailed results
-                                let message = `Sci-Hub operations completed for ${completed} article(s).\n\n`;
-                                if (successCount > 0) {
-                                    message += `✅ Successfully opened: ${successCount}\n`;
-                                }
-                                if (errorCount > 0) {
-                                    message += `❌ Failed: ${errorCount}\n`;
-                                }
-                                
-                                // Add detailed results
-                                results.forEach(result => {
-                                    const icon = result.status === 'success' ? '✅' : '❌';
-                                    message += `${icon} ${result.doi}: ${result.message}\n`;
-                                });
-                                
-                                alert(message);
-                            }
-                        });
-                    }, index * 500); // 0.5 second delay between operations
-                });
-            }
-        }
-        
-        function updateDownloadButton() {
-            const selectedDois = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                .map(checkbox => checkbox.value)
-                .filter(doi => doi && doi.trim() !== '' && doi.startsWith('10.'));
-            
-            const downloadButton = document.querySelector('button[onclick="downloadSelectedPapers()"]');
-            if (downloadButton) {
-                if (selectedDois.length === 0) {
-                    downloadButton.textContent = 'Open selected in Sci-Hub (0)';
-                    downloadButton.disabled = true;
-                    downloadButton.title = 'Select articles with valid DOIs to open in Sci-Hub';
-                } else {
-                    downloadButton.textContent = `Open selected in Sci-Hub (${selectedDois.length})`;
-                    downloadButton.disabled = false;
-                    downloadButton.title = `Open ${selectedDois.length} article(s) in Sci-Hub`;
-                }
-            }
-        }
-        
-        function showDownloadedFiles() {
-            fetch('{{ url_for("ollama.get_downloaded_files") }}')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(`Error: ${data.error}`);
-                        return;
-                    }
-                    
-                    if (data.count === 0) {
-                        alert('No downloaded PDF files found.');
-                        return;
-                    }
-                    
-                    let message = `Downloaded PDF files (${data.count} st):\n\n`;
-                    data.files.forEach(file => {
-                        const sizeKB = Math.round(file.size / 1024);
-                        const date = new Date(file.modified * 1000).toLocaleDateString('sv-SE');
-                        message += `• ${file.filename} (${sizeKB} KB, ${date})\n`;
-                    });
-                    message += `\nFolder: ${data.download_folder}`;
-                    
-                    alert(message);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while fetching files.');
-                });
-        }
-        
-        // Initialize download button state
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDownloadButton();
-            updateSelectedCount();
         });
         
-        // Update selected count for publications
-        function updateSelectedCount() {
-            const selectedCheckboxes = document.querySelectorAll('.publication-checkbox:checked');
-            const countSpan = document.getElementById('selectedCount');
-            if (countSpan) {
-                countSpan.textContent = `(${selectedCheckboxes.length} selected)`;
-            }
-            
-            // Update select all checkbox state
-            const selectAllCheckbox = document.getElementById('selectAllPublications');
-            const allCheckboxes = document.querySelectorAll('.publication-checkbox');
-            if (selectAllCheckbox && allCheckboxes.length > 0) {
-                if (selectedCheckboxes.length === 0) {
-                    selectAllCheckbox.checked = false;
-                    selectAllCheckbox.indeterminate = false;
-                } else if (selectedCheckboxes.length === allCheckboxes.length) {
-                    selectAllCheckbox.checked = true;
-                    selectAllCheckbox.indeterminate = false;
-                } else {
-                    selectAllCheckbox.checked = false;
-                    selectAllCheckbox.indeterminate = true;
-                }
-            }
-        }
-        
-        // Toggle all publications
-        function toggleAllPublications() {
-            const selectAllCheckbox = document.getElementById('selectAllPublications');
-            const allCheckboxes = document.querySelectorAll('.publication-checkbox');
-            
-            allCheckboxes.forEach(checkbox => {
-                checkbox.checked = selectAllCheckbox.checked;
+        results.forEach(result => resultsList.appendChild(result));
+    });
+
+    // Add to workshop functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.add-to-workshop-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const title = this.getAttribute('data-title');
+                addToWorkshop(id, title);
             });
-            
-            updateSelectedCount();
-        }
-        
-        // Send selected publications to workshop
-        function sendToWorkshop() {
-            const selectedCheckboxes = document.querySelectorAll('.publication-checkbox:checked');
-            
-            if (selectedCheckboxes.length === 0) {
-                alert('Please select at least one publication to send to the workshop.');
-                return;
-            }
-            
-            if (confirm(`Send ${selectedCheckboxes.length} selected publication(s) to Lead Workshop?`)) {
-                // Show loading state
-                const button = event.target;
-                const originalText = button.innerHTML;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-                button.disabled = true;
-                
-                // Collect publication data
-                const publications = [];
-                selectedCheckboxes.forEach(checkbox => {
-                    try {
-                        const pubData = JSON.parse(checkbox.getAttribute('data-publication'));
-                        publications.push(pubData);
-                    } catch (e) {
-                        console.error('Error parsing publication data:', e);
-                    }
-                });
-                
-                // Send to server
-                fetch('{{ url_for("ollama.send_to_workshop") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        publications: publications
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(`✅ ${data.message}\n\nRedirecting to Lead Workshop...`);
-                        // Uncheck all checkboxes
-                        selectedCheckboxes.forEach(checkbox => {
-                            checkbox.checked = false;
-                        });
-                        updateSelectedCount();
-                        
-                        // Redirect to Lead Workshop with the saved lead IDs
-                        if (data.redirect_url) {
-                            setTimeout(() => {
-                                window.location.href = data.redirect_url;
-                            }, 1000);
-                        }
-                    } else {
-                        alert(`❌ Error: ${data.error}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while sending to workshop. Please try again.');
-                })
-                .finally(() => {
-                    // Restore button
-                    button.innerHTML = originalText;
-                    button.disabled = false;
-                });
-            }
-        }
-    </script>
-</body>
-</html> 
+        });
+    });
+</script>
+{% endblock %} 

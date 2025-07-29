@@ -163,11 +163,19 @@
                                         <small class="text-muted">
                                             <i class="fas fa-calendar"></i>
                                             {% if project.start_date %}
-                                                {{ project.start_date.strftime('%Y-%m-%d') }}
+                                                {% if project.start_date is string %}
+                                                    {{ project.start_date }}
+                                                {% else %}
+                                                    {{ project.start_date.strftime('%Y-%m-%d') }}
+                                                {% endif %}
                                             {% endif %}
                                             {% if project.start_date and project.end_date %} - {% endif %}
                                             {% if project.end_date %}
-                                                {{ project.end_date.strftime('%Y-%m-%d') }}
+                                                {% if project.end_date is string %}
+                                                    {{ project.end_date }}
+                                                {% else %}
+                                                    {{ project.end_date.strftime('%Y-%m-%d') }}
+                                                {% endif %}
                                             {% endif %}
                                         </small>
                                     </div>
