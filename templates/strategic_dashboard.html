@@ -277,24 +277,24 @@ if (typeof $ === 'undefined') {
 $(document).ready(function() {
     console.log('Document ready - setting up event handlers');
 
-    // Create Company Profile - try multiple approaches
+    // Create Company Profile - single clean approach
     console.log('Setting up saveCompanyBtn click handler');
-    
-    // Method 1: Direct jQuery binding
-    $('#saveCompanyBtn').on('click', function() {
-        console.log('Save company button clicked via jQuery on()');
-        handleCompanyCreation();
-    });
-    
-    // Method 2: Also bind to the onclick event
-    document.getElementById('saveCompanyBtn').addEventListener('click', function() {
-        console.log('Save company button clicked via addEventListener');
+
+    $('#saveCompanyBtn').off('click').on('click', function() {
+        console.log('Save company button clicked');
         handleCompanyCreation();
     });
     
     function handleCompanyCreation() {
         console.log('Handling company creation...');
-        
+
+        // Prevent multiple submissions
+        if (window.isSubmitting) {
+            console.log('Already submitting, ignoring click');
+            return;
+        }
+        window.isSubmitting = true;
+
         const companyData = {
             company_name: $('#companyName').val(),
             product_description: $('#productDescription').val(),
@@ -305,16 +305,17 @@ $(document).ready(function() {
             business_model: $('#businessModel').val(),
             revenue_model: $('#revenueModel').val()
         };
-        
+
         console.log('Company data:', companyData);
-        
+
         if (!companyData.company_name || !companyData.product_description || !companyData.usps) {
             alert('Company name, product description, and USPs are required');
+            window.isSubmitting = false;
             return;
         }
-        
+
         console.log('Sending AJAX request to /strategic/company/new');
-        
+
         $.ajax({
             url: '/strategic/company/new',
             method: 'POST',
@@ -334,24 +335,12 @@ $(document).ready(function() {
                 console.log('Error response:', xhr);
                 const response = xhr.responseJSON;
                 alert('Error: ' + (response ? response.error : 'Unknown error'));
+            },
+            complete: function() {
+                window.isSubmitting = false;
             }
         });
     }
-    
-    // Fallback: Try to attach event handler after a short delay
-    setTimeout(function() {
-        console.log('Fallback: Checking if saveCompanyBtn exists');
-        const saveBtn = document.getElementById('saveCompanyBtn');
-        if (saveBtn) {
-            console.log('Fallback: Found saveCompanyBtn, attaching event handler');
-            saveBtn.addEventListener('click', function() {
-                console.log('Save company button clicked via fallback addEventListener');
-                handleCompanyCreation();
-            });
-        } else {
-            console.log('Fallback: saveCompanyBtn not found');
-        }
-    }, 1000);
     
     // Comprehensive Analysis
     $('.comprehensive-analysis-btn').click(function() {
