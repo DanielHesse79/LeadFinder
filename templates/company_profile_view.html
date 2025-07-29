@@ -344,27 +344,16 @@
 
 {% block scripts %}
 <script>
-function deleteCompany(companyId) {
-    if (confirm('Are you sure you want to delete this company profile? This action cannot be undone.')) {
-        $.ajax({
-            url: '/strategic/company/' + companyId + '/delete',
-            method: 'POST',
-            success: function(response) {
-                if (response.success) {
-                    alert('Company profile deleted successfully');
-                    window.location.href = '{{ url_for("strategic.strategic_dashboard") }}';
-                } else {
-                    alert('Error: ' + response.error);
-                }
-            },
-            error: function(xhr) {
-                const response = xhr.responseJSON;
-                alert('Error: ' + (response ? response.error : 'Unknown error'));
-            }
-        });
-    }
+console.log('Script block reached');
+
+// Check if jQuery is available
+if (typeof $ === 'undefined') {
+    console.error('jQuery is not available!');
+} else {
+    console.log('jQuery is available');
 }
 
+// Global functions for action buttons
 function mineData(companyId) {
     console.log('mineData called with companyId:', companyId);
     console.log('CSRF token:', window.csrfToken);
@@ -426,7 +415,11 @@ function conductMarketResearch(companyId) {
 }
 
 function conductSwotAnalysis(companyId) {
+    console.log('conductSwotAnalysis called with companyId:', companyId);
+    console.log('CSRF token:', window.csrfToken);
+    
     if (confirm('Conduct SWOT analysis for this company? This may take a few minutes.')) {
+        console.log('Sending SWOT analysis request...');
         $.ajax({
             url: '/strategic/company/' + companyId + '/swot-analysis',
             method: 'POST',
@@ -434,6 +427,7 @@ function conductSwotAnalysis(companyId) {
                 'X-CSRFToken': window.csrfToken
             },
             success: function(response) {
+                console.log('SWOT analysis success:', response);
                 if (response.success) {
                     alert('SWOT analysis completed successfully!');
                     location.reload();
@@ -441,7 +435,8 @@ function conductSwotAnalysis(companyId) {
                     alert('Error: ' + response.error);
                 }
             },
-            error: function(xhr) {
+            error: function(xhr, status, error) {
+                console.error('SWOT analysis error:', {xhr, status, error});
                 const response = xhr.responseJSON;
                 alert('Error: ' + (response ? response.error : 'Unknown error'));
             }
@@ -450,7 +445,11 @@ function conductSwotAnalysis(companyId) {
 }
 
 function generateStrategicPlans(companyId) {
+    console.log('generateStrategicPlans called with companyId:', companyId);
+    console.log('CSRF token:', window.csrfToken);
+    
     if (confirm('Generate strategic plans for this company? This may take several minutes.')) {
+        console.log('Sending strategic plans request...');
         // Generate all three plan types
         const plans = ['market_plan', 'business_plan', 'gtm_strategy'];
         let completed = 0;
@@ -475,7 +474,7 @@ function generateStrategicPlans(companyId) {
                         location.reload();
                     }
                 },
-                error: function(xhr) {
+                error: function(xhr, status, error) {
                     completed++;
                     const response = xhr.responseJSON;
                     console.error('Error generating ' + planType + ': ' + (response ? response.error : 'Unknown error'));
@@ -491,7 +490,11 @@ function generateStrategicPlans(companyId) {
 }
 
 function comprehensiveAnalysis(companyId) {
+    console.log('comprehensiveAnalysis called with companyId:', companyId);
+    console.log('CSRF token:', window.csrfToken);
+    
     if (confirm('Conduct comprehensive analysis including data mining, market research, and SWOT analysis? This may take several minutes.')) {
+        console.log('Sending comprehensive analysis request...');
         $.ajax({
             url: '/strategic/company/' + companyId + '/comprehensive-analysis',
             method: 'POST',
@@ -499,8 +502,86 @@ function comprehensiveAnalysis(companyId) {
                 'X-CSRFToken': window.csrfToken
             },
             success: function(response) {
+                console.log('Comprehensive analysis success:', response);
                 if (response.success) {
                     alert('Comprehensive analysis completed successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Comprehensive analysis error:', {xhr, status, error});
+                const response = xhr.responseJSON;
+                alert('Error: ' + (response ? response.error : 'Unknown error'));
+            }
+        });
+    }
+}
+
+function deleteCompany(companyId) {
+    console.log('deleteCompany called with companyId:', companyId);
+    console.log('CSRF token:', window.csrfToken);
+    
+    if (confirm('Are you sure you want to delete this company? This action cannot be undone.')) {
+        console.log('Sending delete company request...');
+        $.ajax({
+            url: '/strategic/company/' + companyId + '/delete',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': window.csrfToken
+            },
+            success: function(response) {
+                console.log('Delete company success:', response);
+                if (response.success) {
+                    alert('Company deleted successfully!');
+                    window.location.href = '/strategic';
+                } else {
+                    alert('Error: ' + response.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Delete company error:', {xhr, status, error});
+                const response = xhr.responseJSON;
+                alert('Error: ' + (response ? response.error : 'Unknown error'));
+            }
+        });
+    }
+}
+
+$(document).ready(function() {
+    console.log('Document ready - setting up event handlers');
+
+    // Edit company profile
+    $('#saveEditBtn').click(function() {
+        const companyData = {
+            company_name: $('#editCompanyName').val(),
+            product_description: $('#editProductDescription').val(),
+            target_market: $('#editTargetMarket').val(),
+            usps: $('#editUsps').val(),
+            service_portfolio: $('#editServicePortfolio').val(),
+            industry: $('#editIndustry').val(),
+            business_model: $('#editBusinessModel').val(),
+            revenue_model: $('#editRevenueModel').val()
+        };
+        
+        if (!companyData.company_name || !companyData.product_description || !companyData.usps) {
+            alert('Company name, product description, and USPs are required');
+            return;
+        }
+        
+        $.ajax({
+            url: '/strategic/company/{{ company.id }}/update',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(companyData),
+            headers: {
+                'X-CSRFToken': window.csrfToken
+            },
+            success: function(response) {
+                if (response.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editCompanyModal'));
+                    modal.hide();
                     location.reload();
                 } else {
                     alert('Error: ' + response.error);
@@ -511,48 +592,6 @@ function comprehensiveAnalysis(companyId) {
                 alert('Error: ' + (response ? response.error : 'Unknown error'));
             }
         });
-    }
-}
-
-// Edit company profile
-$('#saveEditBtn').click(function() {
-    const companyData = {
-        company_name: $('#editCompanyName').val(),
-        product_description: $('#editProductDescription').val(),
-        target_market: $('#editTargetMarket').val(),
-        usps: $('#editUsps').val(),
-        service_portfolio: $('#editServicePortfolio').val(),
-        industry: $('#editIndustry').val(),
-        business_model: $('#editBusinessModel').val(),
-        revenue_model: $('#editRevenueModel').val()
-    };
-    
-    if (!companyData.company_name || !companyData.product_description || !companyData.usps) {
-        alert('Company name, product description, and USPs are required');
-        return;
-    }
-    
-    $.ajax({
-        url: '/strategic/company/{{ company.id }}/update',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(companyData),
-        headers: {
-            'X-CSRFToken': window.csrfToken
-        },
-        success: function(response) {
-            if (response.success) {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('editCompanyModal'));
-                modal.hide();
-                location.reload();
-            } else {
-                alert('Error: ' + response.error);
-            }
-        },
-        error: function(xhr) {
-            const response = xhr.responseJSON;
-            alert('Error: ' + (response ? response.error : 'Unknown error'));
-        }
     });
 });
 </script>
