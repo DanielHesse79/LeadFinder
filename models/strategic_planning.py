@@ -230,8 +230,37 @@ class StrategicPlanningDB:
             
         except Exception as e:
             if logger:
-                logger.error(f"Failed to get company profiles: {e}")
+                logger.error(f"Failed to get all company profiles: {e}")
             return []
+    
+    def delete_company_profile(self, company_id: int) -> bool:
+        """Delete company profile by ID"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            c = conn.cursor()
+            
+            # Delete related data first
+            c.execute('DELETE FROM market_research WHERE company_id = ?', (company_id,))
+            c.execute('DELETE FROM swot_analysis WHERE company_id = ?', (company_id,))
+            c.execute('DELETE FROM strategic_plans WHERE company_id = ?', (company_id,))
+            c.execute('DELETE FROM competitive_analysis WHERE company_id = ?', (company_id,))
+            c.execute('DELETE FROM financial_projections WHERE company_id = ?', (company_id,))
+            
+            # Delete the company profile
+            c.execute('DELETE FROM company_profiles WHERE id = ?', (company_id,))
+            
+            conn.commit()
+            conn.close()
+            
+            if logger:
+                logger.info(f"Deleted company profile: {company_id}")
+            
+            return True
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Failed to delete company profile {company_id}: {e}")
+            return False
     
     def save_market_research(self, company_id: int, research_data: Dict[str, Any]) -> int:
         """Save market research data"""
