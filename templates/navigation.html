@@ -25,9 +25,6 @@
                         <li><a class="dropdown-item" href="{{ url_for('unified_search.unified_search_form') }}">
                             <i class="fas fa-search-plus"></i> Unified Search
                         </a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('api_keys.api_keys_dashboard') }}">
-                            <i class="fas fa-key"></i> API Keys
-                        </a></li>
                         <li><a class="dropdown-item" href="{{ url_for('search.search_form') }}">
                             <i class="fas fa-globe"></i> Web Search
                         </a></li>
@@ -118,6 +115,9 @@
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="{{ url_for('config.config_home') }}">
                             <i class="fas fa-sliders-h"></i> Configuration
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('api_keys.api_keys_dashboard') }}">
+                            <i class="fas fa-key"></i> API Keys
                         </a></li>
                     </ul>
                 </li>
