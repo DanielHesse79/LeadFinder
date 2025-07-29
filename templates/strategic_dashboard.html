@@ -213,8 +213,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveCompanyBtn">Create Company Profile</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveCompanyBtn" onclick="console.log('Save button clicked via onclick')">Create Company Profile</button>
             </div>
         </div>
     </div>
@@ -250,7 +250,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="generatePlansBtn">Generate Plans</button>
             </div>
         </div>
@@ -261,6 +261,8 @@
 {% block scripts %}
 <script>
 $(document).ready(function() {
+    console.log('Document ready - setting up event handlers');
+    
     // Create Company Profile
     $('#saveCompanyBtn').click(function() {
         console.log('Save company button clicked');
