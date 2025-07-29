@@ -7,12 +7,12 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">
                         <i class="fas fa-chart-line"></i> Strategic Planning Dashboard
                     </h3>
                     <div class="card-tools">
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createCompanyModal">
+                        <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createCompanyModal">
                             <i class="fas fa-plus"></i> New Company Profile
                         </button>
                     </div>
@@ -42,6 +42,14 @@
                                             <p><strong>Website:</strong> <a href="{{ company.website }}" target="_blank">{{ company.website }}</a></p>
                                             {% endif %}
                                         </div>
+                                        
+                                        <!-- USP Preview -->
+                                        {% if company.usps %}
+                                        <div class="usp-preview mt-3">
+                                            <h6><i class="fas fa-bullseye"></i> USPs:</h6>
+                                            <p class="text-muted">{{ company.usps[:150] }}{% if company.usps|length > 150 %}...{% endif %}</p>
+                                        </div>
+                                        {% endif %}
                                         
                                         <div class="strategic-actions mt-3">
                                             <h6>Strategic Planning:</h6>
@@ -124,7 +132,7 @@
                             <i class="fas fa-building fa-3x text-muted mb-3"></i>
                             <h4 class="text-muted">No Company Profiles Yet</h4>
                             <p class="text-muted">Create your first company profile to start strategic planning with comprehensive data mining.</p>
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createCompanyModal">
+                            <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createCompanyModal">
                                 <i class="fas fa-plus"></i> Create Company Profile
                             </button>
                         </div>
@@ -176,9 +184,10 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="usps">Unique Selling Propositions (USPs)</label>
-                        <textarea class="form-control" id="usps" rows="2"
-                                  placeholder="What makes your product/service unique?"></textarea>
+                        <label for="usps">Unique Selling Propositions (USPs) *</label>
+                        <textarea class="form-control" id="usps" rows="4" required
+                                  placeholder="What makes your product/service unique? List key differentiators, competitive advantages, and value propositions"></textarea>
+                        <small class="form-text text-muted">Focus on what makes your company/products truly unique and valuable to customers. This is crucial for strategic analysis.</small>
                     </div>
                     
                     <div class="form-group">
@@ -269,8 +278,8 @@ $(document).ready(function() {
             revenue_model: $('#revenueModel').val()
         };
         
-        if (!companyData.company_name || !companyData.product_description) {
-            alert('Company name and product description are required');
+        if (!companyData.company_name || !companyData.product_description || !companyData.usps) {
+            alert('Company name, product description, and USPs are required');
             return;
         }
         
