@@ -78,6 +78,11 @@
                                                         data-company-id="{{ company.id }}">
                                                     <i class="fas fa-file-alt"></i> Generate Plans
                                                 </button>
+                                                <button class="btn btn-outline-danger btn-sm mb-2 delete-company-btn"
+                                                        data-company-id="{{ company.id }}" 
+                                                        data-company-name="{{ company.company_name }}">
+                                                    <i class="fas fa-trash"></i> Delete Company
+                                                </button>
                                             </div>
                                         </div>
                                         
@@ -523,6 +528,36 @@ $(document).ready(function() {
                 });
             });
         });
+    });
+    
+    // Delete Company
+    $('.delete-company-btn').click(function() {
+        const companyId = $(this).data('company-id');
+        const companyName = $(this).data('company-name');
+        
+        if (confirm(`Are you sure you want to delete "${companyName}"? This action cannot be undone and will remove all associated data (market research, SWOT analysis, strategic plans, etc.).`)) {
+            $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Deleting...');
+            
+            $.ajax({
+                url: '/strategic/company/' + companyId + '/delete',
+                method: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        alert('Company deleted successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.error);
+                    }
+                },
+                error: function(xhr) {
+                    const response = xhr.responseJSON;
+                    alert('Error: ' + (response ? response.error : 'Unknown error'));
+                },
+                complete: function() {
+                    $('.delete-company-btn').prop('disabled', false).html('<i class="fas fa-trash"></i> Delete Company');
+                }
+            });
+        }
     });
 });
 </script>
