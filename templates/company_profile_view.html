@@ -255,6 +255,9 @@
                                 <button class="btn btn-dark" onclick="comprehensiveAnalysis({{ company.id }})">
                                     <i class="fas fa-rocket"></i> Comprehensive Analysis
                                 </button>
+                                <button class="btn btn-secondary" onclick="editCompany({{ company.id }})">
+                                    <i class="fas fa-edit"></i> Edit Company
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -334,7 +337,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
             </div>
         </div>
@@ -342,7 +345,7 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
 <script>
 console.log('Script block reached');
 
@@ -517,6 +520,15 @@ function comprehensiveAnalysis(companyId) {
             }
         });
     }
+}
+
+function editCompany(companyId) {
+    console.log('editCompany called with companyId:', companyId);
+    console.log('CSRF token:', window.csrfToken);
+    
+    // Show the edit modal
+    const modal = new bootstrap.Modal(document.getElementById('editCompanyModal'));
+    modal.show();
 }
 
 function deleteCompany(companyId) {
