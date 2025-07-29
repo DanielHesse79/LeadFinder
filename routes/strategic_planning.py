@@ -77,6 +77,12 @@ def create_company_profile():
         if not company_data['company_name']:
             return jsonify({'success': False, 'error': 'Company name is required'}), 400
         
+        if not company_data['product_description']:
+            return jsonify({'success': False, 'error': 'Product description is required'}), 400
+        
+        if not company_data['usps']:
+            return jsonify({'success': False, 'error': 'Unique Selling Propositions (USPs) are required'}), 400
+        
         db = get_strategic_db()
         company_id = db.create_company_profile(company_data)
         
@@ -124,6 +130,78 @@ def view_company_profile(company_id):
             logger.error(f"View company profile error: {e}")
         flash(f'Error loading company profile: {str(e)}', 'error')
         return redirect(url_for('strategic.strategic_dashboard'))
+
+@strategic_bp.route('/strategic/company/<int:company_id>/update', methods=['POST'])
+def update_company_profile(company_id):
+    """Update an existing company profile"""
+    if not get_strategic_db:
+        return jsonify({'success': False, 'error': 'Strategic planning system not available'}), 500
+    
+    try:
+        data = request.get_json()
+        company_data = {
+            'company_name': data.get('company_name', '').strip(),
+            'product_description': data.get('product_description', '').strip(),
+            'target_market': data.get('target_market', '').strip(),
+            'usps': data.get('usps', '').strip(),
+            'service_portfolio': data.get('service_portfolio', '').strip(),
+            'industry': data.get('industry', '').strip(),
+            'business_model': data.get('business_model', '').strip(),
+            'revenue_model': data.get('revenue_model', '').strip()
+        }
+        
+        if not company_data['company_name']:
+            return jsonify({'success': False, 'error': 'Company name is required'}), 400
+        
+        if not company_data['product_description']:
+            return jsonify({'success': False, 'error': 'Product description is required'}), 400
+        
+        if not company_data['usps']:
+            return jsonify({'success': False, 'error': 'Unique Selling Propositions (USPs) are required'}), 400
+        
+        db = get_strategic_db()
+        success = db.update_company_profile(company_id, company_data)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'Company profile "{company_data["company_name"]}" updated successfully'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Company profile not found'}), 404
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"Update company profile error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@strategic_bp.route('/strategic/company/<int:company_id>/delete', methods=['POST'])
+def delete_company_profile(company_id):
+    """Delete a company profile"""
+    if not get_strategic_db:
+        return jsonify({'success': False, 'error': 'Strategic planning system not available'}), 500
+    
+    try:
+        db = get_strategic_db()
+        company = db.get_company_profile(company_id)
+        
+        if not company:
+            return jsonify({'success': False, 'error': 'Company profile not found'}), 404
+        
+        success = db.delete_company_profile(company_id)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'Company profile "{company["company_name"]}" deleted successfully'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to delete company profile'}), 500
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"Delete company profile error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @strategic_bp.route('/strategic/company/<int:company_id>/mine-data', methods=['POST'])
 def mine_company_data(company_id):
