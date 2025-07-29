@@ -70,7 +70,7 @@
                                 <div class="card-body">
                                     {% if company.usps %}
                                     <div class="usp-content">
-                                        {{ company.usps|nl2br }}
+                                        {{ company.usps|safe|replace('\n', '<br>') }}
                                     </div>
                                     {% else %}
                                     <p class="text-muted">No USPs defined yet. <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editCompanyModal">Add USPs</button></p>
@@ -87,7 +87,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     {% if company.product_description %}
-                                    <p>{{ company.product_description|nl2br }}</p>
+                                    <p>{{ company.product_description|safe|replace('\n', '<br>') }}</p>
                                     {% else %}
                                     <p class="text-muted">No product description available</p>
                                     {% endif %}
@@ -99,9 +99,9 @@
                             <div class="card">
                                 <div class="card-body">
                                     {% if company.service_portfolio %}
-                                    <p>{{ company.service_portfolio|nl2br }}</p>
+                                    <p>{{ company.service_portfolio|safe|replace('\n', '<br>') }}</p>
                                     {% else %}
-                                    <p class="text-muted">No service portfolio defined</p>
+                                    <p class="text-muted">No service portfolio available</p>
                                     {% endif %}
                                 </div>
                             </div>
@@ -115,7 +115,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     {% if company.target_market %}
-                                    <p>{{ company.target_market|nl2br }}</p>
+                                    <p>{{ company.target_market|safe|replace('\n', '<br>') }}</p>
                                     {% else %}
                                     <p class="text-muted">No target market defined</p>
                                     {% endif %}
