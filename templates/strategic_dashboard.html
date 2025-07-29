@@ -12,7 +12,7 @@
                         <i class="fas fa-chart-line"></i> Strategic Planning Dashboard
                     </h3>
                     <div class="card-tools">
-                        <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createCompanyModal" onclick="console.log('New Company Profile button clicked')">
+                        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createCompanyModal" onclick="console.log('New Company Profile button clicked')">
                             <i class="fas fa-plus"></i> New Company Profile
                         </button>
                     </div>
@@ -132,7 +132,7 @@
                             <i class="fas fa-building fa-3x text-muted mb-3"></i>
                             <h4 class="text-muted">No Company Profiles Yet</h4>
                             <p class="text-muted">Create your first company profile to start strategic planning with comprehensive data mining.</p>
-                            <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createCompanyModal" onclick="console.log('Create Company Profile button clicked')">
+                            <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createCompanyModal" onclick="console.log('Create Company Profile button clicked')">
                                 <i class="fas fa-plus"></i> Create Company Profile
                             </button>
                         </div>
@@ -149,9 +149,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Create Company Profile</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="createCompanyForm">
@@ -228,9 +226,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Generate Strategic Plans</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Select which strategic plans to generate:</p>
@@ -297,7 +293,8 @@ $(document).ready(function() {
             success: function(response) {
                 console.log('Success response:', response);
                 if (response.success) {
-                    $('#createCompanyModal').modal('hide');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createCompanyModal'));
+                    modal.hide();
                     location.reload();
                 } else {
                     alert('Error: ' + response.error);
@@ -430,7 +427,8 @@ $(document).ready(function() {
     // Generate Plans
     $('.generate-plan-btn').click(function() {
         const companyId = $(this).data('company-id');
-        $('#generatePlansModal').modal('show');
+        const modal = new bootstrap.Modal(document.getElementById('generatePlansModal'));
+        modal.show();
         
         $('#generatePlansBtn').off('click').on('click', function() {
             const plans = [];
@@ -443,7 +441,7 @@ $(document).ready(function() {
                 return;
             }
             
-            $('#generatePlansModal').modal('hide');
+            modal.hide();
             $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Generating...');
             
             // Generate each selected plan
