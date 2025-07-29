@@ -366,7 +366,11 @@ function deleteCompany(companyId) {
 }
 
 function mineData(companyId) {
+    console.log('mineData called with companyId:', companyId);
+    console.log('CSRF token:', window.csrfToken);
+    
     if (confirm('Mine comprehensive company data from multiple sources? This may take a few minutes.')) {
+        console.log('Sending mine data request...');
         $.ajax({
             url: '/strategic/company/' + companyId + '/mine-data',
             method: 'POST',
@@ -374,6 +378,7 @@ function mineData(companyId) {
                 'X-CSRFToken': window.csrfToken
             },
             success: function(response) {
+                console.log('Mine data success:', response);
                 if (response.success) {
                     alert('Data mining completed successfully!');
                     location.reload();
@@ -381,7 +386,8 @@ function mineData(companyId) {
                     alert('Error: ' + response.error);
                 }
             },
-            error: function(xhr) {
+            error: function(xhr, status, error) {
+                console.error('Mine data error:', {xhr, status, error});
                 const response = xhr.responseJSON;
                 alert('Error: ' + (response ? response.error : 'Unknown error'));
             }
@@ -390,7 +396,11 @@ function mineData(companyId) {
 }
 
 function conductMarketResearch(companyId) {
+    console.log('conductMarketResearch called with companyId:', companyId);
+    console.log('CSRF token:', window.csrfToken);
+    
     if (confirm('Conduct market research for this company? This may take a few minutes.')) {
+        console.log('Sending market research request...');
         $.ajax({
             url: '/strategic/company/' + companyId + '/market-research',
             method: 'POST',
@@ -398,6 +408,7 @@ function conductMarketResearch(companyId) {
                 'X-CSRFToken': window.csrfToken
             },
             success: function(response) {
+                console.log('Market research success:', response);
                 if (response.success) {
                     alert('Market research completed successfully!');
                     location.reload();
@@ -405,7 +416,8 @@ function conductMarketResearch(companyId) {
                     alert('Error: ' + response.error);
                 }
             },
-            error: function(xhr) {
+            error: function(xhr, status, error) {
+                console.error('Market research error:', {xhr, status, error});
                 const response = xhr.responseJSON;
                 alert('Error: ' + (response ? response.error : 'Unknown error'));
             }
