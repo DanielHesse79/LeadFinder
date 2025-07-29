@@ -293,6 +293,23 @@
                         </div>
                     </div>
                     
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="editLocation">Location</label>
+                                <input type="text" class="form-control" id="editLocation" value="{{ company.location or '' }}" 
+                                       placeholder="e.g., Stockholm, Sweden or San Francisco, CA">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="editBusinessModel">Business Model</label>
+                                <input type="text" class="form-control" id="editBusinessModel" value="{{ company.business_model or '' }}"
+                                       placeholder="e.g., SaaS, Marketplace, Consulting">
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="editProductDescription">Product/Service Description *</label>
                         <textarea class="form-control" id="editProductDescription" rows="3" required
@@ -573,6 +590,7 @@ $(document).ready(function() {
             usps: $('#editUsps').val(),
             service_portfolio: $('#editServicePortfolio').val(),
             industry: $('#editIndustry').val(),
+            location: $('#editLocation').val(),
             business_model: $('#editBusinessModel').val(),
             revenue_model: $('#editRevenueModel').val()
         };

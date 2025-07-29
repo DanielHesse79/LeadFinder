@@ -70,6 +70,7 @@ def create_company_profile():
             'usps': data.get('usps', '').strip(),
             'service_portfolio': data.get('service_portfolio', '').strip(),
             'industry': data.get('industry', '').strip(),
+            'location': data.get('location', '').strip(),
             'business_model': data.get('business_model', '').strip(),
             'revenue_model': data.get('revenue_model', '').strip()
         }
@@ -146,6 +147,7 @@ def update_company_profile(company_id):
             'usps': data.get('usps', '').strip(),
             'service_portfolio': data.get('service_portfolio', '').strip(),
             'industry': data.get('industry', '').strip(),
+            'location': data.get('location', '').strip(),
             'business_model': data.get('business_model', '').strip(),
             'revenue_model': data.get('revenue_model', '').strip()
         }
