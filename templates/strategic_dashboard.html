@@ -265,25 +265,18 @@
 
 {% block extra_js %}
 <script>
-alert('JavaScript is loading!');
 console.log('Script block reached');
 
 // Check if jQuery is available
 if (typeof $ === 'undefined') {
     console.error('jQuery is not available!');
-    alert('jQuery is not available!');
 } else {
     console.log('jQuery is available');
 }
 
 $(document).ready(function() {
     console.log('Document ready - setting up event handlers');
-    
-    // Simple test: add a click handler to any button
-    $('button').on('click', function() {
-        console.log('Any button clicked:', this.id || this.textContent);
-    });
-    
+
     // Create Company Profile - try multiple approaches
     console.log('Setting up saveCompanyBtn click handler');
     
