@@ -370,6 +370,9 @@ $(document).ready(function() {
             $.ajax({
                 url: '/strategic/company/' + companyId + '/comprehensive-analysis',
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.csrfToken
+                },
                 success: function(response) {
                     if (response.success) {
                         alert('Comprehensive analysis completed successfully!');
@@ -399,6 +402,9 @@ $(document).ready(function() {
             $.ajax({
                 url: '/strategic/company/' + companyId + '/mine-data',
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.csrfToken
+                },
                 success: function(response) {
                     if (response.success) {
                         alert('Data mining completed successfully!');
@@ -428,6 +434,9 @@ $(document).ready(function() {
             $.ajax({
                 url: '/strategic/company/' + companyId + '/market-research',
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.csrfToken
+                },
                 success: function(response) {
                     if (response.success) {
                         alert('Market research completed successfully!');
@@ -457,6 +466,9 @@ $(document).ready(function() {
             $.ajax({
                 url: '/strategic/company/' + companyId + '/swot-analysis',
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.csrfToken
+                },
                 success: function(response) {
                     if (response.success) {
                         alert('SWOT analysis completed successfully!');
@@ -502,6 +514,9 @@ $(document).ready(function() {
                 $.ajax({
                     url: '/strategic/company/' + companyId + '/generate-plan/' + planType,
                     method: 'POST',
+                    headers: {
+                        'X-CSRFToken': window.csrfToken
+                    },
                     success: function(response) {
                         completed++;
                         if (response.success) {
@@ -541,6 +556,9 @@ $(document).ready(function() {
             $.ajax({
                 url: '/strategic/company/' + companyId + '/delete',
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.csrfToken
+                },
                 success: function(response) {
                     if (response.success) {
                         alert('Company deleted successfully!');
