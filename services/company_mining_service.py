@@ -11,9 +11,9 @@ import re
 from datetime import datetime
 
 try:
-    from services.serpapi_service import serpapi_service
+    from services.serp_service import serp_service
 except ImportError:
-    serpapi_service = None
+    serp_service = None
 
 try:
     from services.semantic_scholar_service import semantic_scholar_service
@@ -40,7 +40,7 @@ class CompanyMiningService:
     """Service for mining comprehensive company data from multiple sources"""
     
     def __init__(self):
-        self.serpapi_service = serpapi_service
+        self.serp_service = serp_service
         self.semantic_scholar_service = semantic_scholar_service
         self.nih_service = nih_service
         self.orcid_service = orcid_service
@@ -100,12 +100,12 @@ class CompanyMiningService:
     def _search_company_web(self, company_name: str) -> Dict[str, Any]:
         """Search for basic company information on the web"""
         try:
-            if not self.serpapi_service:
+            if not self.serp_service:
                 return {'error': 'SerpAPI service not available'}
             
             # Search for company website and basic info
             search_query = f"{company_name} company website about us"
-            web_results = self.serpapi_service.search_web_results(search_query, num_results=10)
+            web_results = self.serp_service.search(search_query, num_results=10) if self.serp_service else []
             
             # Extract company information
             company_info = self._extract_company_info(web_results, company_name)
@@ -131,16 +131,16 @@ class CompanyMiningService:
     def _analyze_company_news(self, company_name: str) -> Dict[str, Any]:
         """Analyze company news and social media presence"""
         try:
-            if not self.serpapi_service:
+            if not self.serp_service:
                 return {'error': 'SerpAPI service not available'}
             
             # Search for recent news
             news_query = f"{company_name} news press release 2024 2025"
-            news_results = self.serpapi_service.search_web_results(news_query, num_results=20)
+            news_results = self.serp_service.search(news_query, num_results=20) if self.serp_service else []
             
             # Search for social media mentions
             social_query = f"{company_name} LinkedIn Twitter social media"
-            social_results = self.serpapi_service.search_web_results(social_query, num_results=10)
+            social_results = self.serp_service.search(social_query, num_results=10) if self.serp_service else []
             
             # Analyze sentiment and key topics
             news_analysis = self._analyze_news_sentiment(news_results)
@@ -166,11 +166,11 @@ class CompanyMiningService:
             
             # Search for funding information
             funding_query = f"{company_name} funding investment venture capital"
-            funding_results = self.serpapi_service.search_web_results(funding_query, num_results=15)
+            funding_results = self.serp_service.search(funding_query, num_results=15) if self.serp_service else []
             
             # Search for financial performance
             financial_query = f"{company_name} revenue profit financial performance"
-            financial_results = self.serpapi_service.search_web_results(financial_query, num_results=10)
+            financial_results = self.serp_service.search(financial_query, num_results=10) if self.serp_service else []
             
             # Extract funding information
             funding_info = self._extract_funding_info(funding_results)
@@ -199,11 +199,11 @@ class CompanyMiningService:
             
             # Search for patents and IP
             patent_query = f"{company_name} patents intellectual property"
-            patent_results = self.semantic_scholar_service.search_papers(patent_query, max_results=20)
+            patent_results = self.semantic_scholar_service.search_articles(patent_query, max_results=20) if self.semantic_scholar_service else []
             
             # Search for technology publications
             tech_query = f"{company_name} technology innovation research"
-            tech_results = self.semantic_scholar_service.search_papers(tech_query, max_results=15)
+            tech_results = self.semantic_scholar_service.search_articles(tech_query, max_results=15) if self.semantic_scholar_service else []
             
             return {
                 'patent_portfolio': patent_results[:10],
@@ -229,11 +229,11 @@ class CompanyMiningService:
             
             # Search for industry research papers
             research_query = f"{industry} market analysis industry trends 2024"
-            research_results = self.semantic_scholar_service.search_papers(research_query, max_results=20)
+            research_results = self.semantic_scholar_service.search_articles(research_query, max_results=20) if self.semantic_scholar_service else []
             
             # Search for market reports
             market_query = f"{industry} market size growth projections"
-            market_results = self.semantic_scholar_service.search_papers(market_query, max_results=15)
+            market_results = self.semantic_scholar_service.search_articles(market_query, max_results=15) if self.semantic_scholar_service else []
             
             return {
                 'industry_research': research_results[:10],
@@ -255,7 +255,7 @@ class CompanyMiningService:
             
             # Search for company employees on professional networks
             talent_query = f"{company_name} employees LinkedIn professionals"
-            talent_results = self.serpapi_service.search_web_results(talent_query, num_results=10)
+            talent_results = self.serp_service.search(talent_query, num_results=10) if self.serp_service else []
             
             # Search for company research and publications
             if self.semantic_scholar_service:
