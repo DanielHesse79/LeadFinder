@@ -214,7 +214,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveCompanyBtn" onclick="console.log('Save button clicked via onclick')">Create Company Profile</button>
+                <button type="button" class="btn btn-primary" id="saveCompanyBtn">Create Company Profile</button>
             </div>
         </div>
     </div>
@@ -263,9 +263,23 @@
 $(document).ready(function() {
     console.log('Document ready - setting up event handlers');
     
-    // Create Company Profile
-    $('#saveCompanyBtn').click(function() {
-        console.log('Save company button clicked');
+    // Create Company Profile - try multiple approaches
+    console.log('Setting up saveCompanyBtn click handler');
+    
+    // Method 1: Direct jQuery binding
+    $('#saveCompanyBtn').on('click', function() {
+        console.log('Save company button clicked via jQuery on()');
+        handleCompanyCreation();
+    });
+    
+    // Method 2: Also bind to the onclick event
+    document.getElementById('saveCompanyBtn').addEventListener('click', function() {
+        console.log('Save company button clicked via addEventListener');
+        handleCompanyCreation();
+    });
+    
+    function handleCompanyCreation() {
+        console.log('Handling company creation...');
         
         const companyData = {
             company_name: $('#companyName').val(),
@@ -308,7 +322,22 @@ $(document).ready(function() {
                 alert('Error: ' + (response ? response.error : 'Unknown error'));
             }
         });
-    });
+    }
+    
+    // Fallback: Try to attach event handler after a short delay
+    setTimeout(function() {
+        console.log('Fallback: Checking if saveCompanyBtn exists');
+        const saveBtn = document.getElementById('saveCompanyBtn');
+        if (saveBtn) {
+            console.log('Fallback: Found saveCompanyBtn, attaching event handler');
+            saveBtn.addEventListener('click', function() {
+                console.log('Save company button clicked via fallback addEventListener');
+                handleCompanyCreation();
+            });
+        } else {
+            console.log('Fallback: saveCompanyBtn not found');
+        }
+    }, 1000);
     
     // Comprehensive Analysis
     $('.comprehensive-analysis-btn').click(function() {
