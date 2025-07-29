@@ -270,9 +270,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Company Profile</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="editCompanyForm">
@@ -372,6 +370,9 @@ function mineData(companyId) {
         $.ajax({
             url: '/strategic/company/' + companyId + '/mine-data',
             method: 'POST',
+            headers: {
+                'X-CSRFToken': window.csrfToken
+            },
             success: function(response) {
                 if (response.success) {
                     alert('Data mining completed successfully!');
@@ -393,6 +394,9 @@ function conductMarketResearch(companyId) {
         $.ajax({
             url: '/strategic/company/' + companyId + '/market-research',
             method: 'POST',
+            headers: {
+                'X-CSRFToken': window.csrfToken
+            },
             success: function(response) {
                 if (response.success) {
                     alert('Market research completed successfully!');
@@ -414,6 +418,9 @@ function conductSwotAnalysis(companyId) {
         $.ajax({
             url: '/strategic/company/' + companyId + '/swot-analysis',
             method: 'POST',
+            headers: {
+                'X-CSRFToken': window.csrfToken
+            },
             success: function(response) {
                 if (response.success) {
                     alert('SWOT analysis completed successfully!');
@@ -440,6 +447,9 @@ function generateStrategicPlans(companyId) {
             $.ajax({
                 url: '/strategic/company/' + companyId + '/generate-plan/' + planType,
                 method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.csrfToken
+                },
                 success: function(response) {
                     completed++;
                     if (response.success) {
@@ -473,6 +483,9 @@ function comprehensiveAnalysis(companyId) {
         $.ajax({
             url: '/strategic/company/' + companyId + '/comprehensive-analysis',
             method: 'POST',
+            headers: {
+                'X-CSRFToken': window.csrfToken
+            },
             success: function(response) {
                 if (response.success) {
                     alert('Comprehensive analysis completed successfully!');
@@ -512,9 +525,13 @@ $('#saveEditBtn').click(function() {
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(companyData),
+        headers: {
+            'X-CSRFToken': window.csrfToken
+        },
         success: function(response) {
             if (response.success) {
-                $('#editCompanyModal').modal('hide');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editCompanyModal'));
+                modal.hide();
                 location.reload();
             } else {
                 alert('Error: ' + response.error);
