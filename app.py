@@ -332,6 +332,7 @@ def create_app():
         app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
         if logger:
             logger.info("Dashboard blueprint registered")
+    app.register_blueprint(reports_bp, url_prefix='/reports')
     
     if reports_bp:
         app.register_blueprint(reports_bp, url_prefix='/reports')

@@ -692,16 +692,6 @@ class DatabaseConnection:
                     COUNT(DISTINCT source) as total_sources
                 FROM rag_document_chunks
             '''
-        
-            # Get session statistics
-            session_query = '''
-                SELECT 
-                    COUNT(*) as total_sessions,
-                    AVG(processing_time) as avg_processing_time,
-                    AVG(confidence_score) as avg_confidence_score
-                FROM rag_search_sessions
-            '''
-            
             if self.pool:
                 chunk_results = self.pool.execute_query(chunk_query)
                 session_results = self.pool.execute_query(session_query)
@@ -730,18 +720,9 @@ class DatabaseConnection:
                 })
             
             return stats
-        
         except Exception as e:
-            if logger:
-                logger.error(f"Error getting RAG stats: {str(e)}")
-            return {
-                'total_chunks': 0,
-                'total_documents': 0,
-                'total_sources': 0,
-                'total_sessions': 0,
-                'avg_processing_time': 0.0,
-                'avg_confidence_score': 0.0
-            }
+            logger.error(f"Error getting RAG stats: {e}")
+            return {}
 
     def get_lead_stats(self) -> Dict[str, Any]:
         """Get lead statistics"""
