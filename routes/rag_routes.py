@@ -161,13 +161,14 @@ def rag_search_form():
     """Render RAG search form"""
     return render_template('rag_search.html')
 
-@rag_bp.route('/retrieve', methods=['POST'])
+@rag_bp.route('/retrieve', methods=['GET', 'POST'])
 @handle_errors if handle_errors else lambda x: x
 def retrieve_context():
     """
     Retrieve context without generation
     
-    Expected JSON payload:
+    For GET requests: Return form page
+    For POST requests: Expected JSON payload:
     {
         "query": "user query string",
         "top_k": 10,
@@ -183,6 +184,9 @@ def retrieve_context():
         "retrieval_method": "vector"
     }
     """
+    if request.method == 'GET':
+        return render_template('rag_retrieve.html')
+    
     try:
         # Parse request data
         data = request.get_json()
@@ -345,13 +349,14 @@ def generate_with_context():
             'error': error_msg
         }), 500
 
-@rag_bp.route('/ingest', methods=['POST'])
+@rag_bp.route('/ingest', methods=['GET', 'POST'])
 @handle_errors if handle_errors else lambda x: x
 def ingest_document():
     """
     Ingest a document into the RAG system
     
-    Expected JSON payload:
+    For GET requests: Return form page
+    For POST requests: Expected JSON payload:
     {
         "document_type": "lead",
         "document": {
@@ -370,6 +375,9 @@ def ingest_document():
         "processing_time": 2.5
     }
     """
+    if request.method == 'GET':
+        return render_template('rag_ingest.html')
+    
     try:
         # Parse request data
         data = request.get_json()
@@ -533,6 +541,20 @@ def rag_stats():
     """
     Get RAG system statistics
     
+    For GET requests: Return stats page
+    For API requests: Returns JSON with statistics
+    """
+    if request.headers.get('Accept') == 'application/json' or request.args.get('format') == 'json':
+        # Return JSON for API requests
+        return get_rag_stats_json()
+    else:
+        # Return HTML template for web requests
+        return render_template('rag_stats.html')
+
+def get_rag_stats_json():
+    """
+    Get RAG system statistics as JSON
+    
     Returns:
     {
         "success": true,
@@ -548,15 +570,45 @@ def rag_stats():
         
         # Get vector store stats
         if get_vector_store_service:
-            vector_store = get_vector_store_service()
-            vector_stats = vector_store.get_stats()
-            
+            try:
+                vector_store = get_vector_store_service()
+                vector_stats = vector_store.get_stats()
+                
+                stats.update({
+                    'total_documents': vector_stats.total_documents,
+                    'document_types': vector_stats.document_types,
+                    'collection_size_mb': round(vector_stats.collection_size_mb, 2),
+                    'index_status': vector_stats.index_status
+                })
+            except Exception as vector_error:
+                if logger:
+                    logger.warning(f"Vector store stats unavailable: {vector_error}")
+                # Provide fallback stats when ChromaDB is not available
+                stats.update({
+                    'total_documents': 0,
+                    'document_types': {'lead': 0, 'paper': 0, 'search': 0},
+                    'collection_size_mb': 0.0,
+                    'index_status': 'not_available',
+                    'note': 'ChromaDB not configured - using fallback statistics'
+                })
+        else:
+            # Vector store service not available
             stats.update({
-                'total_documents': vector_stats.total_documents,
-                'document_types': vector_stats.document_types,
-                'collection_size_mb': round(vector_stats.collection_size_mb, 2),
-                'index_status': vector_stats.index_status
+                'total_documents': 0,
+                'document_types': {'lead': 0, 'paper': 0, 'search': 0},
+                'collection_size_mb': 0.0,
+                'index_status': 'not_available',
+                'note': 'Vector store service not available'
             })
+        
+        # Add system info
+        stats.update({
+            'system_info': {
+                'chromadb_available': get_vector_store_service is not None,
+                'rag_enabled': True,
+                'timestamp': time.time()
+            }
+        })
         
         response_data = {
             'success': True,

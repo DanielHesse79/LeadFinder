@@ -459,6 +459,59 @@ Sammanfatta kort: företag, relevans för {research_question}"""
             logger.error(f"Error calling Ollama: {e}")
             return None
     
+    def generate_text(self, prompt: str) -> str:
+        """
+        Generate text using Ollama - main interface for strategic planning
+        
+        Args:
+            prompt: The prompt to send to Ollama
+            
+        Returns:
+            Generated text or fallback message
+        """
+        if not self.selected_model:
+            logger.warning("No model selected for text generation")
+            return "AI service not available - please configure Ollama model"
+        
+        try:
+            logger.info(f"Generating text with model: {self.selected_model}")
+            
+            # Use optimized parameters for strategic planning
+            payload = {
+                "model": self.selected_model,
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": 0.2,  # Lower temperature for more focused output
+                    "top_p": 0.9,
+                    "num_predict": 1000,  # Allow longer responses for strategic content
+                    "repeat_penalty": 1.1
+                }
+            }
+            
+            response = self.session.post(self.api_url, json=payload, timeout=OLLAMA_TIMEOUT)
+            
+            if response.status_code == 200:
+                data = response.json()
+                ai_response = data.get('response', '').strip()
+                
+                if ai_response:
+                    logger.info("Text generation successful")
+                    return ai_response
+                else:
+                    logger.warning("Empty response from Ollama")
+                    return "AI generated an empty response"
+            else:
+                logger.error(f"Ollama API error: {response.status_code}")
+                return f"AI service error (HTTP {response.status_code})"
+                
+        except requests.exceptions.Timeout:
+            logger.error(f"Ollama timeout after {OLLAMA_TIMEOUT} seconds")
+            return "AI service timeout - please try again"
+        except Exception as e:
+            logger.error(f"Error generating text: {e}")
+            return f"AI service error: {str(e)}"
+    
     def _call_ollama_with_retry(self, prompt: str, max_retries: int = 3) -> Optional[str]:
         """
         Call Ollama with retry logic and shorter timeout

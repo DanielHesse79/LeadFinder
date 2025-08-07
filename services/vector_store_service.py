@@ -16,8 +16,7 @@ from contextlib import contextmanager
 
 try:
     import chromadb
-    from chromadb.config import Settings
-    from chromadb.errors import ChromaDBError
+    from chromadb.errors import ChromaError
     CHROMADB_AVAILABLE = True
 except ImportError:
     CHROMADB_AVAILABLE = False
@@ -66,10 +65,7 @@ class VectorStoreConnection:
     def initialize(self):
         """Initialize the connection"""
         try:
-            self.client = chromadb.Client(Settings(
-                chroma_db_impl="duckdb+parquet",
-                persist_directory=self.persist_directory
-            ))
+            self.client = chromadb.PersistentClient(path=self.persist_directory)
             
             # Get or create the main collection
             self.collection = self.client.get_or_create_collection(
@@ -261,7 +257,7 @@ class VectorStoreService:
                 
                 return True
                 
-        except ChromaDBError as e:
+        except ChromaError as e:
             if logger:
                 logger.error(f"Failed to upsert documents to vector store: {e}")
             return False
@@ -309,7 +305,7 @@ class VectorStoreService:
                 
                 return search_results
                 
-        except ChromaDBError as e:
+        except ChromaError as e:
             if logger:
                 logger.error(f"Search failed: {e}")
             return []
@@ -342,7 +338,7 @@ class VectorStoreService:
                 
                 return None
                 
-        except ChromaDBError as e:
+        except ChromaError as e:
             if logger:
                 logger.error(f"Failed to get document {document_id}: {e}")
             return None
@@ -366,7 +362,7 @@ class VectorStoreService:
                 
                 return True
                 
-        except ChromaDBError as e:
+        except ChromaError as e:
             if logger:
                 logger.error(f"Failed to delete document {document_id}: {e}")
             return False
@@ -414,7 +410,7 @@ class VectorStoreService:
                     index_status="healthy"
                 )
                 
-        except ChromaDBError as e:
+        except ChromaError as e:
             if logger:
                 logger.error(f"Failed to get vector store stats: {e}")
             return VectorStoreStats(
@@ -442,7 +438,7 @@ class VectorStoreService:
                 
                 return True
                 
-        except ChromaDBError as e:
+        except ChromaError as e:
             if logger:
                 logger.error(f"Failed to clear collection: {e}")
             return False

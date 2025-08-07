@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}RAG Analytics{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line"></i> RAG Analytics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="statsContent">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading RAG statistics...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load RAG statistics
+async function loadRAGStats() {
+    try {
+        const response = await fetch('/rag/stats');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayStats(data.stats);
+        } else {
+            displayError(data.error);
+        }
+    } catch (error) {
+        displayError('Failed to load statistics: ' + error.message);
+    }
+}
+
+function displayStats(stats) {
+    const statsContent = document.getElementById('statsContent');
+    
+    const systemStatus = stats.system_info?.chromadb_available ? 
+        '<span class="badge bg-success">Available</span>' : 
+        '<span class="badge bg-warning">Not Available</span>';
+    
+    statsContent.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>System Status</h6>
+                <div class="mb-3">
+                    <strong>ChromaDB:</strong> ${systemStatus}
+                </div>
+                <div class="mb-3">
+                    <strong>RAG System:</strong> <span class="badge bg-success">Enabled</span>
+                </div>
+                ${stats.note ? `<div class="alert alert-info">${stats.note}</div>` : ''}
+            </div>
+            <div class="col-md-6">
+                <h6>Collection Statistics</h6>
+                <div class="mb-2">
+                    <strong>Total Documents:</strong> ${stats.total_documents || 0}
+                </div>
+                <div class="mb-2">
+                    <strong>Collection Size:</strong> ${stats.collection_size_mb || 0} MB
+                </div>
+                <div class="mb-2">
+                    <strong>Index Status:</strong> <span class="badge bg-${stats.index_status === 'healthy' ? 'success' : 'warning'}">${stats.index_status || 'unknown'}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <h6>Document Types</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">${stats.document_types?.lead || 0}</h5>
+                                <p class="card-text">Leads</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">${stats.document_types?.paper || 0}</h5>
+                                <p class="card-text">Research Papers</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">${stats.document_types?.search || 0}</h5>
+                                <p class="card-text">Search Results</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <button class="btn btn-primary" onclick="loadRAGStats()">
+                <i class="fas fa-sync-alt"></i> Refresh Statistics
+            </button>
+        </div>
+    `;
+}
+
+function displayError(error) {
+    const statsContent = document.getElementById('statsContent');
+    statsContent.innerHTML = `
+        <div class="alert alert-danger">
+            <h6>Error Loading Statistics</h6>
+            <p>${error}</p>
+            <button class="btn btn-primary" onclick="loadRAGStats()">
+                <i class="fas fa-sync-alt"></i> Retry
+            </button>
+        </div>
+    `;
+}
+
+// Load stats when page loads
+document.addEventListener('DOMContentLoaded', loadRAGStats);
+</script>
+{% endblock %} 

@@ -6,6 +6,20 @@ data/*.db
 data/*.sqlite
 data/*.sqlite3
 
+# SQLite temporary files (WAL/SHM)
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+data/*.db-wal
+data/*.db-shm
+data/*.sqlite-wal
+data/*.sqlite-shm
+data/*.sqlite3-wal
+data/*.sqlite3-shm
+
 # Environment variables
 .env
 .env.local

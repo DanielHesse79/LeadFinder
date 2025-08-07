@@ -3,6 +3,13 @@ from typing import List, Dict, Any
 import logging
 import time
 
+# Import CSRF protection
+try:
+    from flask_wtf.csrf import CSRFProtect
+    csrf = CSRFProtect()
+except ImportError:
+    csrf = None
+
 # Import services with error handling
 try:
     from services.serp_service import serp_service
@@ -52,6 +59,11 @@ except ImportError:
     SEARCH_STEPS = None
 
 try:
+    from services.rag_search_service import get_rag_search_service
+except ImportError:
+    get_rag_search_service = None
+
+try:
     from leadfinder_autogpt_integration import LeadfinderAutoGPTIntegration
 except ImportError:
     LeadfinderAutoGPTIntegration = None
@@ -71,8 +83,10 @@ def collect_leads(query: str, engines: List[str], max_leads: int = 10) -> List[D
     """Collect leads without AI analysis"""
     leads = []
     
-    if serp_service:
-        serp_results = serp_service.search(query, engines, num_results=max_leads)
+    # Handle SERP (web search) engines
+    serp_engines = [eng for eng in engines if eng in ['google', 'bing', 'duckduckgo']]
+    if serp_engines and serp_service:
+        serp_results = serp_service.search(query, serp_engines, num_results=max_leads)
         for res in serp_results:
             leads.append({
                 'title': res.get('title', ''),
@@ -80,6 +94,58 @@ def collect_leads(query: str, engines: List[str], max_leads: int = 10) -> List[D
                 'link': res.get('link', ''),
                 'source': 'serp'
             })
+    
+    # Handle PubMed search
+    if 'pubmed' in engines and pubmed_service:
+        try:
+            if logger:
+                logger.info(f"Searching PubMed for: {query}")
+            pubmed_results = pubmed_service.search_articles(query, max_results=max_leads)
+            
+            for article in pubmed_results:
+                leads.append({
+                    'title': article.get('title', ''),
+                    'snippet': article.get('abstract', ''),
+                    'link': article.get('url', ''),
+                    'source': 'pubmed',
+                    'authors': article.get('authors', []),
+                    'journal': article.get('journal', ''),
+                    'year': article.get('year', ''),
+                    'doi': article.get('doi', ''),
+                    'pmid': article.get('pmid', '')
+                })
+            
+            if logger:
+                logger.info(f"Found {len(pubmed_results)} PubMed articles")
+                
+        except Exception as e:
+            if logger:
+                logger.error(f"PubMed search failed: {e}")
+    
+    # Handle ORCID search
+    if 'orcid' in engines and orcid_service:
+        try:
+            if logger:
+                logger.info(f"Searching ORCID for: {query}")
+            orcid_results = orcid_service.search_researchers(query, max_results=max_leads)
+            
+            for researcher in orcid_results:
+                leads.append({
+                    'title': researcher.get('name', ''),
+                    'snippet': researcher.get('bio', ''),
+                    'link': researcher.get('url', ''),
+                    'source': 'orcid',
+                    'institution': researcher.get('institution', ''),
+                    'orcid_id': researcher.get('orcid', ''),
+                    'researcher_type': 'academic'
+                })
+            
+            if logger:
+                logger.info(f"Found {len(orcid_results)} ORCID researchers")
+                
+        except Exception as e:
+            if logger:
+                logger.error(f"ORCID search failed: {e}")
     
     return leads
 
@@ -201,7 +267,7 @@ def perform_search():
                 else:
                     lead['ai_summary'] = f"Manual review required for: {research_question}"
         
-        # Step 3: Save all leads (not just "relevant" ones)
+        # Save leads to database
         saved_count = 0
         for lead in leads:
             if db:
@@ -222,20 +288,6 @@ def perform_search():
         
         if logger:
             logger.info(f"Saved {saved_count} leads out of {len(leads)} total")
-        
-        # PubMed search (articles) - TODO: implement similar processing
-        if search_type in ['articles', 'both'] and pubmed_service:
-            if logger:
-                logger.info(f"PubMed search for: {query}")
-            pubmed_results = pubmed_service.search_articles(query)
-            # TODO: Process PubMed results when implemented
-        
-        # ORCID search (profiles) - TODO: implement similar processing
-        if search_type in ['profiles', 'both'] and orcid_service:
-            if logger:
-                logger.info(f"ORCID search for: {query}")
-            orcid_results = orcid_service.search_researchers(query)
-            # TODO: Process ORCID results when implemented
         
         # Save search history
         if db:
@@ -266,6 +318,9 @@ def perform_search_ajax():
         
         search_type = request.form.get('search_type', 'articles')
         use_ai_analysis = request.form.get('use_ai_analysis') == 'on'
+        use_rag_search = request.form.get('use_rag_search') == 'on'
+        rag_top_k = int(request.form.get('rag_top_k', 5))
+        rag_method = request.form.get('rag_method', 'vector')
         
         selected_engines = request.form.getlist('engines')
         if not selected_engines:
@@ -309,6 +364,43 @@ def perform_search_ajax():
             if operation_id:
                 progress_manager.update_step(operation_id, "step_2", 1.0, ProgressStatus.COMPLETED,
                                            {"results_found": len(leads)})
+            
+            # Step 2.5: RAG Search (if enabled)
+            rag_results = None
+            if use_rag_search and get_rag_search_service:
+                if operation_id:
+                    progress_manager.update_step(operation_id, "step_2_5", 0.0, ProgressStatus.RUNNING,
+                                               {"rag_method": rag_method, "top_k": rag_top_k})
+                
+                try:
+                    rag_service = get_rag_search_service()
+                    if rag_method == "conversational":
+                        rag_results = rag_service.search_with_context(query, "", top_k=rag_top_k)
+                    else:
+                        rag_results = rag_service.search(query, top_k=rag_top_k)
+                    
+                    if rag_results and rag_results.retrieved_documents:
+                        # Add RAG results to leads
+                        for doc in rag_results.retrieved_documents:
+                            leads.append({
+                                'title': doc.get('title', 'RAG Result'),
+                                'snippet': doc.get('content', '')[:200] + '...',
+                                'link': doc.get('url', ''),
+                                'source': 'rag',
+                                'ai_summary': f"RAG Analysis: {rag_results.generated_response[:200]}...",
+                                'confidence': rag_results.confidence_score
+                            })
+                    
+                    if operation_id:
+                        progress_manager.update_step(operation_id, "step_2_5", 1.0, ProgressStatus.COMPLETED,
+                                                   {"rag_results": len(rag_results.retrieved_documents) if rag_results else 0})
+                
+                except Exception as e:
+                    if logger:
+                        logger.warning(f"RAG search failed: {e}")
+                    if operation_id:
+                        progress_manager.update_step(operation_id, "step_2_5", 1.0, ProgressStatus.COMPLETED,
+                                                   {"rag_error": str(e)})
             
             # Step 3: Research search (if applicable)
             if search_type in ['both', 'research'] and operation_id:
@@ -405,6 +497,85 @@ def perform_search_ajax():
             logger.error(f"AJAX Search error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@search_bp.route('/search_api', methods=['POST'])
+@csrf.exempt if csrf else lambda f: f
+def perform_search_api():
+    """JSON API version of search for programmatic access"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'JSON data required'}), 400
+        
+        query = data.get('query', '').strip()
+        if not query:
+            return jsonify({'success': False, 'error': 'Search query is required'}), 400
+        
+        engines = data.get('engines', ['google'])
+        max_leads = data.get('max_leads', 10)
+        use_ai_analysis = data.get('use_ai_analysis', False)
+        research_question = data.get('research_question', 'general search')
+        
+        if logger:
+            logger.info(f"API Search: {query} with engines {engines}")
+        
+        # Collect leads
+        leads = collect_leads(query, engines, max_leads=max_leads)
+        
+        if not leads:
+            return jsonify({
+                'success': False, 
+                'error': 'No results found for your search',
+                'query': query,
+                'engines': engines
+            }), 404
+        
+        # Add AI analysis if requested
+        if use_ai_analysis:
+            leads = analyze_leads_with_ai(leads, research_question)
+        
+        # Save to database if available
+        saved_count = 0
+        if db:
+            for lead in leads:
+                try:
+                    success = db.save_lead(
+                        lead['title'], 
+                        lead['snippet'], 
+                        lead['link'], 
+                        lead.get('ai_summary', ''), 
+                        source=lead['source']
+                    )
+                    if success:
+                        saved_count += 1
+                except Exception as e:
+                    if logger:
+                        logger.error(f"Failed to save lead '{lead['title']}': {e}")
+                    continue
+        
+        # Save search history
+        if db:
+            engines_str = ','.join(engines)
+            db.save_search_history(query, research_question, engines_str, len(leads))
+        
+        return jsonify({
+            'success': True,
+            'query': query,
+            'engines': engines,
+            'results': leads,
+            'total_found': len(leads),
+            'saved_count': saved_count,
+            'research_question': research_question,
+            'ai_analysis': use_ai_analysis
+        })
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"API search error: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Search failed: {str(e)}'
+        }), 500
+
 @search_bp.route('/search_form')
 def search_form():
     """Display search form"""
@@ -415,35 +586,39 @@ def search_form():
 
 @search_bp.route('/test_search')
 def test_search():
-    """Test route to verify search functionality"""
+    """Test search functionality"""
+    return render_template('search_form.html', 
+                         autogpt_available=AUTOGPT_AVAILABLE,
+                         research_question=DEFAULT_RESEARCH_QUESTION)
+
+@search_bp.route('/test_rag_search')
+def test_rag_search():
+    """Test RAG search functionality"""
     try:
-        # Test serp_service
-        serp_status = "Available" if serp_service else "Not available"
+        if not get_rag_search_service:
+            return jsonify({'success': False, 'error': 'RAG service not available'})
         
-        # Test database
-        db_status = "Available" if db else "Not available"
+        rag_service = get_rag_search_service()
+        test_query = "biomarker diabetes research"
         
-        # Test configuration
-        config_status = "Available" if 'config' in globals() else "Not available"
+        # Test basic RAG search
+        results = rag_service.search(test_query, top_k=3)
         
-        # Test serpapi key
-        try:
-            from config import config
-            serpapi_key = config.get('SERPAPI_KEY', 'Not set')
-            serpapi_status = "Set" if serpapi_key and serpapi_key != 'Not set' else "Not set"
-        except:
-            serpapi_status = "Error accessing"
+        return jsonify({
+            'success': True,
+            'query': test_query,
+            'results': {
+                'documents_found': len(results.retrieved_documents) if results else 0,
+                'generated_response': results.generated_response if results else 'No response',
+                'confidence': results.confidence_score if results else 0.0,
+                'processing_time': results.processing_time if results else 0.0
+            }
+        })
         
-        return {
-            'serp_service': serp_status,
-            'database': db_status,
-            'config': config_status,
-            'serpapi_key': serpapi_status,
-            'engines': SERP_ENGINES,
-            'default_question': DEFAULT_RESEARCH_QUESTION
-        }
     except Exception as e:
-        return {'error': str(e)} 
+        if logger:
+            logger.error(f"RAG test failed: {e}")
+        return jsonify({'success': False, 'error': str(e)})
 
 
 

@@ -10,6 +10,7 @@ from typing import List, Dict, Any
 import os
 import tempfile
 from werkzeug.utils import secure_filename
+import time # Added for processing time tracking
 
 # Import services with error handling
 try:
@@ -227,6 +228,7 @@ def analyze_leads():
         project_context = data.get('project_context', '').strip()
         delete_after_analysis = data.get('delete_after_analysis', False)
         use_runpod = data.get('use_runpod', False)  # New option for RunPod.ai
+        ai_service = data.get('ai_service', 'auto')  # Service selection from frontend
         
         # Handle different formats of lead_ids (array, string, or comma-separated string)
         lead_ids = []
@@ -252,48 +254,57 @@ def analyze_leads():
         
         # Get leads with proper error handling for each ID
         leads_data = []
-        for lead_id_str in lead_ids:
+        for lead_id in lead_ids:
             try:
-                # Clean the lead_id string and convert to int
-                lead_id_clean = lead_id_str.strip().replace('\n', '').replace('\r', '')
-                lead_id_int = int(lead_id_clean)
-                lead = db.get_lead_by_id(lead_id_int)
+                lead = db.get_lead(int(lead_id))
                 if lead:
                     leads_data.append(lead)
                 else:
                     if logger:
-                        logger.warning(f"Lead with ID {lead_id_int} not found in database")
+                        logger.warning(f"Lead {lead_id} not found")
             except (ValueError, TypeError) as e:
                 if logger:
-                    logger.error(f"Invalid lead ID format: '{lead_id_str}' - {e}")
-                continue
+                    logger.error(f"Invalid lead ID {lead_id}: {e}")
         
         if not leads_data:
             return jsonify({'success': False, 'error': 'No valid leads found'}), 400
         
-        # Analyze each lead individually for better results
+        # Smart AI service selection
+        lead_count = len(leads_data)
+        analysis_type = "complex" if project_context else "standard"
+        
+        # Determine which AI service to use
+        if ai_service == 'runpod' or use_runpod:
+            # User explicitly chose RunPod
+            selected_service = 'runpod'
+            if logger:
+                logger.info(f"User selected RunPod for {lead_count} leads")
+        elif ai_service == 'auto':
+            # Smart decision based on configuration
+            if runpod_service and runpod_service.should_use_runpod(lead_count, analysis_type):
+                selected_service = 'runpod'
+                if logger:
+                    logger.info(f"Auto-selected RunPod for {lead_count} leads ({analysis_type} analysis)")
+            else:
+                selected_service = 'ollama'
+                if logger:
+                    logger.info(f"Auto-selected Ollama for {lead_count} leads ({analysis_type} analysis)")
+        else:
+            # Default to Ollama
+            selected_service = 'ollama'
+            if logger:
+                logger.info(f"Using Ollama for {lead_count} leads")
+        
+        # Analyze leads
         saved_analyses = []
         analysis_summary = []
-        
-        # Choose AI service based on user preference and availability
-        ai_service = None
-        if use_runpod and runpod_service and runpod_service.is_available():
-            ai_service = 'runpod'
-            if logger:
-                logger.info("Using RunPod.ai for enhanced analysis")
-        elif ollama_service:
-            ai_service = 'ollama'
-            if logger:
-                logger.info("Using Ollama for analysis")
-        else:
-            return jsonify({'success': False, 'error': 'No AI service available'}), 500
         
         for i, lead in enumerate(leads_data, 1):
             if logger:
                 logger.info(f"Analyzing lead {i}/{len(leads_data)}: {lead['title'][:50]}...")
             
             try:
-                if ai_service == 'runpod':
+                if selected_service == 'runpod':
                     # Use RunPod.ai for enhanced analysis
                     result = runpod_service.analyze_lead(lead, project_context)
                     
@@ -320,115 +331,80 @@ def analyze_leads():
                         analysis_summary.append(f"✅ Lead {i}: {lead['title'][:50]}... (Score: {result.score}, RunPod)")
                     else:
                         analysis_summary.append(f"❌ Lead {i}: {lead['title'][:50]}... (RunPod failed: {result.analysis})")
-                
                 else:
-                    # Use Ollama for analysis (existing logic)
-                    individual_prompt = f"""
-                    Project: {project['name']}
-                    Context: {project_context if project_context else 'General analysis'}
-                    
-                    Analyze this specific lead in detail:
-                    
-                    LEAD: {lead['title']}
-                    DESCRIPTION: {lead['description']}
-                    LINK: {lead['link']}
-                    SOURCE: {lead['source']}
-                    
-                    Provide a comprehensive analysis with the following format:
-                    
-                    SCORE: [1-5 relevancy score]
-                    JUSTIFICATION: [Detailed explanation of why this score]
-                    PEOPLE: [Names, titles, organizations mentioned or "None found"]
-                    CONTACT: [Contact details found or "Not available"]
-                    PRODUCTS: [Product names, technologies mentioned or "None mentioned"]
-                    COMPANY: [Company information or "Not available"]
-                    OPPORTUNITIES: [Potential collaboration opportunities or "None identified"]
-                    CONCERNS: [Red flags or concerns or "None identified"]
-                    ANALYSIS: [Comprehensive analysis and recommendations]
-                    
-                    Be thorough and specific to this lead. If information is not available, say "Not available" or "Unknown".
-                    Focus on extracting specific details like product names, company information, and contact details.
-                    """
-                    
-                    # Get AI analysis for this individual lead
-                    ai_response = ollama_service._call_ollama_with_retry(individual_prompt, max_retries=1)
-                    
-                    if not ai_response:
-                        ai_response = "AI analysis failed - no response received"
-                    
-                    # Parse the AI response to extract structured data
-                parsed_data = parse_ai_analysis(ai_response, lead['title'])
+                    # Use Ollama for standard analysis
+                    if ollama_service:
+                        # Create analysis prompt
+                        analysis_prompt = f"""
+                        Analyze this lead for business opportunities:
+                        
+                        Title: {lead['title']}
+                        Description: {lead['description']}
+                        Link: {lead.get('link', 'N/A')}
+                        Source: {lead.get('source', 'N/A')}
+                        
+                        Project Context: {project_context if project_context else 'General analysis'}
+                        
+                        Provide a brief analysis with:
+                        - Relevancy score (1-5)
+                        - Key people mentioned
+                        - Contact information
+                        - Products/technologies
+                        - Company details
+                        - Opportunities
+                        - Concerns
+                        """
+                        
+                        start_time = time.time()
+                        ai_response = ollama_service._call_ollama(analysis_prompt)
+                        processing_time = time.time() - start_time
+                        
+                        if ai_response:
+                            # Save Ollama analysis results
+                            analysis_id = db.save_lead_analysis(
+                                project_id=int(project_id),
+                                lead_id=lead['id'],
+                                relevancy_score=3,  # Default score
+                                ai_analysis=ai_response,
+                                key_opinion_leaders="Extracted from analysis",
+                                contact_info="Extracted from analysis",
+                                notes=f"Ollama Analysis - Processing Time: {processing_time:.2f}s"
+                            )
+                            
+                            saved_analyses.append({
+                                'lead_id': lead['id'],
+                                'analysis_id': analysis_id,
+                                'score': 3,
+                                'model': 'ollama',
+                                'processing_time': processing_time
+                            })
+                            
+                            analysis_summary.append(f"✅ Lead {i}: {lead['title'][:50]}... (Score: 3, Ollama)")
+                        else:
+                            analysis_summary.append(f"❌ Lead {i}: {lead['title'][:50]}... (Ollama failed)")
+                    else:
+                        analysis_summary.append(f"❌ Lead {i}: {lead['title'][:50]}... (No AI service available)")
                 
-                # Save individual analysis
-                analysis_id = db.save_lead_analysis(
-                    project_id=int(project_id),
-                    lead_id=lead['id'],
-                    relevancy_score=parsed_data.get('score', 3),
-                    ai_analysis=ai_response,
-                    key_opinion_leaders=parsed_data.get('people', 'To be extracted'),
-                    contact_info=parsed_data.get('contact', 'To be extracted'),
-                    notes=f"Analyzed for project: {project['name']} - {parsed_data.get('analysis_summary', 'Analysis completed')}"
-                )
-                
-                if analysis_id:
-                    saved_analyses.append(analysis_id)
-                    analysis_summary.append(f"Lead {i}: {lead['title'][:50]}... - Score: {parsed_data.get('score', 3)}")
-                
-                if logger:
-                    logger.info(f"Completed analysis for lead {i}: {lead['title'][:50]}...")
-                    
+                # Delete lead if requested
+                if delete_after_analysis:
+                    db.delete_lead(lead['id'])
+                    if logger:
+                        logger.info(f"Deleted lead {lead['id']} after analysis")
+                        
             except Exception as e:
                 if logger:
-                    logger.error(f"Failed to analyze lead {i} ({lead['title'][:50]}...): {e}")
-                
-                # Save fallback analysis for failed leads
-                analysis_id = db.save_lead_analysis(
-                    project_id=int(project_id),
-                    lead_id=lead['id'],
-                    relevancy_score=3,
-                    ai_analysis=f"Analysis failed: {str(e)}",
-                    key_opinion_leaders="Analysis failed",
-                    contact_info="Analysis failed",
-                    notes=f"Analysis failed for project: {project['name']}"
-                )
-                
-                if analysis_id:
-                    saved_analyses.append(analysis_id)
-                    analysis_summary.append(f"Lead {i}: {lead['title'][:50]}... - FAILED")
+                    logger.error(f"Error analyzing lead {lead['id']}: {e}")
+                analysis_summary.append(f"❌ Lead {i}: {lead['title'][:50]}... (Error: {str(e)})")
         
-        # Create summary response
-        summary_response = f"""
-        Analysis completed for {len(saved_analyses)} leads:
-        
-        {'\n'.join(analysis_summary)}
-        
-        Each lead was analyzed individually for detailed insights.
-        """
-        
-        # Delete leads from workshop if requested
-        deleted_leads = []
-        if delete_after_analysis:
-            for lead_id_str in lead_ids:
-                try:
-                    # Clean the lead_id string and convert to int
-                    lead_id_clean = lead_id_str.strip().replace('\n', '').replace('\r', '')
-                    lead_id_int = int(lead_id_clean)
-                    success = db.delete_lead(lead_id_int)
-                    if success:
-                        deleted_leads.append(lead_id_int)
-                except (ValueError, TypeError) as e:
-                    if logger:
-                        logger.error(f"Error converting lead ID '{lead_id_str}' for deletion: {e}")
-                except Exception as e:
-                    if logger:
-                        logger.error(f"Error deleting lead {lead_id_str} after analysis: {e}")
-        
+        # Return results
         return jsonify({
             'success': True,
-            'message': f'Analyzed {len(saved_analyses)} leads for project "{project["name"]}"',
-            'analysis_count': len(saved_analyses),
-            'deleted_leads': deleted_leads,
-            'ai_response': summary_response
+            'message': f'Analysis completed for {len(saved_analyses)} leads',
+            'analyzed_count': len(saved_analyses),
+            'total_count': len(leads_data),
+            'ai_service_used': selected_service,
+            'analysis_summary': analysis_summary,
+            'saved_analyses': saved_analyses
         })
         
     except Exception as e:

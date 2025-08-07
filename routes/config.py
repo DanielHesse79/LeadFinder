@@ -7,6 +7,7 @@ configuration through the web interface.
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from typing import Dict, Any, Optional
+from datetime import datetime
 
 # Import the new configuration system
 try:
@@ -318,25 +319,117 @@ def export_config():
 
 @config_bp.route('/config/reset', methods=['POST'])
 def reset_config():
-    """Reset all configuration values to defaults"""
-    if not config:
-        flash('Configuration service not available', 'error')
-        return redirect(url_for('config.config_home'))
-    
+    """Reset configuration to defaults"""
     try:
-        # Clear all database configurations
-        success = True
-        for key in CONFIG_DEFINITIONS.keys():
-            if not config.set(key, '', 'Reset to default', False):
-                success = False
+        # Get all configs
+        all_configs = config.get_all_configs()
         
-        if success:
-            flash('Configuration reset to default values', 'success')
-        else:
-            flash('Could not reset configuration', 'error')
+        # Reset to defaults
+        reset_count = 0
+        for key, config_info in all_configs.items():
+            if 'default' in config_info:
+                config.set(key, config_info['default'], config_info.get('description', ''))
+                reset_count += 1
+        
+        flash(f'Configuration reset successfully. {reset_count} settings restored to defaults.', 'success')
+        return redirect(url_for('config.config_home'))
+        
     except Exception as e:
         if logger:
-            logger.error(f"Error resetting config: {e}")
-        flash('Error resetting configuration', 'error')
-    
-    return redirect(url_for('config.config_home')) 
+            logger.error(f"Configuration reset failed: {e}")
+        flash(f'Configuration reset failed: {str(e)}', 'error')
+        return redirect(url_for('config.config_home'))
+
+
+# REST API Endpoints
+@config_bp.route('/api/config', methods=['GET'])
+def get_config_api():
+    """REST API endpoint for getting all configuration"""
+    try:
+        include_secrets = request.args.get('include_secrets', 'false').lower() == 'true'
+        all_configs = config.get_all_configs(include_secrets=include_secrets)
+        
+        return jsonify({
+            'config': all_configs,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"API config fetch failed: {e}")
+        return jsonify({'error': f'Failed to fetch configuration: {str(e)}'}), 500
+
+
+@config_bp.route('/api/config/<key_name>', methods=['GET'])
+def get_config_key_api(key_name: str):
+    """REST API endpoint for getting a specific configuration key"""
+    try:
+        value = config.get(key_name)
+        source = config.get_source(key_name)
+        
+        return jsonify({
+            'key': key_name,
+            'value': value,
+            'source': source
+        })
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"API config key fetch failed: {e}")
+        return jsonify({'error': f'Failed to fetch configuration key: {str(e)}'}), 500
+
+
+@config_bp.route('/api/config/<key_name>', methods=['POST'])
+def set_config_key_api(key_name: str):
+    """REST API endpoint for setting a configuration key"""
+    try:
+        data = request.get_json()
+        if not data or 'value' not in data:
+            return jsonify({'error': 'Value is required'}), 400
+        
+        value = data['value']
+        description = data.get('description', '')
+        
+        success = config.set(key_name, value, description)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'key': key_name,
+                'value': value,
+                'message': 'Configuration updated successfully'
+            })
+        else:
+            return jsonify({'error': 'Failed to update configuration'}), 500
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"API config key update failed: {e}")
+        return jsonify({'error': f'Failed to update configuration: {str(e)}'}), 500
+
+
+@config_bp.route('/api/config/<key_name>', methods=['DELETE'])
+def delete_config_key_api(key_name: str):
+    """REST API endpoint for deleting a configuration key"""
+    try:
+        # Check if key exists
+        current_value = config.get(key_name)
+        if current_value is None:
+            return jsonify({'error': 'Configuration key not found'}), 404
+        
+        # Delete from database (set to None or empty)
+        success = config.set(key_name, '', 'Deleted via API')
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'key': key_name,
+                'message': 'Configuration key deleted successfully'
+            })
+        else:
+            return jsonify({'error': 'Failed to delete configuration key'}), 500
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"API config key deletion failed: {e}")
+        return jsonify({'error': f'Failed to delete configuration key: {str(e)}'}), 500 

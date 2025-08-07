@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}RAG Context Retrieval{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-search"></i> RAG Context Retrieval
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="retrieveForm">
+                        <div class="mb-3">
+                            <label for="query" class="form-label">Query</label>
+                            <input type="text" class="form-control" id="query" name="query" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="top_k" class="form-label">Number of Results</label>
+                            <input type="number" class="form-control" id="top_k" name="top_k" value="10" min="1" max="50">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Retrieve Context
+                        </button>
+                    </form>
+                    
+                    <div id="results" class="mt-4" style="display: none;">
+                        <h6>Retrieved Context</h6>
+                        <div id="contextList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('retrieveForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        query: formData.get('query'),
+        top_k: parseInt(formData.get('top_k'))
+    };
+    
+    try {
+        const response = await fetch('/rag/retrieve', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displayResults(result);
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Request failed: ' + error.message);
+    }
+});
+
+function displayResults(result) {
+    const resultsDiv = document.getElementById('results');
+    const contextList = document.getElementById('contextList');
+    
+    contextList.innerHTML = '';
+    
+    result.context.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'card mb-2';
+        itemDiv.innerHTML = `
+            <div class="card-body">
+                <h6 class="card-title">Result ${index + 1}</h6>
+                <p class="card-text">${item.content}</p>
+                <small class="text-muted">
+                    Score: ${item.similarity_score} | 
+                    Source: ${item.source || 'Unknown'}
+                </small>
+            </div>
+        `;
+        contextList.appendChild(itemDiv);
+    });
+    
+    resultsDiv.style.display = 'block';
+}
+</script>
+{% endblock %} 

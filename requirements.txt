@@ -1,6 +1,7 @@
 # Core Web Framework
 Flask>=2.3.0
 Werkzeug>=2.3.0
+Flask-WTF>=1.1.0
 
 # HTTP and API Libraries
 requests>=2.31.0
@@ -31,9 +32,15 @@ chromadb>=0.4.0
 sentence-transformers>=2.2.0
 numpy>=1.24.0
 
+# Caching and Performance
+redis>=4.5.0
+aioredis>=2.0.0
+
 # Testing Framework
 pytest>=7.0.0
 pytest-cov>=4.0.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.10.0
 
 # Development and Code Quality
 black>=23.0.0
@@ -42,6 +49,10 @@ mypy>=1.0.0
 
 # System Monitoring
 psutil>=5.9.0
+
+# Async Support
+aiohttp>=3.8.0
+asyncio-mqtt>=0.11.0
 
 # Optional: AutoGPT Integration (if using external AutoGPT)
 # autogpt-client>=0.1.0

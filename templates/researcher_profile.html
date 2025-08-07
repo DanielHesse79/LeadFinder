@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}{{ researcher.name }} - Researcher Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+    }
+    .action-buttons {
+        margin: 2rem 0;
+    }
+    .action-card {
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: transform 0.2s;
+    }
+    .action-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .orcid-badge {
+        background-color: #a6ce39;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    .publication-item {
+        border-left: 3px solid #007bff;
+        padding-left: 1rem;
+        margin-bottom: 1rem;
+    }
+    .funding-item {
+        border-left: 3px solid #28a745;
+        padding-left: 1rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <!-- Profile Header -->
+                <div class="profile-header">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h1 class="mb-3">
+                                <i class="fas fa-user-graduate"></i> 
+                                {{ researcher.name }}
+                            </h1>
+                            {% if researcher.institution %}
+                            <p class="mb-2">
+                                <i class="fas fa-university"></i> 
+                                <strong>{{ researcher.institution }}</strong>
+                            </p>
+                            {% endif %}
+                            {% if researcher.department %}
+                            <p class="mb-2">
+                                <i class="fas fa-building"></i> 
+                                {{ researcher.department }}
+                            </p>
+                            {% endif %}
+                            {% if researcher.orcid_id %}
+                            <p class="mb-0">
+                                <span class="orcid-badge">ORCID</span>
+                                <a href="https://orcid.org/{{ researcher.orcid_id }}" 
+                                   target="_blank" class="text-white">
+                                    {{ researcher.orcid_id }}
+                                </a>
+                            </p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="d-flex flex-column">
+                                <small class="text-white-50">
+                                    <i class="fas fa-calendar"></i> 
+                                    Last updated: {{ researcher.last_updated.split(' ')[0] if researcher.last_updated else 'Unknown' }}
+                                </small>
+                                <small class="text-white-50">
+                                    <i class="fas fa-database"></i> 
+                                    Source: {{ researcher.source|title }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Researcher Bio -->
+                {% if researcher.bio %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-info-circle"></i> Biography</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ researcher.bio }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <h4><i class="fas fa-search"></i> Research Actions</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="action-card">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-book fa-2x text-primary me-3"></i>
+                                    <div>
+                                        <h5 class="mb-1">Publications</h5>
+                                        <p class="text-muted mb-0">Search PubMed for publications by this researcher</p>
+                                    </div>
+                                </div>
+                                <form method="POST" action="{{ url_for('researchers.lookup_researcher_publications', orcid_id=researcher.orcid_id) }}">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Find Publications
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="action-card">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-dollar-sign fa-2x text-success me-3"></i>
+                                    <div>
+                                        <h5 class="mb-1">Funding History</h5>
+                                        <p class="text-muted mb-0">Search funding databases for this researcher</p>
+                                    </div>
+                                </div>
+                                <form method="POST" action="{{ url_for('researchers.lookup_researcher_funding', orcid_id=researcher.orcid_id) }}">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-search"></i> Find Funding
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                {% if researcher.email or researcher.website or researcher.linkedin or researcher.twitter %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-address-card"></i> Contact Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% if researcher.email %}
+                                    <div class="col-md-6 mb-2">
+                                        <i class="fas fa-envelope text-primary"></i>
+                                        <a href="mailto:{{ researcher.email }}">{{ researcher.email }}</a>
+                                    </div>
+                                    {% endif %}
+                                    {% if researcher.website %}
+                                    <div class="col-md-6 mb-2">
+                                        <i class="fas fa-globe text-info"></i>
+                                        <a href="{{ researcher.website }}" target="_blank">Website</a>
+                                    </div>
+                                    {% endif %}
+                                    {% if researcher.linkedin %}
+                                    <div class="col-md-6 mb-2">
+                                        <i class="fab fa-linkedin text-primary"></i>
+                                        <a href="{{ researcher.linkedin }}" target="_blank">LinkedIn</a>
+                                    </div>
+                                    {% endif %}
+                                    {% if researcher.twitter %}
+                                    <div class="col-md-6 mb-2">
+                                        <i class="fab fa-twitter text-info"></i>
+                                        <a href="https://twitter.com/{{ researcher.twitter }}" target="_blank">@{{ researcher.twitter }}</a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Research Interests -->
+                {% if researcher.research_interests %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-microscope"></i> Research Interests</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ researcher.research_interests }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Publications Section (if available) -->
+                {% if publications %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-book"></i> Publications ({{ publications|length }})</h5>
+                            </div>
+                            <div class="card-body">
+                                {% for pub in publications %}
+                                <div class="publication-item">
+                                    <h6>{{ pub.title }}</h6>
+                                    {% if pub.authors %}
+                                    <p class="text-muted mb-1">{{ pub.authors }}</p>
+                                    {% endif %}
+                                    {% if pub.journal %}
+                                    <p class="text-muted mb-1">
+                                        <i class="fas fa-newspaper"></i> {{ pub.journal }}
+                                        {% if pub.year %}({{ pub.year }}){% endif %}
+                                    </p>
+                                    {% endif %}
+                                    {% if pub.url %}
+                                    <a href="{{ pub.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-external-link-alt"></i> View
+                                    </a>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Back to Database -->
+                <div class="row">
+                    <div class="col-12">
+                        <a href="{{ url_for('researchers.researchers_home') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Researcher Database
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

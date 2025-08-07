@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Workflow Dashboard - LeadFinder{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-project-diagram me-2"></i>Workflow Dashboard
+        </h1>
+        <p class="page-subtitle">
+            Lean 3-phase data workflow for lead discovery and analysis
+        </p>
+    </div>
+
+    <!-- Workflow Progress Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Workflow Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Phase 1: Data In -->
+                        <div class="col-md-4">
+                            <div class="workflow-phase">
+                                <div class="phase-header">
+                                    <h6 class="phase-title">
+                                        <i class="fas fa-download me-2"></i>Phase 1: Data In
+                                    </h6>
+                                    <span class="phase-status {{ 'completed' if progress.data_in.status == 'completed' else 'pending' }}">
+                                        {{ progress.data_in.status.title() }}
+                                    </span>
+                                </div>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ progress.data_in.progress }}%"
+                                         aria-valuenow="{{ progress.data_in.progress }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ progress.data_in.progress }}%
+                                    </div>
+                                </div>
+                                <p class="phase-description">
+                                    Collect and ingest data from various sources
+                                </p>
+                                <div class="phase-actions">
+                                    <a href="{{ url_for('workflow.data_in_dashboard') }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-arrow-right me-1"></i>Go to Data In
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phase 2: Data Process -->
+                        <div class="col-md-4">
+                            <div class="workflow-phase">
+                                <div class="phase-header">
+                                    <h6 class="phase-title">
+                                        <i class="fas fa-cogs me-2"></i>Phase 2: Data Process
+                                    </h6>
+                                    <span class="phase-status {{ 'completed' if progress.data_process.status == 'completed' else 'pending' }}">
+                                        {{ progress.data_process.status.title() }}
+                                    </span>
+                                </div>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ progress.data_process.progress }}%"
+                                         aria-valuenow="{{ progress.data_process.progress }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ progress.data_process.progress }}%
+                                    </div>
+                                </div>
+                                <p class="phase-description">
+                                    Analyze and transform the data with AI
+                                </p>
+                                <div class="phase-actions">
+                                    <a href="{{ url_for('workflow.data_process_dashboard') }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-arrow-right me-1"></i>Go to Data Process
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phase 3: Data Out -->
+                        <div class="col-md-4">
+                            <div class="workflow-phase">
+                                <div class="phase-header">
+                                    <h6 class="phase-title">
+                                        <i class="fas fa-chart-bar me-2"></i>Phase 3: Data Out
+                                    </h6>
+                                    <span class="phase-status {{ 'completed' if progress.data_out.status == 'completed' else 'pending' }}">
+                                        {{ progress.data_out.status.title() }}
+                                    </span>
+                                </div>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ progress.data_out.progress }}%"
+                                         aria-valuenow="{{ progress.data_out.progress }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ progress.data_out.progress }}%
+                                    </div>
+                                </div>
+                                <p class="phase-description">
+                                    Generate reports and insights
+                                </p>
+                                <div class="phase-actions">
+                                    <a href="{{ url_for('workflow.data_out_dashboard') }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-arrow-right me-1"></i>Go to Data Out
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('workflow.data_in_dashboard') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-search me-2"></i>Start Data Collection
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('workflow.data_process_dashboard') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-brain me-2"></i>Analyze Data
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('workflow.data_out_dashboard') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-file-alt me-2"></i>Generate Reports
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <button class="btn btn-outline-warning w-100" onclick="resetWorkflow()">
+                                <i class="fas fa-redo me-2"></i>Reset Workflow
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Data -->
+    {% if recent_data %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-database me-2"></i>Recent Data
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Source</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in recent_data %}
+                                <tr>
+                                    <td>{{ item.title[:50] }}{% if item.title|length > 50 %}...{% endif %}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ item.source }}</span>
+                                    </td>
+                                    <td>{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewItem({{ item.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.workflow-phase {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.workflow-phase:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.phase-title {
+    margin: 0;
+    font-weight: 600;
+}
+
+.phase-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.phase-status.completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.phase-status.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.phase-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.phase-actions {
+    text-align: center;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.progress-bar {
+    background-color: #007bff;
+    border-radius: 4px;
+}
+</style>
+
+<script>
+function resetWorkflow() {
+    if (confirm('Are you sure you want to reset the workflow progress? This will clear all progress data.')) {
+        fetch('/workflow/reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error resetting workflow: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error resetting workflow');
+        });
+    }
+}
+
+function viewItem(id) {
+    // Implement item viewing functionality
+    console.log('Viewing item:', id);
+}
+</script>
+{% endblock %}

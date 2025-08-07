@@ -10,9 +10,10 @@ from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 
 try:
-    from services.vector_store import get_vector_store
+    from services.vector_store_service import get_vector_store_service, VectorSearchResult
 except ImportError:
-    get_vector_store = None
+    get_vector_store_service = None
+    VectorSearchResult = None
 
 try:
     from services.embedding_service import get_embedding_service
@@ -49,12 +50,12 @@ class RAGSearchService:
     """Service for RAG-based search and response generation"""
     
     def __init__(self):
-        self.vector_store = get_vector_store() if get_vector_store else None
+        self.vector_store_service = get_vector_store_service() if get_vector_store_service else None
         self.embedding_service = get_embedding_service() if get_embedding_service else None
         self.ollama_service = ollama_service
         
-        if not self.vector_store:
-            raise ImportError("Vector store is required for RAG search")
+        if not self.vector_store_service:
+            raise ImportError("Vector store service is required for RAG search")
         if not self.embedding_service:
             raise ImportError("Embedding service is required for RAG search")
         
@@ -82,14 +83,14 @@ class RAGSearchService:
             if not query_embedding:
                 return self._create_error_result(query, "Failed to generate query embedding")
             
-            # Step 2: Retrieve relevant documents
-            search_results = self.vector_store.search(
+            # Step 2: Retrieve relevant documents using vector store service
+            search_results = self.vector_store_service.search(
                 query_embedding=query_embedding,
-                n_results=top_k,
-                where=filters
+                top_k=top_k,
+                filters=filters
             )
             
-            if not search_results['documents']:
+            if not search_results:
                 return self._create_error_result(query, "No relevant documents found")
             
             # Step 3: Build context from retrieved documents
@@ -110,7 +111,7 @@ class RAGSearchService:
                 generated_response=generated_response,
                 processing_time=processing_time,
                 metadata={
-                    'total_documents': len(search_results['documents']),
+                    'total_documents': len(search_results),
                     'filters_applied': filters,
                     'embedding_model': self.embedding_service.model_name
                 },
@@ -144,7 +145,7 @@ class RAGSearchService:
         enhanced_query = f"{query}\n\nContext: {context}"
         return self.search(enhanced_query, top_k)
     
-    def _build_context(self, search_results: Dict[str, Any]) -> str:
+    def _build_context(self, search_results: List[VectorSearchResult]) -> str:
         """
         Build context string from retrieved documents
         
@@ -154,18 +155,14 @@ class RAGSearchService:
         Returns:
             Formatted context string
         """
-        documents = search_results['documents']
-        metadatas = search_results['metadatas']
-        distances = search_results['distances']
-        
         context_parts = []
         
-        for i, (doc, metadata, distance) in enumerate(zip(documents, metadatas, distances)):
+        for i, result in enumerate(search_results):
             # Format document with metadata
-            doc_info = f"Document {i+1} (Relevance: {1-distance:.3f}):\n"
-            doc_info += f"Title: {metadata.get('title', 'Unknown')}\n"
-            doc_info += f"Source: {metadata.get('source', 'Unknown')}\n"
-            doc_info += f"Content: {doc}\n"
+            doc_info = f"Document {i+1} (Relevance: {result.similarity_score:.3f}):\n"
+            doc_info += f"Title: {result.metadata.get('title', 'Unknown')}\n"
+            doc_info += f"Source: {result.metadata.get('source', 'Unknown')}\n"
+            doc_info += f"Content: {result.content}\n"
             
             context_parts.append(doc_info)
         
@@ -231,71 +228,56 @@ Instructions:
 Answer:
 """
     
-    def _format_documents(self, search_results: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _format_documents(self, search_results: List[VectorSearchResult]) -> List[Dict[str, Any]]:
         """
-        Format search results into structured documents
+        Format search results for response
         
         Args:
-            search_results: Raw search results
+            search_results: Vector search results
         
         Returns:
             List of formatted documents
         """
-        documents = []
+        formatted_docs = []
         
-        for i, (doc_id, doc_content, metadata, distance) in enumerate(zip(
-            search_results['ids'],
-            search_results['documents'],
-            search_results['metadatas'],
-            search_results['distances']
-        )):
-            documents.append({
-                'id': doc_id,
-                'content': doc_content,
-                'metadata': metadata,
-                'relevance_score': 1 - distance,
-                'rank': i + 1
+        for result in search_results:
+            formatted_docs.append({
+                'id': result.chunk_id,
+                'content': result.content,
+                'metadata': result.metadata,
+                'similarity_score': result.similarity_score,
+                'rank': result.rank
             })
         
-        return documents
+        return formatted_docs
     
-    def _calculate_confidence(self, search_results: Dict[str, Any]) -> float:
+    def _calculate_confidence(self, search_results: List[VectorSearchResult]) -> float:
         """
         Calculate confidence score based on search results
         
         Args:
-            search_results: Search results
+            search_results: Vector search results
         
         Returns:
             Confidence score between 0 and 1
         """
-        try:
-            distances = search_results['distances']
-            if not distances:
-                return 0.0
-            
-            # Calculate average relevance (1 - distance)
-            relevances = [1 - d for d in distances]
-            avg_relevance = sum(relevances) / len(relevances)
-            
-            # Boost confidence if we have multiple good results
-            if len(distances) >= 3:
-                avg_relevance *= 1.1
-            
-            return min(avg_relevance, 1.0)
-            
-        except Exception as e:
-            if logger:
-                logger.error(f"Failed to calculate confidence: {e}")
+        if not search_results:
             return 0.0
+        
+        # Calculate average similarity score
+        total_score = sum(result.similarity_score for result in search_results)
+        avg_score = total_score / len(search_results)
+        
+        # Normalize to 0-1 range
+        return min(avg_score, 1.0)
     
     def _create_error_result(self, query: str, error_message: str) -> RAGSearchResult:
         """
-        Create error result when search fails
+        Create error result
         
         Args:
             query: Original query
-            error_message: Error description
+            error_message: Error message
         
         Returns:
             RAGSearchResult with error information
@@ -303,7 +285,7 @@ Answer:
         return RAGSearchResult(
             query=query,
             retrieved_documents=[],
-            generated_response=f"Search failed: {error_message}",
+            generated_response=f"Error: {error_message}",
             processing_time=0.0,
             metadata={'error': error_message},
             confidence_score=0.0
@@ -311,25 +293,29 @@ Answer:
     
     def get_service_status(self) -> Dict[str, Any]:
         """
-        Get status of RAG search service
+        Get service status and health information
         
         Returns:
-            Service status information
+            Dictionary with service status
         """
         try:
-            vector_store_status = self.vector_store.get_collection_stats()
-            embedding_status = self.embedding_service.get_model_info()
+            vector_store_status = self.vector_store_service.get_service_status() if self.vector_store_service else None
+            embedding_status = self.embedding_service.get_service_status() if self.embedding_service else None
             
             return {
+                'service': 'rag_search',
                 'status': 'healthy',
                 'vector_store': vector_store_status,
                 'embedding_service': embedding_status,
-                'ollama_available': self.ollama_service is not None,
-                'total_documents': vector_store_status.get('total_documents', 0)
+                'ollama_available': self.ollama_service is not None
             }
+            
         except Exception as e:
+            if logger:
+                logger.error(f"Failed to get service status: {e}")
             return {
-                'status': 'unhealthy',
+                'service': 'rag_search',
+                'status': 'error',
                 'error': str(e)
             }
 
@@ -344,21 +330,13 @@ def get_rag_search_service() -> RAGSearchService:
     return _rag_search_service
 
 def get_rag_search_health_status() -> Dict[str, Any]:
-    """Get health status of the RAG search service"""
+    """Get RAG search service health status"""
     try:
-        rag_service = get_rag_search_service()
-        status = rag_service.get_service_status()
-        
-        return {
-            'status': status['status'],
-            'available': status['status'] == 'healthy',
-            'service_info': status,
-            'error': status.get('error')
-        }
+        service = get_rag_search_service()
+        return service.get_service_status()
     except Exception as e:
         return {
-            'status': 'unhealthy',
-            'available': False,
-            'service_info': {},
+            'service': 'rag_search',
+            'status': 'error',
             'error': str(e)
         } 

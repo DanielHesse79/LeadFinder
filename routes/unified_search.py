@@ -9,11 +9,11 @@ from flask import Blueprint, request, jsonify, render_template
 from typing import Dict, Any
 import logging
 
-# Import the unified search service
+# Import the unified search service (RAG-compatible version)
 try:
-    from services.unified_search import unified_search_service
+    from services.unified_search_service import get_unified_search_service
 except ImportError:
-    unified_search_service = None
+    get_unified_search_service = None
 
 try:
     from utils.logger import get_logger
@@ -29,13 +29,16 @@ def unified_search():
     """
     Unified search endpoint that handles both quick search and comprehensive research
     """
-    if not unified_search_service:
+    if not get_unified_search_service:
         return jsonify({
             'success': False,
             'error': 'Unified search service not available'
         }), 500
     
     try:
+        # Get the unified search service
+        unified_search_service = get_unified_search_service()
+        
         # Get search parameters
         mode = request.form.get('mode', 'quick')
         query = request.form.get('query', '').strip()
@@ -57,13 +60,17 @@ def unified_search():
             max_results = int(request.form.get('max_results', 10))
             research_question = request.form.get('research_question', '').strip()
             
-            result = unified_search_service.quick_search(
+            # Create SearchQuery object for the service
+            from services.unified_search_service import SearchQuery
+            search_query = SearchQuery(
                 query=query,
+                search_type='web',
                 engines=engines,
-                use_ai_analysis=use_ai_analysis,
                 max_results=max_results,
                 research_question=research_question
             )
+            
+            result = unified_search_service.search(search_query)
             
         elif mode == 'research':
             # Comprehensive research parameters
@@ -76,10 +83,16 @@ def unified_search():
                     'error': 'Company name and industry are required for research mode'
                 }), 400
             
-            result = unified_search_service.comprehensive_research(
-                company_name=company_name,
-                industry=industry
+            # Create SearchQuery for research
+            from services.unified_search_service import SearchQuery
+            search_query = SearchQuery(
+                query=f"{company_name} {industry}",
+                search_type='unified',
+                max_results=20,
+                research_question=f"Research {company_name} in {industry} industry"
             )
+            
+            result = unified_search_service.search(search_query)
             
         else:
             return jsonify({
@@ -100,34 +113,26 @@ def unified_search():
 
 @unified_search_bp.route('/unified_search_form')
 def unified_search_form():
-    """
-    Display the unified search form
-    """
-    autogpt_available = unified_search_service.is_autogpt_available() if unified_search_service else False
-    
-    return render_template('unified_search_form.html',
-                         autogpt_available=autogpt_available)
+    """Render the unified search form"""
+    return render_template('unified_search_form.html')
 
 
 @unified_search_bp.route('/search_stats')
 def search_stats():
-    """
-    Get search service statistics
-    """
-    if not unified_search_service:
+    """Get search statistics"""
+    if not get_unified_search_service:
         return jsonify({
             'success': False,
             'error': 'Unified search service not available'
         }), 500
     
     try:
-        cache_stats = unified_search_service.get_cache_stats()
-        autogpt_available = unified_search_service.is_autogpt_available()
+        unified_search_service = get_unified_search_service()
+        stats = unified_search_service.get_service_status()
         
         return jsonify({
             'success': True,
-            'cache_stats': cache_stats,
-            'autogpt_available': autogpt_available
+            'stats': stats
         })
         
     except Exception as e:
@@ -135,26 +140,26 @@ def search_stats():
             logger.error(f"Failed to get search stats: {e}")
         return jsonify({
             'success': False,
-            'error': f'Failed to get stats: {str(e)}'
+            'error': f'Failed to get search stats: {str(e)}'
         }), 500
 
 
 @unified_search_bp.route('/clear_cache', methods=['POST'])
 def clear_cache():
-    """
-    Clear the search cache
-    """
-    if not unified_search_service:
+    """Clear search cache"""
+    if not get_unified_search_service:
         return jsonify({
             'success': False,
             'error': 'Unified search service not available'
         }), 500
     
     try:
+        unified_search_service = get_unified_search_service()
         unified_search_service.clear_cache()
+        
         return jsonify({
             'success': True,
-            'message': 'Search cache cleared successfully'
+            'message': 'Cache cleared successfully'
         })
         
     except Exception as e:

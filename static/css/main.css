@@ -1,0 +1,383 @@
+/* 4Front2Market Branding & Color Scheme */
+
+:root {
+    /* Primary Colors */
+    --4front-yellow: #F8B700;
+    --4front-dark-blue: #003E6B;
+    --4front-teal: #008A8F;
+    --4front-light-yellow: #FFF4CC;
+    --4front-mid-blue: #336D99;
+    --4front-light-teal: #66BFBF;
+    --4front-dark-gray: #333333;
+    --4front-light-gray: #F2F2F2;
+    
+    /* Semantic Colors */
+    --primary: var(--4front-dark-blue);
+    --secondary: var(--4front-teal);
+    --accent: var(--4front-yellow);
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: var(--4front-yellow);
+    --info: var(--4front-teal);
+    --light: var(--4front-light-gray);
+    --dark: var(--4front-dark-gray);
+}
+
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--4front-dark-blue);
+    background-color: #ffffff;
+}
+
+/* Navigation Branding */
+.navbar-brand {
+    color: var(--4front-yellow) !important;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar-dark {
+    background-color: var(--4front-dark-blue) !important;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.3s ease;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link.active {
+    color: var(--4front-yellow) !important;
+}
+
+/* Button Styling */
+.btn-primary {
+    background-color: var(--4front-dark-blue);
+    border-color: var(--4front-dark-blue);
+}
+
+.btn-primary:hover {
+    background-color: var(--4front-mid-blue);
+    border-color: var(--4front-mid-blue);
+}
+
+.btn-secondary {
+    background-color: var(--4front-teal);
+    border-color: var(--4front-teal);
+}
+
+.btn-secondary:hover {
+    background-color: var(--4front-light-teal);
+    border-color: var(--4front-light-teal);
+}
+
+.btn-warning {
+    background-color: var(--4front-yellow);
+    border-color: var(--4front-yellow);
+    color: var(--4front-dark-blue);
+}
+
+.btn-warning:hover {
+    background-color: #e6a500;
+    border-color: #e6a500;
+    color: var(--4front-dark-blue);
+}
+
+.btn-outline-primary {
+    color: var(--4front-dark-blue);
+    border-color: var(--4front-dark-blue);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--4front-dark-blue);
+    border-color: var(--4front-dark-blue);
+}
+
+.btn-outline-secondary {
+    color: var(--4front-teal);
+    border-color: var(--4front-teal);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--4front-teal);
+    border-color: var(--4front-teal);
+}
+
+/* Card Styling */
+.card {
+    border: 1px solid var(--4front-light-gray);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: var(--4front-light-yellow);
+    border-bottom: 1px solid var(--4front-light-teal);
+    color: var(--4front-dark-blue);
+}
+
+/* Form Styling */
+.form-control:focus {
+    border-color: var(--4front-teal);
+    box-shadow: 0 0 0 0.2rem rgba(0, 138, 143, 0.25);
+}
+
+.form-select:focus {
+    border-color: var(--4front-teal);
+    box-shadow: 0 0 0 0.2rem rgba(0, 138, 143, 0.25);
+}
+
+/* Alert Styling */
+.alert-primary {
+    background-color: var(--4front-light-yellow);
+    border-color: var(--4front-yellow);
+    color: var(--4front-dark-blue);
+}
+
+.alert-info {
+    background-color: rgba(0, 138, 143, 0.1);
+    border-color: var(--4front-teal);
+    color: var(--4front-dark-blue);
+}
+
+/* Badge Styling */
+.badge.bg-primary {
+    background-color: var(--4front-dark-blue) !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--4front-teal) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--4front-yellow) !important;
+    color: var(--4front-dark-blue) !important;
+}
+
+/* Gradient Backgrounds */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, var(--4front-dark-blue) 0%, var(--4front-mid-blue) 100%);
+}
+
+.bg-gradient-secondary {
+    background: linear-gradient(135deg, var(--4front-teal) 0%, var(--4front-light-teal) 100%);
+}
+
+.bg-gradient-accent {
+    background: linear-gradient(135deg, var(--4front-yellow) 0%, #e6a500 100%);
+}
+
+/* Section Headers */
+.section-header {
+    background: linear-gradient(135deg, var(--4front-dark-blue) 0%, var(--4front-mid-blue) 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+/* Search Forms */
+.search-form {
+    background: linear-gradient(135deg, var(--4front-dark-blue) 0%, var(--4front-mid-blue) 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Stats Cards */
+.stats-card {
+    background: linear-gradient(135deg, var(--4front-teal) 0%, var(--4front-light-teal) 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Filter Sections */
+.filter-section {
+    background-color: var(--4front-light-yellow);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--4front-yellow);
+}
+
+/* Footer */
+.footer {
+    background-color: var(--4front-light-gray) !important;
+    border-top: 3px solid var(--4front-yellow);
+}
+
+/* Links */
+a {
+    color: var(--4front-teal);
+}
+
+a:hover {
+    color: var(--4front-dark-blue);
+}
+
+/* Text Colors */
+.text-primary {
+    color: var(--4front-dark-blue) !important;
+}
+
+.text-secondary {
+    color: var(--4front-teal) !important;
+}
+
+.text-warning {
+    color: var(--4front-yellow) !important;
+}
+
+/* Background Colors */
+.bg-primary {
+    background-color: var(--4front-dark-blue) !important;
+}
+
+.bg-secondary {
+    background-color: var(--4front-teal) !important;
+}
+
+.bg-warning {
+    background-color: var(--4front-yellow) !important;
+}
+
+.bg-light {
+    background-color: var(--4front-light-gray) !important;
+}
+
+/* Custom Components */
+.4front-highlight {
+    background-color: var(--4front-light-yellow);
+    border-left: 4px solid var(--4front-yellow);
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.4front-accent-box {
+    background: linear-gradient(135deg, var(--4front-light-yellow) 0%, #fff9e6 100%);
+    border: 1px solid var(--4front-yellow);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .search-form {
+        padding: 1rem;
+    }
+    
+    .section-header {
+        padding: 0.75rem;
+    }
+}
+
+/* Loading States */
+.loading-spinner {
+    color: var(--4front-teal);
+}
+
+/* Success/Error States */
+.alert-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-color: #28a745;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+/* Table Styling */
+.table thead th {
+    background-color: var(--4front-light-yellow);
+    border-color: var(--4front-yellow);
+    color: var(--4front-dark-blue);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 244, 204, 0.3);
+}
+
+/* Modal Styling */
+.modal-header {
+    background-color: var(--4front-light-yellow);
+    border-bottom: 1px solid var(--4front-yellow);
+}
+
+.modal-title {
+    color: var(--4front-dark-blue);
+}
+
+/* Progress Bars */
+.progress-bar {
+    background-color: var(--4front-teal);
+}
+
+.progress-bar.bg-warning {
+    background-color: var(--4front-yellow) !important;
+}
+
+/* Tooltips */
+.tooltip-inner {
+    background-color: var(--4front-dark-blue);
+}
+
+.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: var(--4front-dark-blue);
+}
+
+/* Dropdown Styling */
+.dropdown-menu {
+    border: 1px solid var(--4front-light-teal);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item:hover {
+    background-color: var(--4front-light-yellow);
+    color: var(--4front-dark-blue);
+}
+
+/* Pagination */
+.page-link {
+    color: var(--4front-teal);
+    border-color: var(--4front-light-teal);
+}
+
+.page-link:hover {
+    color: var(--4front-dark-blue);
+    background-color: var(--4front-light-yellow);
+    border-color: var(--4front-yellow);
+}
+
+.page-item.active .page-link {
+    background-color: var(--4front-dark-blue);
+    border-color: var(--4front-dark-blue);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--4front-light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--4front-teal);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--4front-dark-blue);
+} 

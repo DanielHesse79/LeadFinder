@@ -1,0 +1,696 @@
+{% extends "base.html" %}
+
+{% block title %}Data Process - Workflow{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('workflow.workflow_dashboard') }}">Workflow</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Data Process</li>
+            </ol>
+        </nav>
+        
+        <h1 class="page-title">
+            <i class="fas fa-cogs me-2"></i>Data Process
+        </h1>
+        <p class="page-subtitle">
+            Analyze and transform the data with AI
+        </p>
+    </div>
+
+    <!-- Available Data -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-database me-2"></i>Available Data
+                    </h5>
+                    <div class="card-tools">
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshData()">
+                            <i class="fas fa-sync me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="availableDataContainer">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-spinner fa-spin fa-3x mb-3"></i>
+                            <p>Loading available data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Methods -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-brain me-2"></i>Analysis Methods
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- RAG Analysis -->
+                        <div class="col-md-6 mb-4">
+                            <div class="analysis-method">
+                                <div class="method-header">
+                                    <h6 class="method-title">
+                                        <i class="fas fa-question-circle me-2"></i>RAG Analysis
+                                    </h6>
+                                    <span class="method-status available">Available</span>
+                                </div>
+                                <p class="method-description">
+                                    Use Retrieval-Augmented Generation for intelligent Q&A and analysis
+                                </p>
+                                <div class="method-form">
+                                    <div class="mb-3">
+                                        <label for="ragQuery" class="form-label">Analysis Query</label>
+                                        <textarea class="form-control" id="ragQuery" rows="3" 
+                                                  placeholder="Ask questions about your data..."></textarea>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="performRAGAnalysis()">
+                                        <i class="fas fa-brain me-1"></i>Analyze with RAG
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lead Analysis -->
+                        <div class="col-md-6 mb-4">
+                            <div class="analysis-method">
+                                <div class="method-header">
+                                    <h6 class="method-title">
+                                        <i class="fas fa-users me-2"></i>Lead Analysis
+                                    </h6>
+                                    <span class="method-status available">Available</span>
+                                </div>
+                                <p class="method-description">
+                                    Analyze leads for business opportunities and scoring
+                                </p>
+                                <div class="method-form">
+                                    <div class="mb-3">
+                                        <label for="leadAnalysisType" class="form-label">Analysis Type</label>
+                                        <select class="form-select" id="leadAnalysisType">
+                                            <option value="opportunity">Opportunity Analysis</option>
+                                            <option value="scoring">Lead Scoring</option>
+                                            <option value="categorization">Categorization</option>
+                                            <option value="contact">Contact Analysis</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="performLeadAnalysis()">
+                                        <i class="fas fa-chart-line me-1"></i>Analyze Leads
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Market Research -->
+                        <div class="col-md-6 mb-4">
+                            <div class="analysis-method">
+                                <div class="method-header">
+                                    <h6 class="method-title">
+                                        <i class="fas fa-chart-bar me-2"></i>Market Research
+                                    </h6>
+                                    <span class="method-status available">Available</span>
+                                </div>
+                                <p class="method-description">
+                                    Perform market analysis and competitive intelligence
+                                </p>
+                                <div class="method-form">
+                                    <div class="mb-3">
+                                        <label for="marketResearchTopic" class="form-label">Research Topic</label>
+                                        <input type="text" class="form-control" id="marketResearchTopic" 
+                                               placeholder="Enter market research topic...">
+                                    </div>
+                                    <button class="btn btn-primary" onclick="performMarketResearch()">
+                                        <i class="fas fa-search me-1"></i>Research Market
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Strategic Planning -->
+                        <div class="col-md-6 mb-4">
+                            <div class="analysis-method">
+                                <div class="method-header">
+                                    <h6 class="method-title">
+                                        <i class="fas fa-chess me-2"></i>Strategic Planning
+                                    </h6>
+                                    <span class="method-status available">Available</span>
+                                </div>
+                                <p class="method-description">
+                                    Generate strategic insights and planning recommendations
+                                </p>
+                                <div class="method-form">
+                                    <div class="mb-3">
+                                        <label for="strategicObjective" class="form-label">Strategic Objective</label>
+                                        <input type="text" class="form-control" id="strategicObjective" 
+                                               placeholder="Enter strategic objective...">
+                                    </div>
+                                    <button class="btn btn-primary" onclick="performStrategicPlanning()">
+                                        <i class="fas fa-chess-king me-1"></i>Generate Strategy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Results -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Analysis Results
+                    </h5>
+                    <div class="card-tools">
+                        <button class="btn btn-sm btn-outline-primary" onclick="exportAnalysis()">
+                            <i class="fas fa-download me-1"></i>Export
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="saveAnalysis()">
+                            <i class="fas fa-save me-1"></i>Save
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="analysisResultsContainer">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-chart-line fa-3x mb-3"></i>
+                            <p>No analysis results yet. Start analyzing your data using the methods above.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.analysis-method {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.analysis-method:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.method-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.method-title {
+    margin: 0;
+    font-weight: 600;
+}
+
+.method-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.method-status.available {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.method-status.unavailable {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.method-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.method-form {
+    margin-top: 1rem;
+}
+
+.card-tools {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#availableDataContainer, #analysisResultsContainer {
+    min-height: 200px;
+}
+
+.data-item {
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.data-item:hover {
+    background-color: #f8f9fa;
+    border-color: #007bff;
+}
+
+.data-item.selected {
+    background-color: #e3f2fd;
+    border-color: #007bff;
+}
+
+.analysis-result {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.analysis-result h6 {
+    color: #007bff;
+    margin-bottom: 0.5rem;
+}
+</style>
+
+<script>
+let selectedDataItems = [];
+let analysisResults = [];
+
+// Load available data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadAvailableData();
+});
+
+function loadAvailableData() {
+    fetch('/workflow/api/available-data')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayAvailableData(data.data);
+            } else {
+                console.error('Error loading data:', data.error);
+                document.getElementById('availableDataContainer').innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                        <p>Error loading data: ${data.error}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('availableDataContainer').innerHTML = `
+                <div class="text-center text-muted">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                    <p>Error loading data</p>
+                </div>
+            `;
+        });
+}
+
+function displayAvailableData(data) {
+    const container = document.getElementById('availableDataContainer');
+    
+    if (data.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted">
+                <i class="fas fa-database fa-3x mb-3"></i>
+                <p>No data available for analysis. Go to Data In to collect some data first.</p>
+                <a href="{{ url_for('workflow.data_in_dashboard') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i>Go to Data In
+                </a>
+            </div>
+        `;
+        return;
+    }
+
+    let html = `
+        <div class="mb-3">
+            <h6>Available Data (${data.length} items)</h6>
+            <p class="text-muted">Select items to analyze:</p>
+        </div>
+        <div class="row">
+    `;
+
+    data.forEach((item, index) => {
+        html += `
+            <div class="col-md-6 mb-2">
+                <div class="data-item" onclick="toggleDataItem(${index})" id="data-item-${index}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${item.title || 'Untitled'}</h6>
+                            <p class="mb-1 text-muted">${item.description || 'No description'}</p>
+                            <small class="text-muted">Source: ${item.source}</small>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="checkbox-${index}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `
+        </div>
+        <div class="mt-3">
+            <button class="btn btn-primary" onclick="selectAllData()">
+                <i class="fas fa-check-square me-1"></i>Select All
+            </button>
+            <button class="btn btn-outline-secondary" onclick="clearSelection()">
+                <i class="fas fa-square me-1"></i>Clear Selection
+            </button>
+        </div>
+    `;
+
+    container.innerHTML = html;
+    window.availableData = data;
+}
+
+function toggleDataItem(index) {
+    const item = document.getElementById(`data-item-${index}`);
+    const checkbox = document.getElementById(`checkbox-${index}`);
+    
+    if (checkbox.checked) {
+        checkbox.checked = false;
+        item.classList.remove('selected');
+        selectedDataItems = selectedDataItems.filter(i => i !== index);
+    } else {
+        checkbox.checked = true;
+        item.classList.add('selected');
+        selectedDataItems.push(index);
+    }
+}
+
+function selectAllData() {
+    selectedDataItems = [];
+    for (let i = 0; i < window.availableData.length; i++) {
+        const checkbox = document.getElementById(`checkbox-${i}`);
+        const item = document.getElementById(`data-item-${i}`);
+        checkbox.checked = true;
+        item.classList.add('selected');
+        selectedDataItems.push(i);
+    }
+}
+
+function clearSelection() {
+    selectedDataItems = [];
+    for (let i = 0; i < window.availableData.length; i++) {
+        const checkbox = document.getElementById(`checkbox-${i}`);
+        const item = document.getElementById(`data-item-${i}`);
+        checkbox.checked = false;
+        item.classList.remove('selected');
+    }
+}
+
+function performRAGAnalysis() {
+    const query = document.getElementById('ragQuery').value.trim();
+    
+    if (!query) {
+        alert('Please enter an analysis query');
+        return;
+    }
+    
+    if (selectedDataItems.length === 0) {
+        alert('Please select data items to analyze');
+        return;
+    }
+
+    showAnalysisLoading('Performing RAG analysis...');
+
+    const dataIds = selectedDataItems.map(index => window.availableData[index].id);
+
+    fetch('/workflow/data-process/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            data_ids: dataIds,
+            analysis_type: 'rag_analysis',
+            query: query
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        hideAnalysisLoading();
+        if (data.success) {
+            displayAnalysisResult(data, 'RAG Analysis');
+        } else {
+            console.error('Analysis error:', data.error);
+            alert('Analysis failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideAnalysisLoading();
+        console.error('Error:', error);
+        alert('Error performing RAG analysis: ' + error.message);
+    });
+}
+
+function performLeadAnalysis() {
+    const analysisType = document.getElementById('leadAnalysisType').value;
+    
+    if (selectedDataItems.length === 0) {
+        alert('Please select data items to analyze');
+        return;
+    }
+
+    showAnalysisLoading('Performing lead analysis...');
+
+    const dataIds = selectedDataItems.map(index => window.availableData[index].id);
+
+    fetch('/workflow/data-process/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            data_ids: dataIds,
+            analysis_type: 'lead_analysis',
+            analysis_subtype: analysisType
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        hideAnalysisLoading();
+        if (data.success) {
+            displayAnalysisResult(data, 'Lead Analysis');
+        } else {
+            console.error('Analysis error:', data.error);
+            alert('Analysis failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideAnalysisLoading();
+        console.error('Error:', error);
+        alert('Error performing lead analysis: ' + error.message);
+    });
+}
+
+function performMarketResearch() {
+    const topic = document.getElementById('marketResearchTopic').value.trim();
+    
+    if (!topic) {
+        alert('Please enter a market research topic');
+        return;
+    }
+    
+    if (selectedDataItems.length === 0) {
+        alert('Please select data items to analyze');
+        return;
+    }
+
+    showAnalysisLoading('Performing market research...');
+
+    const dataIds = selectedDataItems.map(index => window.availableData[index].id);
+
+    fetch('/workflow/data-process/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            data_ids: dataIds,
+            analysis_type: 'market_research',
+            topic: topic
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        hideAnalysisLoading();
+        if (data.success) {
+            displayAnalysisResult(data, 'Market Research');
+        } else {
+            console.error('Analysis error:', data.error);
+            alert('Analysis failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideAnalysisLoading();
+        console.error('Error:', error);
+        alert('Error performing market research: ' + error.message);
+    });
+}
+
+function performStrategicPlanning() {
+    const objective = document.getElementById('strategicObjective').value.trim();
+    
+    if (!objective) {
+        alert('Please enter a strategic objective');
+        return;
+    }
+    
+    if (selectedDataItems.length === 0) {
+        alert('Please select data items to analyze');
+        return;
+    }
+
+    showAnalysisLoading('Generating strategic plan...');
+
+    const dataIds = selectedDataItems.map(index => window.availableData[index].id);
+
+    fetch('/workflow/data-process/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            data_ids: dataIds,
+            analysis_type: 'strategic_planning',
+            objective: objective
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        hideAnalysisLoading();
+        if (data.success) {
+            displayAnalysisResult(data, 'Strategic Planning');
+        } else {
+            console.error('Analysis error:', data.error);
+            alert('Analysis failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideAnalysisLoading();
+        console.error('Error:', error);
+        alert('Error generating strategic plan: ' + error.message);
+    });
+}
+
+function displayAnalysisResult(data, analysisType) {
+    const container = document.getElementById('analysisResultsContainer');
+    
+    const result = {
+        type: analysisType,
+        timestamp: new Date().toLocaleString(),
+        data: data.results,
+        summary: data.analysis_type
+    };
+    
+    analysisResults.push(result);
+    
+    let html = `
+        <div class="analysis-result">
+            <h6><i class="fas fa-chart-line me-2"></i>${analysisType}</h6>
+            <p class="text-muted mb-2">Generated at: ${result.timestamp}</p>
+            <div class="analysis-content">
+                <pre class="bg-light p-3 rounded">${JSON.stringify(data.results, null, 2)}</pre>
+            </div>
+        </div>
+    `;
+    
+    // Add to existing results
+    if (container.querySelector('.analysis-result')) {
+        container.insertAdjacentHTML('afterbegin', html);
+    } else {
+        container.innerHTML = html;
+    }
+}
+
+function showAnalysisLoading(message) {
+    const container = document.getElementById('analysisResultsContainer');
+    container.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">${message}</p>
+        </div>
+    `;
+}
+
+function hideAnalysisLoading() {
+    // Loading will be replaced by results
+}
+
+function refreshData() {
+    loadAvailableData();
+}
+
+function exportAnalysis() {
+    if (analysisResults.length === 0) {
+        alert('No analysis results to export');
+        return;
+    }
+
+    const dataStr = JSON.stringify(analysisResults, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'analysis_results.json';
+    link.click();
+}
+
+function saveAnalysis() {
+    if (analysisResults.length === 0) {
+        alert('No analysis results to save');
+        return;
+    }
+
+    // Implement save functionality
+    console.log('Saving analysis results:', analysisResults);
+    alert(`Saved ${analysisResults.length} analysis results`);
+}
+</script>
+{% endblock %}

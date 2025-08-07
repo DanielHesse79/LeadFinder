@@ -1,595 +1,636 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lead Workshop - LeadFinder</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .workshop-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 3rem 0;
-            margin-bottom: 2rem;
-        }
-        .workshop-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: none;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-        }
-        .workshop-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .status-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
-        .status-ok { background-color: #28a745; }
-        .status-error { background-color: #dc3545; }
-        .status-warning { background-color: #ffc107; }
-        .project-card {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        .lead-item {
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            border-left: 4px solid #667eea;
-        }
-        .lead-item:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .relevancy-score {
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            display: inline-block;
-        }
-        .score-1 { background-color: #dc3545; color: white; }
-        .score-2 { background-color: #fd7e14; color: white; }
-        .score-3 { background-color: #ffc107; color: black; }
-        .score-4 { background-color: #20c997; color: white; }
-        .score-5 { background-color: #28a745; color: white; }
-        .analysis-section {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        .loading {
-            display: none;
-        }
-        .contact-info {
-            background-color: #e3f2fd;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 0.5rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-            <div class="container">
-                <a class="navbar-brand" href="/">
-                    <i class="fas fa-search"></i> LeadFinder
-                </a>
-                <div class="navbar-nav">
-                    <a class="nav-link" href="/">General Search</a>
-                    <a class="nav-link" href="/research">Funding</a>
-                    <a class="nav-link" href="/ollama">Publications & Researchers</a>
-                    <a class="nav-link active" href="/lead-workshop">Lead Workshop</a>
-                    <a class="nav-link" href="/ollama/view_downloads">
-                        <i class="fas fa-download"></i> Downloads
-                    </a>
-                    <a class="nav-link" href="/config">
-                        <i class="fas fa-cog"></i> Settings
-                    </a>
+{% extends "base.html" %}
+
+{% block title %}Lead Workshop - LeadFinder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .workshop-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    .workshop-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: none;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    .workshop-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    .status-ok { background-color: #28a745; }
+    .status-error { background-color: #dc3545; }
+    .status-warning { background-color: #ffc107; }
+    .project-card {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .lead-item {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-left: 4px solid #667eea;
+    }
+    .lead-item:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .relevancy-score {
+        font-size: 1.2rem;
+        font-weight: bold;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        display: inline-block;
+    }
+    .score-1 { background-color: #dc3545; color: white; }
+    .score-2 { background-color: #fd7e14; color: white; }
+    .score-3 { background-color: #ffc107; color: black; }
+    .score-4 { background-color: #20c997; color: white; }
+    .score-5 { background-color: #28a745; color: white; }
+    .analysis-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .loading {
+        display: none;
+    }
+    .contact-info {
+        background-color: #e3f2fd;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="workshop-container rounded">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-tools"></i> Lead Workshop</h1>
+                    <p class="mb-0">AI-powered analysis and project management for people of interest (KOLs, researchers, industry experts)</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="status-indicator status-ok" id="ai-status"></div>
+                    <span id="status-text">AI Analysis Ready</span>
                 </div>
             </div>
-        </nav>
+        </div>
 
-        <div class="container">
-            <!-- Header Section -->
-            <div class="workshop-container rounded">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h1><i class="fas fa-tools"></i> Lead Workshop</h1>
-                        <p class="mb-0">AI-powered analysis and project management for your research leads</p>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <div class="status-indicator status-ok" id="ai-status"></div>
-                        <span id="status-text">AI Analysis Ready</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Status Check -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5><i class="fas fa-robot"></i> AI Analysis Status</h5>
-                            <div id="ai-status-details">
-                                <div class="spinner-border spinner-border-sm" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                Checking AI availability...
+        <!-- AI Status Check -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5><i class="fas fa-robot"></i> AI Analysis Status</h5>
+                        <div id="ai-status-details">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
+                            Checking AI availability...
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Project Management -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="card workshop-card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-folder"></i> Projects</h5>
-                        </div>
-                        <div class="card-body">
-                            {% if projects %}
-                                <div class="mb-3">
-                                    <h6>Your Projects:</h6>
-                                    {% for project in projects %}
-                                    <div class="project-card">
-                                        <h6>{{ project.name }}</h6>
-                                        <p class="mb-2">{{ project.description or 'No description' }}</p>
-                                        <small>Created: {{ project.created_at }}</small>
-                                        <div class="mt-2">
-                                            <a href="{{ url_for('lead_workshop.view_project', project_id=project.id) }}" 
-                                               class="btn btn-light btn-sm">
-                                                <i class="fas fa-eye"></i> View
-                                            </a>
-                                        </div>
+        <!-- Project Management -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card workshop-card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-folder"></i> Projects</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if projects %}
+                            <div class="mb-3">
+                                <h6>Your Projects:</h6>
+                                {% for project in projects %}
+                                <div class="project-card">
+                                    <h6>{{ project.name }}</h6>
+                                    <p class="mb-2">{{ project.description or 'No description' }}</p>
+                                    <small>Created: {{ project.created_at }}</small>
+                                    <div class="mt-2">
+                                        <a href="{{ url_for('lead_workshop.view_project', project_id=project.id) }}" 
+                                           class="btn btn-light btn-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
                                     </div>
-                                    {% endfor %}
                                 </div>
-                            {% else %}
-                                <p class="text-muted">No projects created yet.</p>
-                            {% endif %}
-                            
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createProjectModal">
-                                <i class="fas fa-plus"></i> Create New Project
-                            </button>
-                        </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No projects created yet.</p>
+                        {% endif %}
+                        
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                            <i class="fas fa-plus"></i> Create New Project
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Selected Leads Section -->
-                <div class="col-md-6">
-                    <div class="card workshop-card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-list"></i> Selected Leads</h5>
-                        </div>
-                        <div class="card-body">
-                            {% if selected_leads %}
-                                <div class="mb-3">
-                                    {% set academic_count = 0 %}
-                                    {% for lead in selected_leads %}
-                                        {% if lead.source and lead.source.startswith('academic_') %}
-                                            {% set academic_count = academic_count + 1 %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% if academic_count > 0 %}
-                                        <h6>{{ selected_leads|length }} leads available for analysis ({{ academic_count }} academic publications):</h6>
-                                    {% else %}
-                                        <h6>{{ selected_leads|length }} leads selected for analysis:</h6>
+            <!-- Selected Leads Section -->
+            <div class="col-md-6">
+                <div class="card workshop-card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-list"></i> Selected Leads</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if selected_leads %}
+                            <div class="mb-3">
+                                {% set academic_count = 0 %}
+                                {% for lead in selected_leads %}
+                                    {% if lead.source and lead.source.startswith('academic_') %}
+                                        {% set academic_count = academic_count + 1 %}
                                     {% endif %}
-                                    {% for lead in selected_leads %}
-                                    <div class="lead-item" data-lead-id="{{ lead.id }}">
-                                        <h6 class="mb-1">{{ lead.title }}</h6>
-                                        <p class="text-muted mb-2">{{ lead.description[:100] }}{% if lead.description|length > 100 %}...{% endif %}</p>
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-secondary me-2">{{ lead.source }}</span>
-                                            <a href="{{ lead.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-external-link-alt"></i> Open
-                                            </a>
-                                        </div>
+                                {% endfor %}
+                                {% if academic_count > 0 %}
+                                    <h6>{{ selected_leads|length }} leads available for analysis ({{ academic_count }} academic publications):</h6>
+                                {% else %}
+                                    <h6>{{ selected_leads|length }} leads selected for analysis:</h6>
+                                {% endif %}
+                                {% for lead in selected_leads %}
+                                <div class="lead-item" data-lead-id="{{ lead.id }}">
+                                    <h6 class="mb-1">{{ lead.title }}</h6>
+                                    <p class="text-muted mb-2">{{ lead.description[:100] }}{% if lead.description|length > 100 %}...{% endif %}</p>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-secondary me-2">{{ lead.source }}</span>
+                                        <a href="{{ lead.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-external-link-alt"></i> Open
+                                        </a>
                                     </div>
-                                    {% endfor %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Analysis Options -->
+                            <div class="analysis-section">
+                                <h6>Analyze Selected Leads:</h6>
+                                <div class="mb-3">
+                                    <label for="projectSelect" class="form-label">Select Project:</label>
+                                    <select class="form-select" id="projectSelect">
+                                        <option value="">Choose a project...</option>
+                                        
+                            <!-- AutoGPT Enhanced Analysis -->
+                            <div class="analysis-section bg-primary text-white">
+                                <h6><i class="fas fa-robot"></i> AutoGPT Enhanced Analysis</h6>
+                                <p class="mb-3">Use AutoGPT to get intelligent insights and recommendations for your leads.</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="button" class="btn btn-light btn-sm w-100 mb-2" id="autogptAnalyzeBtn">
+                                            <i class="fas fa-brain"></i> AutoGPT Analysis
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="button" class="btn btn-light btn-sm w-100 mb-2" id="autogptResearchBtn">
+                                            <i class="fas fa-search"></i> Lead Research
+                                        </button>
+                                    </div>
                                 </div>
                                 
-                                <!-- Analysis Options -->
-                                <div class="analysis-section">
-                                    <h6>Analyze Selected Leads:</h6>
-                                    <div class="mb-3">
-                                        <label for="projectSelect" class="form-label">Select Project:</label>
-                                        <select class="form-select" id="projectSelect">
-                                            <option value="">Choose a project...</option>
-                                            
-                                <!-- AutoGPT Enhanced Analysis -->
-                                <div class="analysis-section bg-primary text-white">
-                                    <h6><i class="fas fa-robot"></i> AutoGPT Enhanced Analysis</h6>
-                                    <p class="mb-3">Use AutoGPT to get intelligent insights and recommendations for your leads.</p>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <button type="button" class="btn btn-light btn-sm w-100 mb-2" id="autogptAnalyzeBtn">
-                                                <i class="fas fa-brain"></i> AutoGPT Analysis
-                                            </button>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <button type="button" class="btn btn-light btn-sm w-100 mb-2" id="autogptResearchBtn">
-                                                <i class="fas fa-search"></i> Lead Research
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mt-3">
-                                        <small>
-                                            <i class="fas fa-info-circle"></i> 
-                                            AutoGPT will analyze leads for relevance, opportunities, and provide actionable insights.
-                                        </small>
-                                    </div>
-                                </div>
-                                            {% for project in projects %}
-                                            <option value="{{ project.id }}">{{ project.name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="projectContext" class="form-label">Additional Context (Optional):</label>
-                                        <textarea class="form-control" id="projectContext" rows="3" 
-                                                  placeholder="Provide additional context for the analysis..."></textarea>
-                                    </div>
-                                    
-                                    <!-- AI Service Selection -->
-                                    <div class="mb-3">
-                                        <label class="form-label">AI Analysis Service:</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="aiService" id="ollamaService" value="ollama" checked>
-                                            <label class="form-check-label" for="ollamaService">
-                                                <i class="fas fa-server"></i> Ollama (Local) - Fast analysis
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="aiService" id="runpodService" value="runpod">
-                                            <label class="form-check-label" for="runpodService">
-                                                <i class="fas fa-cloud"></i> RunPod.ai (Cloud) - Enhanced analysis with more powerful models
-                                            </label>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                    <div class="form-check mb-2">
-                                        <input class="form-check-input" type="checkbox" id="deleteAfterAnalysis">
-                                        <label class="form-check-label" for="deleteAfterAnalysis">
-                                            <strong>Delete leads from workshop after analysis</strong>
-                                        </label>
-                                    </div>
-                                    <button type="button" class="btn btn-success" onclick="analyzeSelectedLeads()">
-                                        <i class="fas fa-brain"></i> Analyze with AI
-                                    </button>
-                                    <small class="form-text text-muted d-block mt-2">
+                                <div class="mt-3">
+                                    <small>
                                         <i class="fas fa-info-circle"></i> 
-                                        AI analysis can take up to 30 minutes per lead for comprehensive analysis. 
-                                        Please be patient - thorough analysis provides better results.
+                                        AutoGPT will analyze leads for relevance, opportunities, and provide actionable insights.
                                     </small>
                                 </div>
+                            </div>
+                                        {% for project in projects %}
+                                        <option value="{{ project.id }}">{{ project.name }}</option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
-                            {% else %}
-                                <div class="text-center text-muted">
-                                    <i class="fas fa-search fa-3x mb-3"></i>
-                                    <h6>No leads available</h6>
-                                    <p>Go to Publications and Researchers to find academic publications, or use General Search for other leads</p>
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <a href="/ollama" class="btn btn-primary">
-                                            <i class="fas fa-book"></i> Publications & Researchers
-                                        </a>
-                                        <a href="/" class="btn btn-outline-primary">
-                                            <i class="fas fa-search"></i> General Search
-                                        </a>
+                                <div class="mb-3">
+                                    <label for="projectContext" class="form-label">Additional Context (Optional):</label>
+                                    <textarea class="form-control" id="projectContext" rows="3" 
+                                              placeholder="Provide additional context for the analysis..."></textarea>
+                                </div>
+                                
+                                <!-- AI Service Selection -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-robot me-2"></i>AI Analysis Service
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>Smart Service Selection:</strong> The system will automatically choose the best AI service based on your workload and configuration.
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="aiService" id="autoService" value="auto" checked>
+                                                    <label class="form-check-label" for="autoService">
+                                                        <strong>🔄 Auto-Select (Recommended)</strong>
+                                                    </label>
+                                                    <small class="form-text text-muted d-block">
+                                                        • Ollama for single leads (fast, free)<br>
+                                                        • RunPod for batch processing (5+ leads)<br>
+                                                        • RunPod for complex analysis (detailed insights)<br>
+                                                        • Automatic fallback if service fails
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="aiService" id="runpodService" value="runpod">
+                                                    <label class="form-check-label" for="runpodService">
+                                                        <strong>🚀 RunPod.ai (Enhanced)</strong>
+                                                    </label>
+                                                    <small class="form-text text-muted d-block">
+                                                        • More powerful AI models<br>
+                                                        • Better data extraction<br>
+                                                        • Detailed insights<br>
+                                                        • Pay-per-use pricing
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mt-3">
+                                            <small class="text-muted">
+                                                <i class="fas fa-cog me-1"></i>
+                                                <strong>Configuration:</strong> 
+                                                RunPod auto-enables for batch processing (≥5 leads) and complex analysis. 
+                                                <a href="/config" class="text-decoration-none">Configure settings</a>
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
-                            {% endif %}
-                        </div>
+                                
+                                <div class="mb-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="deleteAfterAnalysis">
+                                    <label class="form-check-label" for="deleteAfterAnalysis">
+                                        <strong>Delete leads from workshop after analysis</strong>
+                                    </label>
+                                </div>
+                                <button type="button" class="btn btn-success" onclick="analyzeSelectedLeads()">
+                                    <i class="fas fa-brain"></i> Analyze with AI
+                                </button>
+                                <small class="form-text text-muted d-block mt-2">
+                                    <i class="fas fa-info-circle"></i> 
+                                    AI analysis can take up to 30 minutes per lead for comprehensive analysis. 
+                                    Please be patient - thorough analysis provides better results.
+                                </small>
+                            </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-search fa-3x mb-3"></i>
+                                <h6>No leads available</h6>
+                                <p>Go to Publications and Researchers to find academic publications, or use General Search for other leads</p>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="/ollama" class="btn btn-primary">
+                                        <i class="fas fa-book"></i> Publications & Researchers
+                                    </a>
+                                    <a href="/" class="btn btn-outline-primary">
+                                        <i class="fas fa-search"></i> General Search
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Analysis Results -->
-            <div class="row">
-                <div class="col-12">
-                    <div class="card workshop-card">
-                        <div class="card-header">
-                            <h5><i class="fas fa-chart-line"></i> Analysis Results</h5>
-                        </div>
-                        <div class="card-body">
-                            <div id="analysisResults">
-                                <div class="text-center text-muted">
-                                    <i class="fas fa-chart-bar fa-3x mb-3"></i>
-                                    <h6>No analysis results yet</h6>
-                                    <p>Select leads and analyze them to see results here.</p>
-                                </div>
+        <!-- Analysis Results -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card workshop-card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> Analysis Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="analysisResults">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                                <h6>No analysis results yet</h6>
+                                <p>Select leads and analyze them to see results here.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Loading Indicator -->
-            <div class="loading text-center" id="loading">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Analyzing leads individually with AI...</p>
-                <div class="text-muted small">
-                    <p><i class="fas fa-clock"></i> Each lead is analyzed individually (~2-5 minutes per lead)</p>
-                    <p><i class="fas fa-cog fa-spin"></i> AI is extracting specific details: people, contacts, products, opportunities...</p>
-                    <p><i class="fas fa-info-circle"></i> Individual analysis provides more accurate and detailed results</p>
-                </div>
+        <!-- Loading Indicator -->
+        <div class="loading text-center" id="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Analyzing leads individually with AI...</p>
+            <div class="text-muted small">
+                <p><i class="fas fa-clock"></i> Each lead is analyzed individually (~2-5 minutes per lead)</p>
+                <p><i class="fas fa-cog fa-spin"></i> AI is extracting specific details: people, contacts, products, opportunities...</p>
+                <p><i class="fas fa-info-circle"></i> Individual analysis provides more accurate and detailed results</p>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Create Project Modal -->
-    <div class="modal fade" id="createProjectModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Create New Project</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="createProjectForm">
-                        <div class="mb-3">
-                            <label for="projectName" class="form-label">Project Name *</label>
-                            <input type="text" class="form-control" id="projectName" required 
-                                   placeholder="e.g., SampleFacts Research">
-                        </div>
-                        <div class="mb-3">
-                            <label for="projectDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="projectDescription" rows="3" 
-                                      placeholder="Describe what this project is about..."></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="createProject()">Create Project</button>
-                </div>
+<!-- Create Project Modal -->
+<div class="modal fade" id="createProjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createProjectForm">
+                    <div class="mb-3">
+                        <label for="projectName" class="form-label">Project Name *</label>
+                        <input type="text" class="form-control" id="projectName" required 
+                               placeholder="e.g., SampleFacts Research">
+                    </div>
+                    <div class="mb-3">
+                        <label for="projectDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="projectDescription" rows="3" 
+                                  placeholder="Describe what this project is about..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createProject()">Create Project</button>
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Check AI status on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAIStatus();
-        });
+{% block extra_js %}
+<script>
+    // Check AI status on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        checkAIStatus();
+    });
 
-        function checkAIStatus() {
-            fetch('/lead-workshop/api/status')
-                .then(response => response.json())
-                .then(data => {
-                    const statusIndicator = document.getElementById('ai-status');
-                    const statusText = document.getElementById('status-text');
-                    const statusDetails = document.getElementById('ai-status-details');
-                    
-                    let statusHtml = '<div class="row">';
-                    
-                    // Ollama status
-                    statusHtml += '<div class="col-md-6">';
-                    statusHtml += '<strong><i class="fas fa-server"></i> Ollama (Local):</strong><br>';
-                    if (data.ollama && data.ollama !== 'unavailable') {
-                        statusHtml += '<span class="text-success"><i class="fas fa-check-circle"></i> Available</span>';
-                    } else {
-                        statusHtml += '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Not available</span>';
-                    }
-                    statusHtml += '</div>';
-                    
-                    // RunPod status
-                    statusHtml += '<div class="col-md-6">';
-                    statusHtml += '<strong><i class="fas fa-cloud"></i> RunPod.ai (Cloud):</strong><br>';
-                    if (data.runpod && data.runpod === 'connected') {
-                        statusHtml += '<span class="text-success"><i class="fas fa-check-circle"></i> Available</span>';
-                    } else {
-                        statusHtml += '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Not configured</span>';
-                    }
-                    statusHtml += '</div>';
-                    
-                    statusHtml += '</div>';
-                    
-                    // Overall status
-                    const hasAnyService = (data.ollama && data.ollama !== 'unavailable') || 
-                                        (data.runpod && data.runpod === 'connected');
-                    
-                    if (hasAnyService) {
-                        statusIndicator.className = 'status-indicator status-ok';
-                        statusText.textContent = 'AI Analysis Ready';
-                    } else {
-                        statusIndicator.className = 'status-indicator status-error';
-                        statusText.textContent = 'AI Analysis Unavailable';
-                    }
-                    
-                    statusDetails.innerHTML = statusHtml;
-                })
-                .catch(error => {
-                    const statusIndicator = document.getElementById('ai-status');
-                    const statusText = document.getElementById('status-text');
-                    const statusDetails = document.getElementById('ai-status-details');
+    function checkAIStatus() {
+        fetch('/lead-workshop/api/status')
+            .then(response => response.json())
+            .then(data => {
+                const statusIndicator = document.getElementById('ai-status');
+                const statusText = document.getElementById('status-text');
+                const statusDetails = document.getElementById('ai-status-details');
+                
+                let statusHtml = '<div class="row">';
+                
+                // Ollama status
+                statusHtml += '<div class="col-md-6">';
+                statusHtml += '<strong><i class="fas fa-server"></i> Ollama (Local):</strong><br>';
+                if (data.ollama && data.ollama !== 'unavailable') {
+                    statusHtml += '<span class="text-success"><i class="fas fa-check-circle"></i> Available</span>';
+                } else {
+                    statusHtml += '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Not available</span>';
+                }
+                statusHtml += '</div>';
+                
+                // RunPod status
+                statusHtml += '<div class="col-md-6">';
+                statusHtml += '<strong><i class="fas fa-cloud"></i> RunPod.ai (Cloud):</strong><br>';
+                if (data.runpod && data.runpod === 'connected') {
+                    statusHtml += '<span class="text-success"><i class="fas fa-check-circle"></i> Available</span>';
+                } else {
+                    statusHtml += '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Not configured</span>';
+                }
+                statusHtml += '</div>';
+                
+                statusHtml += '</div>';
+                
+                // Overall status
+                const hasAnyService = (data.ollama && data.ollama !== 'unavailable') || 
+                                    (data.runpod && data.runpod === 'connected');
+                
+                if (hasAnyService) {
+                    statusIndicator.className = 'status-indicator status-ok';
+                    statusText.textContent = 'AI Analysis Ready';
+                } else {
                     statusIndicator.className = 'status-indicator status-error';
-                    statusText.textContent = 'AI Analysis Error';
-                    statusDetails.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error checking AI status</span>';
-                });
-        }
-
-        function createProject() {
-            const name = document.getElementById('projectName').value.trim();
-            const description = document.getElementById('projectDescription').value.trim();
-            
-            if (!name) {
-                alert('Project name is required');
-                return;
-            }
-            
-            fetch('/lead-workshop/create-project', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: name,
-                    description: description
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    location.reload(); // Reload to show new project
-                } else {
-                    alert('Error creating project: ' + data.error);
+                    statusText.textContent = 'AI Analysis Unavailable';
                 }
+                
+                statusDetails.innerHTML = statusHtml;
             })
             .catch(error => {
-                alert('Error creating project: ' + error);
+                const statusIndicator = document.getElementById('ai-status');
+                const statusText = document.getElementById('status-text');
+                const statusDetails = document.getElementById('ai-status-details');
+                statusIndicator.className = 'status-indicator status-error';
+                statusText.textContent = 'AI Analysis Error';
+                statusDetails.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error checking AI status</span>';
             });
-        }
+    }
 
-        function analyzeSelectedLeads() {
-            {% if selected_leads %}
-            const projectId = document.getElementById('projectSelect').value;
-            const projectContext = document.getElementById('projectContext').value.trim();
-            
-            if (!projectId) {
-                alert('Please select a project for analysis');
-                return;
+    function createProject() {
+        const name = document.getElementById('projectName').value.trim();
+        const description = document.getElementById('projectDescription').value.trim();
+        
+        if (!name) {
+            alert('Project name is required');
+            return;
+        }
+        
+        fetch('/lead-workshop/create-project', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                description: description
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Reload to show new project
+            } else {
+                alert('Error creating project: ' + data.error);
             }
-            
-            // Get lead IDs from the URL parameters first
-            const urlParams = new URLSearchParams(window.location.search);
-            let leadIds = urlParams.getAll('lead_ids');
-            
-            // If no lead IDs in URL, get them from the displayed leads on the page
-            if (leadIds.length === 0) {
-                // Get all lead IDs from the displayed leads
-                const leadElements = document.querySelectorAll('.lead-item');
-                console.log('Found lead elements:', leadElements.length);
-                leadIds = [];
-                leadElements.forEach(element => {
-                    // Extract lead ID from the lead element (we'll add this as a data attribute)
-                    const leadId = element.getAttribute('data-lead-id');
-                    console.log('Lead element data-lead-id:', leadId);
-                    if (leadId && leadId.trim()) {
-                        // Clean the lead ID and ensure it's a valid number
-                        const cleanLeadId = leadId.trim().replace(/\s+/g, '');
-                        if (/^\d+$/.test(cleanLeadId)) {
-                            leadIds.push(cleanLeadId);
-                        } else {
-                            console.warn('Invalid lead ID format:', leadId);
-                        }
+        })
+        .catch(error => {
+            alert('Error creating project: ' + error);
+        });
+    }
+
+    function analyzeSelectedLeads() {
+        {% if selected_leads %}
+        const projectId = document.getElementById('projectSelect').value;
+        const projectContext = document.getElementById('projectContext').value.trim();
+        
+        if (!projectId) {
+            alert('Please select a project for analysis');
+            return;
+        }
+        
+        // Get lead IDs from the URL parameters first
+        const urlParams = new URLSearchParams(window.location.search);
+        let leadIds = urlParams.getAll('lead_ids');
+        
+        // If no lead IDs in URL, get them from the displayed leads on the page
+        if (leadIds.length === 0) {
+            // Get all lead IDs from the displayed leads
+            const leadElements = document.querySelectorAll('.lead-item');
+            console.log('Found lead elements:', leadElements.length);
+            leadIds = [];
+            leadElements.forEach(element => {
+                // Extract lead ID from the lead element (we'll add this as a data attribute)
+                const leadId = element.getAttribute('data-lead-id');
+                console.log('Lead element data-lead-id:', leadId);
+                if (leadId && leadId.trim()) {
+                    // Clean the lead ID and ensure it's a valid number
+                    const cleanLeadId = leadId.trim().replace(/\s+/g, '');
+                    if (/^\d+$/.test(cleanLeadId)) {
+                        leadIds.push(cleanLeadId);
+                    } else {
+                        console.warn('Invalid lead ID format:', leadId);
                     }
-                });
-                console.log('Collected lead IDs from page:', leadIds);
-            }
-            
-            // Clean and validate all lead IDs
-            leadIds = leadIds.filter(id => {
-                const cleanId = id.trim().replace(/\s+/g, '');
-                return /^\d+$/.test(cleanId);
-            });
-            
-            if (leadIds.length === 0) {
-                alert('No leads selected for analysis');
-                return;
-            }
-            
-            console.log('Analyzing leads with IDs:', leadIds);
-            
-            // Show confirmation with time information
-            const confirmMessage = `Start comprehensive AI analysis of ${leadIds.length} lead(s)?\n\n⚠️  Important: Each lead will be analyzed individually for detailed insights.\n\nThis will provide:\n• Individual relevancy scores (1-5)\n• Specific people and contact details\n• Product names and technologies\n• Company information\n• Collaboration opportunities\n• Potential concerns\n\nAnalysis time: ~2-5 minutes per lead\n\nPlease be patient and do not close the browser during analysis.`;
-            
-            if (!confirm(confirmMessage)) {
-                return;
-            }
-            
-            // Show loading
-            document.getElementById('loading').style.display = 'block';
-            
-            // Get delete after analysis option
-            const deleteAfterAnalysis = document.getElementById('deleteAfterAnalysis').checked;
-            
-            // Get AI service selection
-            const aiService = document.querySelector('input[name="aiService"]:checked').value;
-            const useRunpod = aiService === 'runpod';
-            
-            // Send to backend for analysis
-            fetch('/lead-workshop/analyze-leads', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    lead_ids: leadIds,
-                    project_id: projectId,
-                    project_context: projectContext,
-                    delete_after_analysis: deleteAfterAnalysis,
-                    use_runpod: useRunpod
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('loading').style.display = 'none';
-                if (data.success) {
-                    displayAnalysisResult(data);
-                } else {
-                    alert('Analysis failed: ' + data.error);
                 }
-            })
-            .catch(error => {
-                document.getElementById('loading').style.display = 'none';
-                alert('Error during analysis: ' + error);
             });
-            {% else %}
-            alert('No leads available for analysis');
-            {% endif %}
+            console.log('Collected lead IDs from page:', leadIds);
         }
-
-        function displayAnalysisResult(data) {
-            const resultsDiv = document.getElementById('analysisResults');
-            let resultHtml = `
-                <div class="alert alert-success">
-                    <h6><i class="fas fa-check-circle"></i> Analysis Completed Successfully!</h6>
-                    <p><strong>${data.message}</strong></p>
-                    <p>AI Response:</p>
-                    <div class="bg-light p-3 rounded">
-                        <pre style="white-space: pre-wrap;">${data.ai_response}</pre>
-                    </div>
-            `;
+        
+        // Clean and validate all lead IDs
+        leadIds = leadIds.filter(id => {
+            const cleanId = id.trim().replace(/\s+/g, '');
+            return /^\d+$/.test(cleanId);
+        });
+        
+        if (leadIds.length === 0) {
+            alert('No leads selected for analysis');
+            return;
+        }
+        
+        console.log('Analyzing leads with IDs:', leadIds);
+        
+        // Show confirmation with time information
+        const confirmMessage = `Start comprehensive AI analysis of ${leadIds.length} lead(s)?\n\n⚠️  Important: Each lead will be analyzed individually for detailed insights.\n\nThis will provide:\n• Individual relevancy scores (1-5)\n• Specific people and contact details\n• Product names and technologies\n• Company information\n• Collaboration opportunities\n• Potential concerns\n\nAnalysis time: ~2-5 minutes per lead\n\nPlease be patient and do not close the browser during analysis.`;
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+        
+        // Show loading
+        document.getElementById('loading').style.display = 'block';
+        
+        // Get delete after analysis option
+        const deleteAfterAnalysis = document.getElementById('deleteAfterAnalysis').checked;
+        
+        // Get AI service selection
+        const aiService = document.querySelector('input[name="aiService"]:checked').value;
+        const useRunpod = aiService === 'runpod';
+        
+        // Show smart recommendation for auto-selection
+        if (aiService === 'auto') {
+            const leadCount = leadIds.length;
+            let recommendation = '';
             
-            // Show deletion information if leads were deleted
-            if (data.deleted_leads && data.deleted_leads.length > 0) {
-                resultHtml += `
-                    <div class="alert alert-info mt-2">
-                        <i class="fas fa-trash"></i> <strong>${data.deleted_leads.length} leads removed from workshop</strong>
-                        <p class="mb-0">The analyzed leads have been deleted from the workshop as requested.</p>
-                    </div>
-                `;
+            if (leadCount >= 5) {
+                recommendation = `🔄 Auto-selecting RunPod.ai for ${leadCount} leads (batch processing)`;
+            } else if (leadCount === 1) {
+                recommendation = `🔄 Auto-selecting Ollama for single lead (fast analysis)`;
+            } else {
+                recommendation = `🔄 Auto-selecting Ollama for ${leadCount} leads (standard analysis)`;
             }
             
-            resultHtml += `
-                    <small>Analyzed on ${new Date().toLocaleString()}</small>
+            // Update the loading message to show the recommendation
+            document.getElementById('loading').innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">${recommendation}</p>
+                    <p class="text-muted">Please wait while the AI analyzes your leads...</p>
                 </div>
             `;
-            resultsDiv.innerHTML = resultHtml + resultsDiv.innerHTML;
         }
-    </script>
-</body>
-</html> 
+        
+        // Send to backend for analysis
+        fetch('/lead-workshop/analyze-leads', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lead_ids: leadIds,
+                project_id: projectId,
+                project_context: projectContext,
+                delete_after_analysis: deleteAfterAnalysis,
+                use_runpod: useRunpod,
+                ai_service: aiService  // Pass the service selection for backend logic
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            if (data.success) {
+                displayAnalysisResult(data);
+            } else {
+                alert('Analysis failed: ' + data.error);
+            }
+        })
+        .catch(error => {
+            document.getElementById('loading').style.display = 'none';
+            alert('Error during analysis: ' + error);
+        });
+        {% else %}
+        alert('No leads available for analysis');
+        {% endif %}
+    }
+
+    function displayAnalysisResult(data) {
+        const resultsDiv = document.getElementById('analysisResults');
+        let resultHtml = `
+            <div class="alert alert-success">
+                <h6><i class="fas fa-check-circle"></i> Analysis Completed Successfully!</h6>
+                <p><strong>${data.message}</strong></p>
+                <p>AI Response:</p>
+                <div class="bg-light p-3 rounded">
+                    <pre style="white-space: pre-wrap;">${data.ai_response}</pre>
+                </div>
+        `;
+        
+        // Show deletion information if leads were deleted
+        if (data.deleted_leads && data.deleted_leads.length > 0) {
+            resultHtml += `
+                <div class="alert alert-info mt-2">
+                    <i class="fas fa-trash"></i> <strong>${data.deleted_leads.length} leads removed from workshop</strong>
+                    <p class="mb-0">The analyzed leads have been deleted from the workshop as requested.</p>
+                </div>
+            `;
+        }
+        
+        resultHtml += `
+                <small>Analyzed on ${new Date().toLocaleString()}</small>
+            </div>
+        `;
+        resultsDiv.innerHTML = resultHtml + resultsDiv.innerHTML;
+    }
+</script>
+{% endblock %} 

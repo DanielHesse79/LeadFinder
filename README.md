@@ -21,6 +21,15 @@ LeadFinder is a comprehensive lead discovery and research platform that combines
 - **Knowledge base management** with automatic chunking and embedding
 - **Real-time RAG search** via web interface and API endpoints
 
+### 🚀 **Smart AI Service Integration**
+- **Intelligent service selection** between Ollama (local) and RunPod.ai (cloud)
+- **Automatic batch processing** - uses RunPod for 5+ leads automatically
+- **Complex analysis optimization** - RunPod for detailed insights when needed
+- **Seamless fallback system** - Ollama backup if RunPod fails
+- **Cost-optimized usage** - saves RunPod power for batch processing
+- **Configurable thresholds** - customize when to use each service
+- **Transparent service selection** - users see which service will be used
+
 ### 🛡️ **System Reliability**
 - **Comprehensive error handling** with custom exception hierarchy
 - **Thread-safe caching system** with TTL and LRU eviction
@@ -55,6 +64,15 @@ LeadFinder is a comprehensive lead discovery and research platform that combines
 - **Semantic Scholar** for academic papers
 - **AI-powered analysis** of research relevance
 - **Unified research search** with parallel execution and caching
+
+### 🕷️ **Web Scraping & Content Extraction**
+- **Scientific content scraping** from research papers and academic sites
+- **Research profile extraction** from university and researcher pages
+- **Institution information gathering** from university and research center websites
+- **AI-powered content analysis** with LangChain integration
+- **Workflow integration** as part of the Data In collection phase
+- **Batch processing** for multiple URLs with concurrent scraping
+- **Metadata extraction** including authors, DOI, keywords, and funding information
 
 ## 🚀 Quick Start
 
@@ -270,6 +288,18 @@ CORDIS_API_KEY=your_cordis_key
 NIH_API_KEY=your_nih_key
 NSF_API_KEY=your_nsf_key
 
+# RunPod.ai Smart Configuration (Optional)
+RUNPOD_ENABLED=False                    # Master switch for RunPod integration
+RUNPOD_AUTO_ENABLE=True                 # Auto-enable for batch processing
+RUNPOD_BATCH_THRESHOLD=5               # Leads that trigger RunPod usage
+RUNPOD_COMPLEX_ANALYSIS=True           # Use RunPod for detailed analysis
+RUNPOD_FALLBACK_TO_OLLAMA=True         # Fallback to Ollama if RunPod fails
+RUNPOD_API_KEY=your_runpod_api_key     # RunPod API key
+RUNPOD_ENDPOINT_ID=your_endpoint_id    # RunPod endpoint ID
+RUNPOD_TIMEOUT=300                     # Timeout in seconds
+RUNPOD_MAX_RETRIES=3                   # Retry attempts
+RUNPOD_RETRY_DELAY=2                   # Delay between retries
+
 # RAG Configuration (New)
 RAG_ENABLED=True
 RAG_MODEL=mistral:latest
@@ -363,6 +393,41 @@ leadfinder/
 - **Lead Relevance**: Business opportunity assessment
 - **Company Research**: Detailed company analysis
 
+## 🚀 Smart AI Service Integration
+
+### Lead Workshop Analysis
+The Lead Workshop now features **intelligent service selection** between Ollama (local) and RunPod.ai (cloud):
+
+#### Service Selection Options
+- **🔄 Auto-Select (Recommended)**: Smart service selection based on workload
+  - Ollama for single leads (1-4): Fast, free analysis
+  - RunPod for batch processing (5+ leads): Enhanced analysis
+  - RunPod for complex analysis: Detailed insights
+  - Automatic fallback if service fails
+- **🚀 RunPod.ai (Enhanced)**: Force RunPod usage for all analysis
+
+#### Smart Decision Making
+The system automatically chooses the best service based on:
+- **Lead count**: Number of leads to analyze
+- **Analysis complexity**: Project context and requirements
+- **Configuration settings**: Your preferences and thresholds
+- **Service availability**: Current status of both services
+
+#### Usage Scenarios
+- **Single Lead**: Ollama (5-30 seconds, free)
+- **Small Batch (2-4)**: Ollama (10-120 seconds, free)
+- **Medium Batch (5-9)**: RunPod (150-600 seconds, pay-per-use)
+- **Large Batch (10+)**: RunPod (300-1200 seconds, pay-per-use)
+- **Complex Analysis**: RunPod (60-180 seconds, detailed insights)
+
+### Configuration
+Configure smart service selection in `/config` under **RunPod.ai Smart Configuration**:
+- **Enable RunPod.ai Integration**: Master switch
+- **Auto-Enable for Batch Processing**: Use RunPod for 5+ leads
+- **Use for Complex Analysis**: Enhanced analysis when needed
+- **Fallback to Ollama**: Backup if RunPod fails
+- **Batch Processing Threshold**: Customize when to use RunPod (default: 5)
+
 ## 📊 Data Management
 
 ### Lead Storage
@@ -377,6 +442,40 @@ leadfinder/
 - PDF reports
 - CSV data export
 - JSON API responses
+
+## 🔄 Workflow System
+
+### 3-Phase Data Workflow
+LeadFinder implements a lean 3-phase data workflow for systematic lead discovery and analysis:
+
+#### **Phase 1: Data In** 📥
+- **Web Search**: Multi-engine search (Google, Bing, DuckDuckGo)
+- **Research APIs**: Academic databases (PubMed, ORCID, Semantic Scholar)
+- **Document Upload**: PDF, text, and CSV file processing
+- **AI Research**: Automated lead discovery with AI
+- **🕷️ Web Scraping**: Content extraction from scientific websites
+  - Scientific paper scraping
+  - Research profile extraction
+  - Institution information gathering
+  - AI-powered content analysis
+
+#### **Phase 2: Data Process** ⚙️
+- **RAG Analysis**: Context-aware document analysis
+- **Lead Analysis**: AI-powered lead evaluation
+- **Market Research**: Industry and market insights
+- **Strategic Planning**: Business opportunity analysis
+
+#### **Phase 3: Data Out** 📤
+- **Lead Reports**: Comprehensive lead summaries
+- **Market Reports**: Industry analysis and trends
+- **Strategic Reports**: Business opportunity assessments
+- **Action Items**: Prioritized next steps
+
+### Workflow Integration
+- **Unified Interface**: All data collection methods in one dashboard
+- **Progress Tracking**: Real-time workflow status and completion
+- **Data Flow**: Seamless transition between phases
+- **Export Options**: Multiple output formats for different use cases
 
 ## 🔬 Research Funding
 

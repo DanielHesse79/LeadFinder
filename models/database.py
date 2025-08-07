@@ -1,6 +1,7 @@
 import sqlite3
 from typing import List, Tuple, Optional, Dict, Any
 from config import DATABASE_PATH
+from datetime import datetime
 
 try:
     from utils.logger import get_logger
@@ -46,7 +47,17 @@ class DatabaseConnection:
                 link TEXT,
                 ai_summary TEXT,
                 source TEXT DEFAULT 'unknown',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                tags TEXT,
+                company TEXT,
+                institution TEXT,
+                contact_name TEXT,
+                contact_email TEXT,
+                contact_phone TEXT,
+                contact_linkedin TEXT,
+                contact_status TEXT DEFAULT 'not_contacted',
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         
@@ -100,11 +111,64 @@ class DatabaseConnection:
                 title TEXT,
                 email TEXT,
                 phone TEXT,
-                website TEXT,
-                organization TEXT,
-                notes TEXT,
+                linkedin TEXT,
+                twitter TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (analysis_id) REFERENCES workshop_analysis (id)
+            )
+        ''')
+        
+        # Researchers table for ORCID and academic profiles
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS researchers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                orcid_id TEXT UNIQUE,
+                name TEXT NOT NULL,
+                institution TEXT,
+                department TEXT,
+                bio TEXT,
+                email TEXT,
+                website TEXT,
+                linkedin TEXT,
+                twitter TEXT,
+                research_interests TEXT,
+                publications_count INTEGER DEFAULT 0,
+                citations_count INTEGER DEFAULT 0,
+                h_index INTEGER DEFAULT 0,
+                source TEXT DEFAULT 'orcid',
+                last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Researcher Publications table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS researcher_publications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                researcher_id INTEGER,
+                publication_id TEXT,
+                title TEXT,
+                authors TEXT,
+                journal TEXT,
+                year INTEGER,
+                doi TEXT,
+                url TEXT,
+                abstract TEXT,
+                citations INTEGER DEFAULT 0,
+                source TEXT DEFAULT 'pubmed',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (researcher_id) REFERENCES researchers (id)
+            )
+        ''')
+        
+        # Researcher Search History table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS researcher_search_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                query TEXT NOT NULL,
+                engines TEXT,
+                results_count INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         
@@ -159,13 +223,18 @@ class DatabaseConnection:
                 logger.error(f"Database connection error: {e}")
             raise
     
-    def save_lead(self, title: str, description: str, link: str, ai_summary: str, source: str = 'serp') -> int:
-        """Save a new lead to the database"""
+    def save_lead(self, title: str, description: str, link: str, ai_summary: str, source: str = 'serp',
+                  tags: str = None, company: str = None, institution: str = None,
+                  contact_name: str = None, contact_email: str = None, contact_phone: str = None,
+                  contact_linkedin: str = None, contact_status: str = 'not_contacted', notes: str = None) -> int:
+        """Save a new lead to the database with enhanced information"""
         query = '''
-            INSERT INTO leads (title, description, link, ai_summary, source)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO leads (title, description, link, ai_summary, source, tags, company, institution,
+                             contact_name, contact_email, contact_phone, contact_linkedin, contact_status, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         '''
-        params = (title, description, link, ai_summary, source)
+        params = (title, description, link, ai_summary, source, tags, company, institution,
+                 contact_name, contact_email, contact_phone, contact_linkedin, contact_status, notes)
         
         if self.pool:
             return self.pool.execute_update(query, params)
@@ -207,6 +276,79 @@ class DatabaseConnection:
                 c.execute(query, params)
                 results = c.fetchall()
                 return [dict(row) for row in results]
+    
+    def update_lead(self, lead_id: int, title: str = None, description: str = None, link: str = None,
+                   ai_summary: str = None, source: str = None, tags: str = None, company: str = None,
+                   institution: str = None, contact_name: str = None, contact_email: str = None,
+                   contact_phone: str = None, contact_linkedin: str = None, contact_status: str = None,
+                   notes: str = None) -> bool:
+        """Update lead information"""
+        # Build dynamic query based on provided fields
+        fields = []
+        params = []
+        
+        if title is not None:
+            fields.append("title = ?")
+            params.append(title)
+        if description is not None:
+            fields.append("description = ?")
+            params.append(description)
+        if link is not None:
+            fields.append("link = ?")
+            params.append(link)
+        if ai_summary is not None:
+            fields.append("ai_summary = ?")
+            params.append(ai_summary)
+        if source is not None:
+            fields.append("source = ?")
+            params.append(source)
+        if tags is not None:
+            fields.append("tags = ?")
+            params.append(tags)
+        if company is not None:
+            fields.append("company = ?")
+            params.append(company)
+        if institution is not None:
+            fields.append("institution = ?")
+            params.append(institution)
+        if contact_name is not None:
+            fields.append("contact_name = ?")
+            params.append(contact_name)
+        if contact_email is not None:
+            fields.append("contact_email = ?")
+            params.append(contact_email)
+        if contact_phone is not None:
+            fields.append("contact_phone = ?")
+            params.append(contact_phone)
+        if contact_linkedin is not None:
+            fields.append("contact_linkedin = ?")
+            params.append(contact_linkedin)
+        if contact_status is not None:
+            fields.append("contact_status = ?")
+            params.append(contact_status)
+        if notes is not None:
+            fields.append("notes = ?")
+            params.append(notes)
+        
+        # Always update the updated_at timestamp
+        fields.append("updated_at = CURRENT_TIMESTAMP")
+        
+        if not fields:
+            return False
+        
+        query = f'UPDATE leads SET {", ".join(fields)} WHERE id = ?'
+        params.append(lead_id)
+        
+        if self.pool:
+            affected_rows = self.pool.execute_update(query, params)
+            return affected_rows > 0
+        else:
+            # Fallback to direct connection
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                c.execute(query, params)
+                conn.commit()
+                return c.rowcount > 0
     
     def delete_lead(self, lead_id: int) -> bool:
         """Delete a lead by ID"""
@@ -550,16 +692,6 @@ class DatabaseConnection:
                     COUNT(DISTINCT source) as total_sources
                 FROM rag_document_chunks
             '''
-            
-            # Get session statistics
-            session_query = '''
-                SELECT 
-                    COUNT(*) as total_sessions,
-                    AVG(processing_time) as avg_processing_time,
-                    AVG(confidence_score) as avg_confidence_score
-                FROM rag_search_sessions
-            '''
-            
             if self.pool:
                 chunk_results = self.pool.execute_query(chunk_query)
                 session_results = self.pool.execute_query(session_query)
@@ -593,83 +725,438 @@ class DatabaseConnection:
             return {}
 
     def get_lead_stats(self) -> Dict[str, Any]:
-        """Get lead management statistics"""
+        """Get lead statistics"""
+        if self.pool:
+            with self.pool.get_connection() as conn:
+                c = conn.cursor()
+                return self._get_lead_stats_with_cursor(c)
+        else:
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                return self._get_lead_stats_with_cursor(c)
+    
+    def save_researcher(self, orcid_id: str, name: str, institution: str = None, 
+                       department: str = None, bio: str = None, email: str = None,
+                       website: str = None, linkedin: str = None, twitter: str = None,
+                       research_interests: str = None, source: str = 'orcid') -> int:
+        """Save or update a researcher"""
+        if self.pool:
+            with self.pool.get_connection() as conn:
+                c = conn.cursor()
+                return self._save_researcher_with_cursor(c, orcid_id, name, institution, 
+                                                       department, bio, email, website, 
+                                                       linkedin, twitter, research_interests, source)
+        else:
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                return self._save_researcher_with_cursor(c, orcid_id, name, institution, 
+                                                       department, bio, email, website, 
+                                                       linkedin, twitter, research_interests, source)
+    
+    def _save_researcher_with_cursor(self, c, orcid_id: str, name: str, institution: str = None,
+                                   department: str = None, bio: str = None, email: str = None,
+                                   website: str = None, linkedin: str = None, twitter: str = None,
+                                   research_interests: str = None, source: str = 'orcid') -> int:
+        """Save or update a researcher using the provided cursor"""
         try:
-            if self.pool:
-                with self.pool.get_connection() as conn:
-                    c = conn.cursor()
-                    return self._get_lead_stats_with_cursor(c)
+            # Check if researcher already exists
+            c.execute('SELECT id FROM researchers WHERE orcid_id = ?', (orcid_id,))
+            existing = c.fetchone()
+            
+            if existing:
+                # Update existing researcher
+                c.execute('''
+                    UPDATE researchers SET 
+                        name = ?, institution = ?, department = ?, bio = ?, 
+                        email = ?, website = ?, linkedin = ?, twitter = ?, 
+                        research_interests = ?, source = ?, last_updated = CURRENT_TIMESTAMP
+                    WHERE orcid_id = ?
+                ''', (name, institution, department, bio, email, website, 
+                     linkedin, twitter, research_interests, source, orcid_id))
+                return existing[0]
             else:
-                with self._get_connection() as conn:
-                    c = conn.cursor()
-                    return self._get_lead_stats_with_cursor(c)
+                # Insert new researcher
+                c.execute('''
+                    INSERT INTO researchers 
+                    (orcid_id, name, institution, department, bio, email, website, 
+                     linkedin, twitter, research_interests, source)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (orcid_id, name, institution, department, bio, email, website,
+                     linkedin, twitter, research_interests, source))
+                return c.lastrowid
+                
         except Exception as e:
             if logger:
-                logger.error(f"Error getting lead stats: {str(e)}")
-            return {
-                'total_leads': 0,
-                'total_searches': 0,
-                'ai_analyses': 0,
-                'leads_by_source': {},
-                'recent_activity': []
-            }
+                logger.error(f"Error saving researcher {orcid_id}: {e}")
+            return 0
+    
+    def get_researcher(self, orcid_id: str) -> Optional[Dict[str, Any]]:
+        """Get a researcher by ORCID ID"""
+        if self.pool:
+            with self.pool.get_connection() as conn:
+                c = conn.cursor()
+                return self._get_researcher_with_cursor(c, orcid_id)
+        else:
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                return self._get_researcher_with_cursor(c, orcid_id)
+    
+    def _get_researcher_with_cursor(self, c, orcid_id: str) -> Optional[Dict[str, Any]]:
+        """Get a researcher by ORCID ID using the provided cursor"""
+        try:
+            c.execute('''
+                SELECT * FROM researchers WHERE orcid_id = ?
+            ''', (orcid_id,))
+            row = c.fetchone()
+            
+            if row:
+                columns = [description[0] for description in c.description]
+                return dict(zip(columns, row))
+            return None
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Error getting researcher {orcid_id}: {e}")
+            return None
+    
+    def get_all_researchers(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Get all researchers"""
+        if self.pool:
+            with self.pool.get_connection() as conn:
+                c = conn.cursor()
+                return self._get_all_researchers_with_cursor(c, limit)
+        else:
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                return self._get_all_researchers_with_cursor(c, limit)
+    
+    def _get_all_researchers_with_cursor(self, c, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Get all researchers using the provided cursor"""
+        try:
+            if limit:
+                c.execute('''
+                    SELECT * FROM researchers 
+                    ORDER BY last_updated DESC 
+                    LIMIT ?
+                ''', (limit,))
+            else:
+                c.execute('''
+                    SELECT * FROM researchers 
+                    ORDER BY last_updated DESC
+                ''')
+            
+            rows = c.fetchall()
+            columns = [description[0] for description in c.description]
+            return [dict(zip(columns, row)) for row in rows]
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Error getting all researchers: {e}")
+            return []
+    
+    def search_researchers(self, query: str, limit: int = 20) -> List[Dict[str, Any]]:
+        """Search researchers by name, institution, or research interests"""
+        if self.pool:
+            with self.pool.get_connection() as conn:
+                c = conn.cursor()
+                return self._search_researchers_with_cursor(c, query, limit)
+        else:
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                return self._search_researchers_with_cursor(c, query, limit)
+    
+    def _search_researchers_with_cursor(self, c, query: str, limit: int = 20) -> List[Dict[str, Any]]:
+        """Search researchers using the provided cursor"""
+        try:
+            search_term = f'%{query}%'
+            c.execute('''
+                SELECT * FROM researchers 
+                WHERE name LIKE ? OR institution LIKE ? OR research_interests LIKE ?
+                ORDER BY last_updated DESC 
+                LIMIT ?
+            ''', (search_term, search_term, search_term, limit))
+            
+            rows = c.fetchall()
+            columns = [description[0] for description in c.description]
+            return [dict(zip(columns, row)) for row in rows]
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Error searching researchers: {e}")
+            return []
+    
+    def save_researcher_publication(self, researcher_id: int, publication_id: str, 
+                                  title: str, authors: str, journal: str = None,
+                                  year: int = None, doi: str = None, url: str = None,
+                                  abstract: str = None, citations: int = 0, 
+                                  source: str = 'pubmed') -> int:
+        """Save a publication for a researcher"""
+        if self.pool:
+            with self.pool.get_connection() as conn:
+                c = conn.cursor()
+                return self._save_researcher_publication_with_cursor(c, researcher_id, 
+                                                                   publication_id, title, authors,
+                                                                   journal, year, doi, url, abstract,
+                                                                   citations, source)
+        else:
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                return self._save_researcher_publication_with_cursor(c, researcher_id,
+                                                                   publication_id, title, authors,
+                                                                   journal, year, doi, url, abstract,
+                                                                   citations, source)
+    
+    def _save_researcher_publication_with_cursor(self, c, researcher_id: int, publication_id: str,
+                                               title: str, authors: str, journal: str = None,
+                                               year: int = None, doi: str = None, url: str = None,
+                                               abstract: str = None, citations: int = 0,
+                                               source: str = 'pubmed') -> int:
+        """Save a publication using the provided cursor"""
+        try:
+            # Check if publication already exists
+            c.execute('''
+                SELECT id FROM researcher_publications 
+                WHERE researcher_id = ? AND publication_id = ?
+            ''', (researcher_id, publication_id))
+            existing = c.fetchone()
+            
+            if existing:
+                # Update existing publication
+                c.execute('''
+                    UPDATE researcher_publications SET 
+                        title = ?, authors = ?, journal = ?, year = ?, doi = ?, 
+                        url = ?, abstract = ?, citations = ?, source = ?
+                    WHERE researcher_id = ? AND publication_id = ?
+                ''', (title, authors, journal, year, doi, url, abstract, 
+                     citations, source, researcher_id, publication_id))
+                return existing[0]
+            else:
+                # Insert new publication
+                c.execute('''
+                    INSERT INTO researcher_publications 
+                    (researcher_id, publication_id, title, authors, journal, year, 
+                     doi, url, abstract, citations, source)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (researcher_id, publication_id, title, authors, journal, year,
+                     doi, url, abstract, citations, source))
+                return c.lastrowid
+                
+        except Exception as e:
+            if logger:
+                logger.error(f"Error saving researcher publication: {e}")
+            return 0
+    
+    def get_researcher_publications(self, researcher_id: int) -> List[Dict[str, Any]]:
+        """Get all publications for a researcher"""
+        if self.pool:
+            with self.pool.get_connection() as conn:
+                c = conn.cursor()
+                return self._get_researcher_publications_with_cursor(c, researcher_id)
+        else:
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                return self._get_researcher_publications_with_cursor(c, researcher_id)
+    
+    def _get_researcher_publications_with_cursor(self, c, researcher_id: int) -> List[Dict[str, Any]]:
+        """Get researcher publications using the provided cursor"""
+        try:
+            c.execute('''
+                SELECT * FROM researcher_publications 
+                WHERE researcher_id = ? 
+                ORDER BY year DESC, title ASC
+            ''', (researcher_id,))
+            
+            rows = c.fetchall()
+            columns = [description[0] for description in c.description]
+            return [dict(zip(columns, row)) for row in rows]
+            
+        except Exception as e:
+            if logger:
+                logger.error(f"Error getting researcher publications: {e}")
+            return []
+    
+    def save_researcher_search_history(self, query: str, engines: str, results_count: int) -> bool:
+        """Save researcher search history"""
+        if self.pool:
+            with self.pool.get_connection() as conn:
+                c = conn.cursor()
+                return self._save_researcher_search_history_with_cursor(c, query, engines, results_count)
+        else:
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                result = self._save_researcher_search_history_with_cursor(c, query, engines, results_count)
+                conn.commit()
+                return result
 
-    def _get_lead_stats_with_cursor(self, c) -> Dict[str, Any]:
-        """Get lead statistics using the provided cursor"""
-        # Get total leads
-        c.execute('SELECT COUNT(*) FROM leads')
-        total_leads = c.fetchone()[0]
-        
-        # Get total searches
-        c.execute('SELECT COUNT(*) FROM search_history')
-        total_searches = c.fetchone()[0]
-        
-        # Get AI analyses (leads with AI summaries)
-        c.execute('SELECT COUNT(*) FROM leads WHERE ai_summary IS NOT NULL AND ai_summary != ""')
-        ai_analyses = c.fetchone()[0]
-        
-        # Get leads by source
-        c.execute('SELECT source, COUNT(*) FROM leads GROUP BY source')
-        leads_by_source = dict(c.fetchall())
-        
-        # Get recent activity (last 5 leads)
-        c.execute('''
-            SELECT title, source, created_at 
-            FROM leads 
-            ORDER BY created_at DESC 
-            LIMIT 5
-        ''')
-        recent_leads = c.fetchall()
-        
-        recent_activity = []
-        for lead in recent_leads:
-            recent_activity.append({
-                'type': 'lead',
-                'title': lead[0],
-                'source': lead[1],
-                'created_at': lead[2]
-            })
-        
-        return {
-            'total_leads': total_leads,
-            'total_searches': total_searches,
-            'ai_analyses': ai_analyses,
-            'leads_by_source': leads_by_source,
-            'recent_activity': recent_activity
-        }
+    def _save_researcher_search_history_with_cursor(self, c, query: str, engines: str, results_count: int) -> bool:
+        """Save researcher search history using cursor"""
+        try:
+            c.execute('''
+                INSERT INTO researcher_search_history (query, engines, results_count, created_at)
+                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ''', (query, engines, results_count))
+            return True
+        except Exception as e:
+            if logger:
+                logger.error(f"Error saving researcher search history: {e}")
+            return False
+
+    def remove_researcher(self, orcid_id: str) -> bool:
+        """Remove a researcher from the database"""
+        if self.pool:
+            with self.pool.get_connection() as conn:
+                c = conn.cursor()
+                return self._remove_researcher_with_cursor(c, orcid_id)
+        else:
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                result = self._remove_researcher_with_cursor(c, orcid_id)
+                conn.commit()
+                return result
+
+    def _remove_researcher_with_cursor(self, c, orcid_id: str) -> bool:
+        """Remove a researcher using cursor"""
+        try:
+            # First remove associated publications
+            c.execute('DELETE FROM researcher_publications WHERE researcher_id = (SELECT id FROM researchers WHERE orcid_id = ?)', (orcid_id,))
+            
+            # Then remove the researcher
+            c.execute('DELETE FROM researchers WHERE orcid_id = ?', (orcid_id,))
+            
+            return c.rowcount > 0
+        except Exception as e:
+            if logger:
+                logger.error(f"Error removing researcher {orcid_id}: {e}")
+            return False
+
+    def update_researcher(self, orcid_id: str, name: str = None, institution: str = None, 
+                         department: str = None, bio: str = None, email: str = None,
+                         website: str = None, linkedin: str = None, twitter: str = None,
+                         research_interests: str = None, publications: List[Dict] = None,
+                         funding: List[Dict] = None, keywords: List[str] = None,
+                         last_updated: datetime = None) -> bool:
+        """Update researcher data with enhanced information"""
+        if self.pool:
+            with self.pool.get_connection() as conn:
+                c = conn.cursor()
+                return self._update_researcher_with_cursor(c, orcid_id, name, institution, department,
+                                                        bio, email, website, linkedin, twitter,
+                                                        research_interests, publications, funding,
+                                                        keywords, last_updated)
+        else:
+            with self._get_connection() as conn:
+                c = conn.cursor()
+                result = self._update_researcher_with_cursor(c, orcid_id, name, institution, department,
+                                                          bio, email, website, linkedin, twitter,
+                                                          research_interests, publications, funding,
+                                                          keywords, last_updated)
+                conn.commit()
+                return result
+
+    def _update_researcher_with_cursor(self, c, orcid_id: str, name: str = None, institution: str = None,
+                                     department: str = None, bio: str = None, email: str = None,
+                                     website: str = None, linkedin: str = None, twitter: str = None,
+                                     research_interests: str = None, publications: List[Dict] = None,
+                                     funding: List[Dict] = None, keywords: List[str] = None,
+                                     last_updated: datetime = None) -> bool:
+        """Update researcher data using cursor"""
+        try:
+            # Build update query dynamically
+            update_fields = []
+            params = []
+            
+            if name is not None:
+                update_fields.append("name = ?")
+                params.append(name)
+            if institution is not None:
+                update_fields.append("institution = ?")
+                params.append(institution)
+            if department is not None:
+                update_fields.append("department = ?")
+                params.append(department)
+            if bio is not None:
+                update_fields.append("bio = ?")
+                params.append(bio)
+            if email is not None:
+                update_fields.append("email = ?")
+                params.append(email)
+            if website is not None:
+                update_fields.append("website = ?")
+                params.append(website)
+            if linkedin is not None:
+                update_fields.append("linkedin = ?")
+                params.append(linkedin)
+            if twitter is not None:
+                update_fields.append("twitter = ?")
+                params.append(twitter)
+            if research_interests is not None:
+                update_fields.append("research_interests = ?")
+                params.append(research_interests)
+            if last_updated is not None:
+                update_fields.append("last_updated = ?")
+                params.append(last_updated)
+            
+            if not update_fields:
+                return False
+            
+            update_fields.append("updated_at = CURRENT_TIMESTAMP")
+            params.append(orcid_id)
+            
+            query = f"UPDATE researchers SET {', '.join(update_fields)} WHERE orcid_id = ?"
+            c.execute(query, params)
+            
+            # Update publications if provided
+            if publications:
+                # Remove existing publications for this researcher
+                c.execute('DELETE FROM researcher_publications WHERE researcher_id = (SELECT id FROM researchers WHERE orcid_id = ?)', (orcid_id,))
+                
+                # Add new publications
+                for pub in publications:
+                    self._save_researcher_publication_with_cursor(c, 
+                        researcher_id=orcid_id,  # Using orcid_id as researcher_id for simplicity
+                        publication_id=pub.get('id', ''),
+                        title=pub.get('title', ''),
+                        authors=pub.get('authors', ''),
+                        journal=pub.get('journal', ''),
+                        year=pub.get('year'),
+                        doi=pub.get('doi', ''),
+                        url=pub.get('url', ''),
+                        abstract=pub.get('abstract', ''),
+                        citations=pub.get('citations', 0),
+                        source=pub.get('source', 'orcid')
+                    )
+            
+            return c.rowcount > 0
+        except Exception as e:
+            if logger:
+                logger.error(f"Error updating researcher {orcid_id}: {e}")
+            return False
 
 # Global database instance
 db = DatabaseConnection()
 
 # Convenience functions for backward compatibility
-def save_lead(title: str, description: str, link: str, ai_summary: str, source: str = 'serp') -> int:
-    return db.save_lead(title, description, link, ai_summary, source)
+def save_lead(title: str, description: str, link: str, ai_summary: str, source: str = 'serp',
+              tags: str = None, company: str = None, institution: str = None,
+              contact_name: str = None, contact_email: str = None, contact_phone: str = None,
+              contact_linkedin: str = None, contact_status: str = 'not_contacted', notes: str = None) -> int:
+    return db.save_lead(title, description, link, ai_summary, source, tags, company, institution,
+                       contact_name, contact_email, contact_phone, contact_linkedin, contact_status, notes)
 
 def get_all_leads(limit: Optional[int] = None) -> List[Dict[str, Any]]:
     return db.get_all_leads(limit)
 
 def get_leads_by_source(source: str) -> List[Dict[str, Any]]:
     return db.get_leads_by_source(source)
+
+def update_lead(lead_id: int, title: str = None, description: str = None, link: str = None,
+               ai_summary: str = None, source: str = None, tags: str = None, company: str = None,
+               institution: str = None, contact_name: str = None, contact_email: str = None,
+               contact_phone: str = None, contact_linkedin: str = None, contact_status: str = None,
+               notes: str = None) -> bool:
+    return db.update_lead(lead_id, title, description, link, ai_summary, source, tags, company,
+                         institution, contact_name, contact_email, contact_phone, contact_linkedin,
+                         contact_status, notes)
 
 def delete_lead(lead_id: int) -> bool:
     return db.delete_lead(lead_id)
@@ -713,5 +1200,43 @@ def get_rag_stats() -> Dict[str, Any]:
     return db.get_rag_stats()
 
 def get_lead_stats() -> Dict[str, Any]:
-    """Get lead management statistics"""
-    return db.get_lead_stats() 
+    """Get lead statistics"""
+    return db.get_lead_stats()
+
+# Researcher database functions
+def save_researcher(orcid_id: str, name: str, institution: str = None, 
+                   department: str = None, bio: str = None, email: str = None,
+                   website: str = None, linkedin: str = None, twitter: str = None,
+                   research_interests: str = None, source: str = 'orcid') -> int:
+    """Save or update a researcher"""
+    return db.save_researcher(orcid_id, name, institution, department, bio, email,
+                             website, linkedin, twitter, research_interests, source)
+
+def get_researcher(orcid_id: str) -> Optional[Dict[str, Any]]:
+    """Get a researcher by ORCID ID"""
+    return db.get_researcher(orcid_id)
+
+def get_all_researchers(limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    """Get all researchers"""
+    return db.get_all_researchers(limit)
+
+def search_researchers(query: str, limit: int = 20) -> List[Dict[str, Any]]:
+    """Search researchers by name, institution, or research interests"""
+    return db.search_researchers(query, limit)
+
+def save_researcher_publication(researcher_id: int, publication_id: str, 
+                              title: str, authors: str, journal: str = None,
+                              year: int = None, doi: str = None, url: str = None,
+                              abstract: str = None, citations: int = 0, 
+                              source: str = 'pubmed') -> int:
+    """Save a publication for a researcher"""
+    return db.save_researcher_publication(researcher_id, publication_id, title, authors,
+                                        journal, year, doi, url, abstract, citations, source)
+
+def get_researcher_publications(researcher_id: int) -> List[Dict[str, Any]]:
+    """Get all publications for a researcher"""
+    return db.get_researcher_publications(researcher_id)
+
+def save_researcher_search_history(query: str, engines: str, results_count: int) -> bool:
+    """Save researcher search history"""
+    return db.save_researcher_search_history(query, engines, results_count) 

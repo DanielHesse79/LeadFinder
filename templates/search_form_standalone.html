@@ -265,6 +265,7 @@
             <!-- Search Form -->
             <div class="search-form-card">
                 <form method="POST" action="{{ url_for('search.perform_search_ajax') }}" id="searchForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <!-- Basic Search Section -->
                     <div class="form-section">
                         <h3 class="form-section-title">

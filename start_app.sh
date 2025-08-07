@@ -19,6 +19,9 @@ sleep 2
 # Set Flask environment
 export FLASK_ENV=$ENVIRONMENT
 
+# Skip AutoGPT validation by default to avoid timeout issues
+export SKIP_AUTOGPT_VALIDATION=true
+
 # Load environment-specific configuration safely
 if [ -f "env.$ENVIRONMENT" ]; then
     echo "📁 Loading configuration from env.$ENVIRONMENT"
@@ -73,6 +76,57 @@ else
     echo "✅ fundNSF already installed"
 fi
 
+# Check for syntax errors in critical files before validation
+echo "🔍 Checking for syntax errors in critical files..."
+SYNTAX_ERRORS=0
+
+# Check database.py for syntax errors
+if ! venv/bin/python -c "import models.database" 2>/dev/null; then
+    echo "❌ Syntax error found in models/database.py"
+    echo "   Please fix the syntax error before continuing."
+    echo "   Common issues:"
+    echo "   - Missing 'try:' or 'except:' blocks"
+    echo "   - Incorrect indentation"
+    echo "   - Unclosed parentheses or brackets"
+    SYNTAX_ERRORS=$((SYNTAX_ERRORS + 1))
+else
+    echo "✅ models/database.py syntax OK"
+fi
+
+# Check app.py for syntax errors
+if ! venv/bin/python -c "import app" 2>/dev/null; then
+    echo "❌ Syntax error found in app.py"
+    echo "   Please fix the syntax error before continuing."
+    SYNTAX_ERRORS=$((SYNTAX_ERRORS + 1))
+else
+    echo "✅ app.py syntax OK"
+fi
+
+# Check routes for syntax errors
+for route_file in routes/*.py; do
+    if [ -f "$route_file" ]; then
+        if ! venv/bin/python -c "import $(basename "$route_file" .py)" 2>/dev/null; then
+            echo "❌ Syntax error found in $route_file"
+            SYNTAX_ERRORS=$((SYNTAX_ERRORS + 1))
+        else
+            echo "✅ $route_file syntax OK"
+        fi
+    fi
+done
+
+if [ $SYNTAX_ERRORS -gt 0 ]; then
+    echo ""
+    echo "❌ Found $SYNTAX_ERRORS syntax error(s). Please fix them before starting the app."
+    echo ""
+    echo "Common fixes:"
+    echo "1. Check for missing 'try:' or 'except:' blocks"
+    echo "2. Verify indentation is consistent (4 spaces)"
+    echo "3. Ensure all parentheses and brackets are properly closed"
+    echo "4. Check for missing colons after function definitions"
+    echo ""
+    exit 1
+fi
+
 # Validate configuration before starting
 echo "🔍 Validating configuration..."
 venv/bin/python -c "
@@ -120,8 +174,32 @@ echo "   Port: $FLASK_PORT"
 echo "   Debug: $FLASK_DEBUG"
 echo "   Log Level: $LOG_LEVEL"
 echo "   Environment: $ENVIRONMENT"
+echo "   AutoGPT Validation: Skipped (SKIP_AUTOGPT_VALIDATION=true)"
 echo ""
 
+# Test if port is already in use
+echo "🔍 Checking if port $FLASK_PORT is available..."
+if command -v netstat >/dev/null 2>&1; then
+    if netstat -tlnp 2>/dev/null | grep ":$FLASK_PORT " >/dev/null; then
+        echo "⚠️  Warning: Port $FLASK_PORT is already in use"
+        echo "   The app might not start properly if the port is occupied."
+        echo "   Consider stopping other services using this port."
+    else
+        echo "✅ Port $FLASK_PORT is available"
+    fi
+elif command -v ss >/dev/null 2>&1; then
+    if ss -tlnp 2>/dev/null | grep ":$FLASK_PORT " >/dev/null; then
+        echo "⚠️  Warning: Port $FLASK_PORT is already in use"
+        echo "   The app might not start properly if the port is occupied."
+        echo "   Consider stopping other services using this port."
+    else
+        echo "✅ Port $FLASK_PORT is available"
+    fi
+else
+    echo "⚠️  Could not check port availability (netstat/ss not available)"
+fi
+
+echo ""
 echo "🚀 Starting LeadFinder on $FLASK_HOST:$FLASK_PORT"
 echo "🌐 Access the application at: http://localhost:$FLASK_PORT"
 echo "📊 Health check: http://localhost:$FLASK_PORT/health"
@@ -129,5 +207,6 @@ echo ""
 echo "Press Ctrl+C to stop the application"
 echo ""
 
-# Start the application using venv Python
+# Start the application directly without timeout (AutoGPT validation is already skipped)
+echo "⏳ Starting app..."
 venv/bin/python app.py 

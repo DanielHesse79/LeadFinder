@@ -1,512 +1,227 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ project.name }} - Lead Workshop</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .project-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-        }
-        .analysis-card {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .relevancy-score {
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            display: inline-block;
-        }
-        .score-1 { background-color: #dc3545; color: white; }
-        .score-2 { background-color: #fd7e14; color: white; }
-        .score-3 { background-color: #ffc107; color: black; }
-        .score-4 { background-color: #20c997; color: white; }
-        .score-5 { background-color: #28a745; color: white; }
-        .contact-info {
-            background-color: #e3f2fd;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 0.5rem;
-        }
-        .edit-form {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 0.5rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-            <div class="container">
-                <a class="navbar-brand" href="/">
-                    <i class="fas fa-search"></i> LeadFinder
-                </a>
-                <div class="navbar-nav">
-                    <a class="nav-link" href="/">General Search</a>
-                    <a class="nav-link" href="/research">Funding</a>
-                    <a class="nav-link" href="/ollama">Publications & Researchers</a>
-                    <a class="nav-link active" href="/lead-workshop">Lead Workshop</a>
-                    <a class="nav-link" href="/ollama/view_downloads">
-                        <i class="fas fa-download"></i> Downloads
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }} - 4Front2Market Lead Workshop{% endblock %}
+
+{% block extra_css %}
+<style>
+    .project-header {
+        background: linear-gradient(135deg, var(--4front-dark-blue) 0%, var(--4front-mid-blue) 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    .analysis-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .relevancy-score {
+        font-size: 1.2rem;
+        font-weight: bold;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        display: inline-block;
+    }
+    .score-1 { background-color: #dc3545; color: white; }
+    .score-2 { background-color: #fd7e14; color: white; }
+    .score-3 { background-color: var(--4front-yellow); color: var(--4front-dark-blue); }
+    .score-4 { background-color: #20c997; color: white; }
+    .score-5 { background-color: #28a745; color: white; }
+    .contact-info {
+        background-color: var(--4front-light-yellow);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+    .edit-form {
+        background-color: var(--4front-light-gray);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="container">
+        <!-- Project Header -->
+        <div class="project-header rounded">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-folder"></i> {{ project.name }}</h1>
+                    <p class="mb-0">{{ project.description or 'No description provided' }}</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{{ url_for('lead_workshop.lead_workshop_home') }}" class="btn btn-light me-2">
+                        <i class="fas fa-arrow-left"></i> Back to Workshop
                     </a>
-                    <a class="nav-link" href="/config">
-                        <i class="fas fa-cog"></i> Settings
+                    <a href="{{ url_for('lead_workshop.edit_report', project_id=project.id) }}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Report
                     </a>
-                </div>
-            </div>
-        </nav>
-
-        <div class="container">
-            <!-- Project Header -->
-            <div class="project-header rounded">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h1><i class="fas fa-folder"></i> {{ project.name }}</h1>
-                        <p class="mb-0">{{ project.description or 'No description provided' }}</p>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <a href="{{ url_for('lead_workshop.lead_workshop_home') }}" class="btn btn-light me-2">
-                            <i class="fas fa-arrow-left"></i> Back to Workshop
-                        </a>
-                        <a href="{{ url_for('lead_workshop.edit_report', project_id=project.id) }}" class="btn btn-primary">
-                            <i class="fas fa-edit"></i> Edit Report
-                        </a>
-                        <a href="{{ url_for('lead_workshop.export_project_pdf', project_id=project.id) }}" class="btn btn-success ms-2">
-                            <i class="fas fa-file-pdf"></i> Export PDF Report
-                        </a>
-                        <a href="{{ url_for('lead_workshop.export_project_markdown', project_id=project.id) }}" class="btn btn-warning ms-2">
-                            <i class="fas fa-file-alt"></i> Export Workshop Markdown
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Project Stats -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ analyses|length }}</h5>
-                            <p class="card-text">Total Leads</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {% set high_relevance = analyses|selectattr('relevancy_score', '>=', 4)|list|length %}
-                                {{ high_relevance }}
-                            </h5>
-                            <p class="card-text">High Relevance (4-5)</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {% set medium_relevance = analyses|selectattr('relevancy_score', '==', 3)|list|length %}
-                                {{ medium_relevance }}
-                            </h5>
-                            <p class="card-text">Medium Relevance (3)</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {% set low_relevance = analyses|selectattr('relevancy_score', '<=', 2)|list|length %}
-                                {{ low_relevance }}
-                            </h5>
-                            <p class="card-text">Low Relevance (1-2)</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lead Analyses -->
-            <div class="row">
-                <div class="col-12">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <h3><i class="fas fa-chart-line"></i> Lead Analyses</h3>
-                            {% if current_sort_by == 'relevancy_score' and current_sort_order == 'DESC' %}
-                                <small class="text-muted">Sorted by: Relevance (Highest First)</small>
-                            {% elif current_sort_by == 'relevancy_score' and current_sort_order == 'ASC' %}
-                                <small class="text-muted">Sorted by: Relevance (Lowest First)</small>
-                            {% elif current_sort_by == 'created_at' and current_sort_order == 'DESC' %}
-                                <small class="text-muted">Sorted by: Date (Newest First)</small>
-                            {% elif current_sort_by == 'created_at' and current_sort_order == 'ASC' %}
-                                <small class="text-muted">Sorted by: Date (Oldest First)</small>
-                            {% elif current_sort_by == 'title' and current_sort_order == 'ASC' %}
-                                <small class="text-muted">Sorted by: Title (A-Z)</small>
-                            {% elif current_sort_by == 'title' and current_sort_order == 'DESC' %}
-                                <small class="text-muted">Sorted by: Title (Z-A)</small>
-                            {% endif %}
-                        </div>
-                        
-                        {% if analyses %}
-                        <div class="d-flex align-items-center gap-3">
-                            <!-- Sorting Controls -->
-                            <div class="d-flex align-items-center gap-2">
-                                <label for="sortSelect" class="form-label mb-0"><strong>Sort by:</strong></label>
-                                <select class="form-select form-select-sm" id="sortSelect" style="width: auto;" onchange="changeSort()">
-                                    <option value="relevancy_score:DESC" {% if current_sort_by == 'relevancy_score' and current_sort_order == 'DESC' %}selected{% endif %}>
-                                        Relevance (High to Low)
-                                    </option>
-                                    <option value="relevancy_score:ASC" {% if current_sort_by == 'relevancy_score' and current_sort_order == 'ASC' %}selected{% endif %}>
-                                        Relevance (Low to High)
-                                    </option>
-                                    <option value="created_at:DESC" {% if current_sort_by == 'created_at' and current_sort_order == 'DESC' %}selected{% endif %}>
-                                        Date (Newest First)
-                                    </option>
-                                    <option value="created_at:ASC" {% if current_sort_by == 'created_at' and current_sort_order == 'ASC' %}selected{% endif %}>
-                                        Date (Oldest First)
-                                    </option>
-                                    <option value="title:ASC" {% if current_sort_by == 'title' and current_sort_order == 'ASC' %}selected{% endif %}>
-                                        Title (A-Z)
-                                    </option>
-                                    <option value="title:DESC" {% if current_sort_by == 'title' and current_sort_order == 'DESC' %}selected{% endif %}>
-                                        Title (Z-A)
-                                    </option>
-                                </select>
-                            </div>
-                            
-                            <!-- Bulk Actions -->
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="selectAllAnalyses" onchange="toggleAllAnalyses()">
-                                    <label class="form-check-label" for="selectAllAnalyses">
-                                        <strong>Select All</strong>
-                                    </label>
-                                </div>
-                                <button type="button" class="btn btn-danger btn-sm" id="bulkDeleteBtn" disabled onclick="bulkDeleteAnalyses()">
-                                    <i class="fas fa-trash"></i> Delete Selected (<span id="selectedCount">0</span>)
-                                </button>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    {% if analyses %}
-                        {% for analysis in analyses %}
-                        <div class="analysis-card">
-                            <div class="row">
-                                <div class="col-md-1">
-                                    <div class="form-check">
-                                        <input class="form-check-input analysis-checkbox" type="checkbox" 
-                                               value="{{ analysis.id }}" onchange="updateSelectedCount()">
-                                    </div>
-                                </div>
-                                <div class="col-md-7">
-                                    <h5>{{ analysis.title or 'Lead information not available' }}</h5>
-                                    {% if analysis.description %}
-                                        <p class="text-muted">{{ analysis.description[:200] }}{% if analysis.description|length > 200 %}...{% endif %}</p>
-                                    {% else %}
-                                        <p class="text-muted"><em>Lead description not available (lead may have been removed from workshop)</em></p>
-                                    {% endif %}
-                                    
-                                    <div class="d-flex align-items-center mb-2">
-                                        {% if analysis.source %}
-                                            <span class="badge bg-secondary me-2">{{ analysis.source }}</span>
-                                        {% endif %}
-                                        {% if analysis.link %}
-                                            <a href="{{ analysis.link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-external-link-alt"></i> Open
-                                            </a>
-                                        {% else %}
-                                            <span class="badge bg-warning me-2">Link not available</span>
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <!-- Relevancy Score -->
-                                    <div class="mb-3">
-                                        <strong>Relevancy Score:</strong>
-                                        <span class="relevancy-score score-{{ analysis.relevancy_score }}">
-                                            {{ analysis.relevancy_score }}/5
-                                        </span>
-                                    </div>
-                                    
-                                    <!-- AI Analysis -->
-                                    {% if analysis.ai_analysis %}
-                                    <div class="mb-3">
-                                        <h6>AI Analysis:</h6>
-                                        <div class="bg-light p-3 rounded">
-                                            <pre style="white-space: pre-wrap;">{{ analysis.ai_analysis }}</pre>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    <!-- Key Opinion Leaders -->
-                                    {% if analysis.key_opinion_leaders %}
-                                    <div class="mb-3">
-                                        <h6>Key Opinion Leaders:</h6>
-                                        <div class="contact-info">
-                                            {{ analysis.key_opinion_leaders }}
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    <!-- Contact Information -->
-                                    {% if analysis.contact_info %}
-                                    <div class="mb-3">
-                                        <h6>Contact Information:</h6>
-                                        <div class="contact-info">
-                                            {{ analysis.contact_info }}
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    <!-- Notes -->
-                                    {% if analysis.notes %}
-                                    <div class="mb-3">
-                                        <h6>Notes:</h6>
-                                        <div class="bg-light p-3 rounded">
-                                            {{ analysis.notes }}
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="col-md-4">
-                                    <div class="text-end">
-                                        <button type="button" class="btn btn-primary btn-sm" 
-                                                onclick="editAnalysis({{ analysis.id }})">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Edit Form (hidden by default) -->
-                                    <div id="editForm{{ analysis.id }}" class="edit-form" style="display: none;">
-                                        <h6>Edit Analysis:</h6>
-                                        <form id="updateForm{{ analysis.id }}">
-                                            <div class="mb-2">
-                                                <label class="form-label">Relevancy Score:</label>
-                                                <select class="form-select form-select-sm" id="score{{ analysis.id }}">
-                                                    <option value="1" {% if analysis.relevancy_score == 1 %}selected{% endif %}>1 - Not Relevant</option>
-                                                    <option value="2" {% if analysis.relevancy_score == 2 %}selected{% endif %}>2 - Low Relevance</option>
-                                                    <option value="3" {% if analysis.relevancy_score == 3 %}selected{% endif %}>3 - Medium Relevance</option>
-                                                    <option value="4" {% if analysis.relevancy_score == 4 %}selected{% endif %}>4 - High Relevance</option>
-                                                    <option value="5" {% if analysis.relevancy_score == 5 %}selected{% endif %}>5 - Very Relevant</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-2">
-                                                <label class="form-label">Key Opinion Leaders:</label>
-                                                <textarea class="form-control form-control-sm" id="kol{{ analysis.id }}" rows="2">{{ analysis.key_opinion_leaders or '' }}</textarea>
-                                            </div>
-                                            <div class="mb-2">
-                                                <label class="form-label">Contact Information:</label>
-                                                <textarea class="form-control form-control-sm" id="contact{{ analysis.id }}" rows="2">{{ analysis.contact_info or '' }}</textarea>
-                                            </div>
-                                            <div class="mb-2">
-                                                <label class="form-label">Notes:</label>
-                                                <textarea class="form-control form-control-sm" id="notes{{ analysis.id }}" rows="2">{{ analysis.notes or '' }}</textarea>
-                                            </div>
-                                            <div class="d-flex gap-2">
-                                                <button type="button" class="btn btn-success btn-sm" 
-                                                        onclick="saveAnalysis({{ analysis.id }})">
-                                                    <i class="fas fa-save"></i> Save
-                                                </button>
-                                                <button type="button" class="btn btn-secondary btn-sm" 
-                                                        onclick="cancelEdit({{ analysis.id }})">
-                                                    <i class="fas fa-times"></i> Cancel
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mt-3 text-muted">
-                                <small>Analyzed on {{ analysis.created_at }}</small>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="text-center text-muted">
-                            <i class="fas fa-chart-bar fa-3x mb-3"></i>
-                            <h6>No analyses yet</h6>
-                            <p>Go to Lead Workshop to analyze leads for this project.</p>
-                            <a href="{{ url_for('lead_workshop.lead_workshop_home') }}" class="btn btn-primary">
-                                <i class="fas fa-tools"></i> Go to Workshop
-                            </a>
-                        </div>
-                    {% endif %}
+                    <a href="{{ url_for('lead_workshop.export_pdf', project_id=project.id) }}" class="btn btn-success ms-2">
+                        <i class="fas fa-file-pdf"></i> Export PDF Report
+                    </a>
+                    <a href="{{ url_for('lead_workshop.export_markdown', project_id=project.id) }}" class="btn btn-warning ms-2">
+                        <i class="fas fa-file-alt"></i> Export Workshop Markdown
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function editAnalysis(analysisId) {
-            document.getElementById(`editForm${analysisId}`).style.display = 'block';
-        }
-        
-        function cancelEdit(analysisId) {
-            document.getElementById(`editForm${analysisId}`).style.display = 'none';
-        }
-        
-        function saveAnalysis(analysisId) {
-            const relevancyScore = document.getElementById(`score${analysisId}`).value;
-            const keyOpinionLeaders = document.getElementById(`kol${analysisId}`).value;
-            const contactInfo = document.getElementById(`contact${analysisId}`).value;
-            const notes = document.getElementById(`notes${analysisId}`).value;
-            
-            fetch('/lead-workshop/update-analysis', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    analysis_id: analysisId,
-                    relevancy_score: parseInt(relevancyScore),
-                    key_opinion_leaders: keyOpinionLeaders,
-                    contact_info: contactInfo,
-                    notes: notes
-                })
+        <!-- Project Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ project.leads|length }}</h5>
+                        <p class="card-text">Total Leads</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ project.leads|selectattr('status', 'equalto', 'contacted')|list|length }}</h5>
+                        <p class="card-text">Contacted</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ project.leads|selectattr('status', 'equalto', 'qualified')|list|length }}</h5>
+                        <p class="card-text">Qualified</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ project.leads|selectattr('status', 'equalto', 'converted')|list|length }}</h5>
+                        <p class="card-text">Converted</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leads Analysis -->
+        <div class="row">
+            <div class="col-12">
+                <h3><i class="fas fa-chart-line"></i> Leads Analysis</h3>
+                
+                {% for lead in project.leads %}
+                <div class="analysis-card">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5>{{ lead.name }}</h5>
+                            <p class="text-muted">{{ lead.company or 'No company specified' }}</p>
+                            <p>{{ lead.description or 'No description provided' }}</p>
+                            
+                            <!-- Contact Information -->
+                            {% if lead.email or lead.phone or lead.linkedin %}
+                            <div class="contact-info">
+                                <h6><i class="fas fa-address-book"></i> Contact Information</h6>
+                                {% if lead.email %}
+                                <p class="mb-1"><i class="fas fa-envelope"></i> {{ lead.email }}</p>
+                                {% endif %}
+                                {% if lead.phone %}
+                                <p class="mb-1"><i class="fas fa-phone"></i> {{ lead.phone }}</p>
+                                {% endif %}
+                                {% if lead.linkedin %}
+                                <p class="mb-1"><i class="fab fa-linkedin"></i> <a href="{{ lead.linkedin }}" target="_blank">LinkedIn Profile</a></p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-end">
+                                <span class="relevancy-score score-{{ lead.relevancy_score }}">
+                                    Score: {{ lead.relevancy_score }}/5
+                                </span>
+                                <br><br>
+                                <span class="badge bg-{{ 'success' if lead.status == 'converted' else 'warning' if lead.status == 'qualified' else 'info' if lead.status == 'contacted' else 'secondary' }}">
+                                    {{ lead.status|title }}
+                                </span>
+                                <br><br>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button class="btn btn-outline-primary" onclick="editLead({{ lead.id }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" onclick="updateStatus({{ lead.id }}, 'qualified')">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteLead({{ lead.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function editLead(leadId) {
+        // Implement lead editing functionality
+        console.log('Edit lead:', leadId);
+    }
+    
+    function updateStatus(leadId, status) {
+        fetch('/lead-workshop/update-lead-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lead_id: leadId,
+                status: status
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Analysis updated successfully');
-                    location.reload(); // Reload to show updated data
-                } else {
-                    alert('Error updating analysis: ' + data.error);
-                }
-            })
-            .catch(error => {
-                alert('Error updating analysis: ' + error);
-            });
-        }
-        
-        function updateSelectedCount() {
-            const selectedCheckboxes = document.querySelectorAll('.analysis-checkbox:checked');
-            const countSpan = document.getElementById('selectedCount');
-            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-            
-            if (countSpan) {
-                countSpan.textContent = selectedCheckboxes.length;
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating status: ' + data.error);
             }
-            
-            if (bulkDeleteBtn) {
-                bulkDeleteBtn.disabled = selectedCheckboxes.length === 0;
-            }
-            
-            // Update select all checkbox state
-            const selectAllCheckbox = document.getElementById('selectAllAnalyses');
-            const allCheckboxes = document.querySelectorAll('.analysis-checkbox');
-            
-            if (selectAllCheckbox && allCheckboxes.length > 0) {
-                if (selectedCheckboxes.length === 0) {
-                    selectAllCheckbox.checked = false;
-                    selectAllCheckbox.indeterminate = false;
-                } else if (selectedCheckboxes.length === allCheckboxes.length) {
-                    selectAllCheckbox.checked = true;
-                    selectAllCheckbox.indeterminate = false;
-                } else {
-                    selectAllCheckbox.checked = false;
-                    selectAllCheckbox.indeterminate = true;
-                }
-            }
-        }
-        
-        function toggleAllAnalyses() {
-            const selectAllCheckbox = document.getElementById('selectAllAnalyses');
-            const allCheckboxes = document.querySelectorAll('.analysis-checkbox');
-            
-            allCheckboxes.forEach(checkbox => {
-                checkbox.checked = selectAllCheckbox.checked;
-            });
-            
-            updateSelectedCount();
-        }
-        
-        function changeSort() {
-            const sortSelect = document.getElementById('sortSelect');
-            const [sortBy, sortOrder] = sortSelect.value.split(':');
-            
-            // Build URL with new sort parameters
-            const url = new URL(window.location);
-            url.searchParams.set('sort_by', sortBy);
-            url.searchParams.set('sort_order', sortOrder);
-            
-            // Navigate to the new URL
-            window.location.href = url.toString();
-        }
-        
-        function bulkDeleteAnalyses() {
-            const selectedCheckboxes = document.querySelectorAll('.analysis-checkbox:checked');
-            
-            if (selectedCheckboxes.length === 0) {
-                alert('Please select analyses to delete');
-                return;
-            }
-            
-            const confirmMessage = `Are you sure you want to delete ${selectedCheckboxes.length} analysis(es)?\n\nThis action cannot be undone.`;
-            
-            if (!confirm(confirmMessage)) {
-                return;
-            }
-            
-            const analysisIds = Array.from(selectedCheckboxes).map(checkbox => checkbox.value);
-            const projectId = {{ project.id }};
-            
-            // Show loading state
-            const button = document.getElementById('bulkDeleteBtn');
-            const originalText = button.innerHTML;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-            button.disabled = true;
-            
-            fetch('/lead-workshop/delete-analyses', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    analysis_ids: analysisIds,
-                    project_id: projectId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(`✅ ${data.message}`);
-                    location.reload(); // Reload to show updated data
-                } else {
-                    alert(`❌ Error: ${data.error}`);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while deleting analyses. Please try again.');
-            })
-            .finally(() => {
-                // Restore button
-                button.innerHTML = originalText;
-                button.disabled = false;
-            });
-        }
-        
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            updateSelectedCount();
+        })
+        .catch(error => {
+            alert('Error updating status: ' + error);
         });
-    </script>
-</body>
-</html> 
+    }
+    
+    function deleteLead(leadId) {
+        if (confirm('Are you sure you want to delete this lead?')) {
+            fetch('/lead-workshop/delete-lead', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    lead_id: leadId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error deleting lead: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error deleting lead: ' + error);
+            });
+        }
+    }
+</script>
+{% endblock %} 

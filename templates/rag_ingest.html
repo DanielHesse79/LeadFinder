@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}RAG Document Ingestion{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-upload"></i> RAG Document Ingestion
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="ingestForm">
+                        <div class="mb-3">
+                            <label for="document_type" class="form-label">Document Type</label>
+                            <select class="form-control" id="document_type" name="document_type" required>
+                                <option value="">Select document type</option>
+                                <option value="lead">Lead</option>
+                                <option value="paper">Research Paper</option>
+                                <option value="search">Search Result</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Content</label>
+                            <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="source" class="form-label">Source</label>
+                            <input type="text" class="form-control" id="source" name="source">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Ingest Document
+                        </button>
+                    </form>
+                    
+                    <div id="results" class="mt-4" style="display: none;">
+                        <div class="alert alert-success">
+                            <h6>Ingestion Results</h6>
+                            <div id="ingestResults"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('ingestForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        document_type: formData.get('document_type'),
+        document: {
+            title: formData.get('title'),
+            content: formData.get('content'),
+            source: formData.get('source')
+        }
+    };
+    
+    try {
+        const response = await fetch('/rag/ingest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displayResults(result);
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Request failed: ' + error.message);
+    }
+});
+
+function displayResults(result) {
+    const resultsDiv = document.getElementById('results');
+    const ingestResults = document.getElementById('ingestResults');
+    
+    ingestResults.innerHTML = `
+        <p><strong>Document ID:</strong> ${result.document_id}</p>
+        <p><strong>Chunks Created:</strong> ${result.chunks_created}</p>
+        <p><strong>Processing Time:</strong> ${result.processing_time}s</p>
+    `;
+    
+    resultsDiv.style.display = 'block';
+}
+</script>
+{% endblock %} 
